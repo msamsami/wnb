@@ -63,20 +63,20 @@ class WeightedNB:
         if isinstance(X, pd.DataFrame):
             X = X.values
         if isinstance(y, pd.DataFrame):
-            y = y.values
+            y = y.values.flatten()
 
         unique_y, self.class_count_ = np.unique(y, return_counts=True)
         self.n_classes = len(unique_y)  # Find the number of classes
         self.n_samples, self.n_features = X.shape  # Find the number of samples and features
 
-        self.__check_inputs(self, X, y)
+        self.__check_inputs(X, y)
 
         # Calculate mean and standard deviation of features for each class
         self.mu = np.zeros((self.n_features, self.n_classes))
         self.std = np.zeros((self.n_features, self.n_classes))
         for i, c in enumerate(unique_y):
-            self.mu[:, i] = np.mean(X[y == c, :], axis=1)  # Calculate mean of features for class c
-            self.std[:, i] = np.std(X[y == c, :], axis=1)  # Calculate std of features for class c
+            self.mu[:, i] = np.mean(X[y == c, :], axis=0)  # Calculate mean of features for class c
+            self.std[:, i] = np.std(X[y == c, :], axis=0)  # Calculate std of features for class c
 
         # Update if no priors is provided
         if self.priors is None:
