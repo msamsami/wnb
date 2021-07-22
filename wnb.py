@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 
 
@@ -58,13 +59,19 @@ class WeightedNB:
             raise ValueError("Regularization type must be either 'l1' or 'l2'.")
 
     def fit(self, X, y, learning_hist=False):
+        # Convert to NumPy array if X and/or y are Pandas DataFrame
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        if isinstance(y, pd.DataFrame):
+            y = y.values
+
         unique_y, self.class_count_ = np.unique(y, return_counts=True)
         self.n_classes = len(unique_y)  # Find the number of classes
         self.n_samples, self.n_features = X.shape  # Find the number of samples and features
 
         self.__check_inputs(self, X, y)
 
-        # Calculate mean and standard deviation of feature for each class
+        # Calculate mean and standard deviation of features for each class
         self.mu = np.zeros((self.n_features, self.n_classes))
         self.std = np.zeros((self.n_features, self.n_classes))
         for i, c in enumerate(unique_y):
@@ -80,7 +87,7 @@ class WeightedNB:
             self.error_weights = np.array([[0, 1], [-1, 0]])
 
         self.weights_ = np.ones((self.n_classes,))  # Initialize the weights
-        self.cost_hist_ = np.zeros((self.max_iter,))  # Cost history storage
+        self.cost_hist_ = np.zeros((self.max_iter,))  # To store history of cost changes
 
         # Learn the weights using gradient descent
         for _iter in range(self.max_iter):
