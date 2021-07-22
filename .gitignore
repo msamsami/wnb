@@ -132,4 +132,4 @@ dmypy.json
 .idea/
 
 # Test files
-test.py
+/test
