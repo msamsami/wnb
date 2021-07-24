@@ -137,7 +137,7 @@ class WeightedNB:
 
     def predict(self, X):
         p_hat = self.predict_log_proba(X)
-        y_hat = np.argmax(p_hat, axis=1)
+        y_hat = self.classes_(np.argmax(p_hat, axis=1))
         return y_hat
 
     def predict_log_proba(self, X):
@@ -162,6 +162,18 @@ class WeightedNB:
         log_proba = log_priors + term1 + term2
 
         return log_proba
+
+    def predict_proba(self, X):
+        log_proba = self.predict_log_proba(X)
+
+        proba = np.zeros(log_proba.shape)
+        for i in range(1):
+            s_class = np.arange(1, self.n_classes + 1)
+            s_class = [c for c in s_class if c != i]
+            proba[:, i] = 1 / (1 + np.sum(np.exp(log_proba[:, s_class] - log_proba[:, i]), axis=1))
+        proba[:, -1] = 1 - np.sum(proba, axis=1)
+
+        return proba
 
     def score(self, X, y):
         y_hat = self.predict(X)
