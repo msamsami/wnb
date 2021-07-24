@@ -15,6 +15,7 @@ class WeightedNB:
 
         self.n_samples = None  # Number of samples
         self.n_classes = None  # Number of classes
+        self.classes_ = None  # Class labels
         self.class_count_ = None  # Number of samples in each class
         self.n_features = None  # Number of features
         self.mu = None  # Mean of features (n_features x 1)
@@ -65,8 +66,8 @@ class WeightedNB:
         if isinstance(y, pd.DataFrame):
             y = y.values.flatten()
 
-        unique_y, self.class_count_ = np.unique(y, return_counts=True)
-        self.n_classes = len(unique_y)  # Find the number of classes
+        self.classes_, self.class_count_ = np.unique(y, return_counts=True)  # Unique class labels and their counts
+        self.n_classes = len(self.classes_)  # Find the number of classes
         self.n_samples, self.n_features = X.shape  # Find the number of samples and features
 
         self.__check_inputs(X, y)
@@ -74,13 +75,16 @@ class WeightedNB:
         # Calculate mean and standard deviation of features for each class
         self.mu = np.zeros((self.n_features, self.n_classes))
         self.std = np.zeros((self.n_features, self.n_classes))
-        for i, c in enumerate(unique_y):
+        for i, c in enumerate(self.classes_):
             self.mu[:, i] = np.mean(X[y == c, :], axis=0)  # Calculate mean of features for class c
             self.std[:, i] = np.std(X[y == c, :], axis=0)  # Calculate std of features for class c
 
         # Update if no priors is provided
         if self.priors is None:
             self.priors = self.class_count_ / self.n_samples  # Calculate empirical prior probabilities
+        # Convert to NumPy array in input priors is in a list
+        if type(self.priors) is list:
+            self.priors = np.array(self.priors)
 
         # Update if no error weights is provided
         if self.error_weights is None:
@@ -132,18 +136,34 @@ class WeightedNB:
         return _cost, _lambda
 
     def predict(self, X):
-        p_hat = self.predict_proba(self, X)
+        p_hat = self.predict_log_proba(X)
         y_hat = np.argmax(p_hat, axis=1)
         return y_hat
 
-    def predict_proba(self, X):
+    def predict_log_proba(self, X):
         if not self._fit_status:
             raise Exception('Model is not fitted.')
-        #
-        #
-        #
+
+        if not X.shape[1] == self.n_features:
+            raise ValueError("Expected input with %d features, got %d instead."
+                             % (self.n_features, X.shape[1]))
+
+        # Convert to NumPy array if X is Pandas DataFrame
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+
+        log_priors = np.tile(np.log(self.priors), (self.n_samples, 1))
+        w_reshaped = np.tile(self.weights_.reshape(1, -1), (1, self.n_classes))
+        term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std)))
+        var_inv = np.multiply(w_reshaped, 1/np.multiply(self.std, self.std))
+        mu_by_var = np.multiply(self.mu, var_inv)
+        term2 = -0.5*(np.matmul(np.multiply(X, X), var_inv) - 2*np.matmul(X, mu_by_var)
+                      + np.sum(self.mu.conj()*mu_by_var, axis=0))
+        log_proba = log_priors + term1 + term2
+
+        return log_proba
 
     def score(self, X, y):
-        y_hat = self.predict(self, X)
+        y_hat = self.predict(X)
         _score = (y == y_hat).sum() / len(y)
         return _score
