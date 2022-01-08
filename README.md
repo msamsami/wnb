@@ -1,1 +1,3 @@
-# weighted-naive-bayes
+# MLD-WNB Classifier
+
+Naive Bayes (NB) is recognized as one of the most popular classification algorithms in the machine learning community, but its conditional independence assumption rarely holds true in real-world applications. In order to alleviate its conditional independence assumption, many attribute weighting NB (WNB) approaches have been proposed. Most of the proposed methods involve computationally demanding optimization problems that do not allow for controlling the model's bias due to class imbalance. **Minimum Log-likelihood Difference WNB (MLD-WNB)** is a novel weighting approach that optimizes the weights according to the Bayes optimal decision rule and includes hyperparameters for controlling the model's bias.
