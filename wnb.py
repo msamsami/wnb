@@ -90,19 +90,19 @@ class WeightedNB:
         if self.error_weights is None:
             self.error_weights = np.array([[0, 1], [-1, 0]])
 
-        self.weights_ = np.ones((self.n_classes,))  # Initialize the weights
+        self.weights_ = np.ones((self.n_features,))  # Initialize the weights
         self.cost_hist_ = np.zeros((self.max_iter,))  # To store history of cost changes
 
         # Learn the weights using gradient descent
         for _iter in range(self.max_iter):
             # Predict on X
-            y_hat = self.predict(self, X)
+            y_hat = self.predict(X)
 
             # Calculate cost
-            self.cost_hist_[_iter], _lambda = self.__calculate_cost(self, X, y_hat, learning_hist)
+            self.cost_hist_[_iter], _lambda = self.__calculate_cost(X, y, y_hat, learning_hist)
 
             # Calculate gradients
-            _grad = self.__calculate_grad(self, X, _lambda)
+            _grad = self.__calculate_grad(X, _lambda)
 
             # Add regularization
             if self.penalty == 'l1':
@@ -115,10 +115,10 @@ class WeightedNB:
 
         self._fit_status = True
 
-    def __calculate_cost(self, X, y_hat, learning_hist):
+    def __calculate_cost(self, X, y, y_hat, learning_hist):
         _lambda = []
         for i in range(self.n_samples):
-            _lambda.insert(i, self.error_weights[self.y[i], y_hat[i]])
+            _lambda.insert(i, self.error_weights[y[i], y_hat[i]])
 
         if learning_hist:
             # Calculate cost
@@ -135,14 +135,25 @@ class WeightedNB:
 
         return _cost, _lambda
 
+    def __calculate_grad(self, X, _lambda):
+        _grad = np.zeros((self.n_features,))
+
+        for j in range(self.n_features):
+            for i in range(self.n_samples):
+                x = X[i, :]
+                _grad[j] += _lambda[i] * (np.log(1e-20 + norm.pdf(x[j], self.mu[j, 1], self.std[j, 1]))
+                                          - np.log(1e-20 + norm.pdf(x[j], self.mu[j, 0], self.std[j, 0])))
+
+        return _grad
+
     def predict(self, X):
         p_hat = self.predict_log_proba(X)
-        y_hat = self.classes_(np.argmax(p_hat, axis=1))
+        y_hat = self.classes_[np.argmax(p_hat, axis=1)]
         return y_hat
 
     def predict_log_proba(self, X):
-        if not self._fit_status:
-            raise Exception('Model is not fitted.')
+        # if not self._fit_status:
+        #     raise Exception('Model is not fitted.')
 
         if not X.shape[1] == self.n_features:
             raise ValueError("Expected input with %d features, got %d instead."
@@ -153,7 +164,7 @@ class WeightedNB:
             X = X.values
 
         log_priors = np.tile(np.log(self.priors), (self.n_samples, 1))
-        w_reshaped = np.tile(self.weights_.reshape(1, -1), (1, self.n_classes))
+        w_reshaped = np.tile(self.weights_.reshape(-1, 1), (1, self.n_classes))
         term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std)))
         var_inv = np.multiply(w_reshaped, 1/np.multiply(self.std, self.std))
         mu_by_var = np.multiply(self.mu, var_inv)
@@ -177,5 +188,7 @@ class WeightedNB:
 
     def score(self, X, y):
         y_hat = self.predict(X)
+        if isinstance(y, pd.DataFrame):
+            y = y.values.flatten()
         _score = (y == y_hat).sum() / len(y)
         return _score
