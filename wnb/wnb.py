@@ -106,9 +106,9 @@ class WeightedNB:
 
             # Add regularization
             if self.penalty == 'l1':
-                _grad += 2 * self.C * self.weights_
-            elif self.penalty == 'l2':
                 _grad += self.C * np.sign(self.weights_)
+            elif self.penalty == 'l2':
+                _grad += 2 * self.C * self.weights_
 
             # Update weights
             self.weights_ = self.weights_ - self.step_size * _grad
@@ -138,11 +138,13 @@ class WeightedNB:
     def __calculate_grad(self, X, _lambda):
         _grad = np.zeros((self.n_features,))
 
-        for j in range(self.n_features):
-            for i in range(self.n_samples):
-                x = X[i, :]
-                _grad[j] += _lambda[i] * (np.log(1e-20 + norm.pdf(x[j], self.mu[j, 1], self.std[j, 1]))
-                                          - np.log(1e-20 + norm.pdf(x[j], self.mu[j, 0], self.std[j, 0])))
+        for i in range(self.n_samples):
+            x = X[i, :]
+            _log_p = np.array([np.log(self.std[j, 0] / self.std[j, 1]) +
+                               0.5*((x[j] - self.mu[j, 0]) / self.std[j, 0])**2 -
+                               0.5*((x[j] - self.mu[j, 1]) / self.std[j, 1])**2
+                               for j in range(self.n_features)])
+            _grad += _lambda[i] * _log_p
 
         return _grad
 
@@ -152,8 +154,8 @@ class WeightedNB:
         return y_hat
 
     def predict_log_proba(self, X):
-        # if not self._fit_status:
-        #     raise Exception('Model is not fitted.')
+        if not self._fit_status:
+            raise Exception('Model is not fitted.')
 
         if not X.shape[1] == self.n_features:
             raise ValueError("Expected input with %d features, got %d instead."
@@ -188,7 +190,8 @@ class WeightedNB:
 
     def score(self, X, y):
         y_hat = self.predict(X)
-        if isinstance(y, pd.DataFrame):
-            y = y.values.flatten()
+        if isinstance(y, pd.Series) or isinstance(y, pd.DataFrame):
+            y = y.values
+        y = y.flatten()
         _score = (y == y_hat).sum() / len(y)
         return _score
