@@ -5,7 +5,7 @@ from scipy.stats import norm
 
 class WeightedNB:
 
-    def __init__(self, priors=None, error_weights=None, max_iter=100, step_size=1e-4, penalty='l2', C=1.0):
+    def __init__(self, priors=None, error_weights=None, max_iter=25, step_size=1e-4, penalty='l2', C=1.0):
         self.priors = priors  # Prior probabilities of classes (n_classes x 1)
         self.error_weights = error_weights  # Matrix of error weights (n_features x n_features)
         self.max_iter = max_iter  # Maximum number of iterations of the learning algorithm
@@ -28,7 +28,7 @@ class WeightedNB:
     def __check_inputs(self, X, y):
         # Check that the dataset has only two unique labels
         if self.n_classes != 2:
-            raise ValueError('This version of MLLV-WNB only supports binary classification.')
+            raise ValueError('This version of MLD-WNB only supports binary classification.')
 
         # Check that the number of samples and labels are compatible
         if self.n_samples != y.shape[0]:
@@ -116,9 +116,7 @@ class WeightedNB:
         self._fit_status = True
 
     def __calculate_cost(self, X, y, y_hat, learning_hist):
-        _lambda = []
-        for i in range(self.n_samples):
-            _lambda.insert(i, self.error_weights[y[i], y_hat[i]])
+        _lambda = [self.error_weights[y[i], y_hat[i]] for i in range(self.n_samples)]
 
         if learning_hist:
             # Calculate cost
@@ -154,8 +152,8 @@ class WeightedNB:
         return y_hat
 
     def predict_log_proba(self, X):
-        if not self._fit_status:
-            raise Exception('Model is not fitted.')
+        # if not self._fit_status:
+        #     raise Exception('Model is not fitted.')
 
         if not X.shape[1] == self.n_features:
             raise ValueError("Expected input with %d features, got %d instead."
