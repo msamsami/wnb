@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
@@ -7,9 +5,25 @@ from typing import Union
 
 
 class WeightedNB:
+    """
+    Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
+    """
 
     def __init__(self, priors: Union[list, np.ndarray, None] = None, error_weights: Union[np.ndarray, None] = None,
-                 max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0):
+                 max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0) -> None:
+        """Initializes an object of the class.
+
+        Args:
+            priors (Union[list, np.ndarray, None]): Prior probabilities. Defaults to None.
+            error_weights (Union[np.ndarray, None]): Matrix of error weights (n_classes * n_classes). Defaults to None.
+            max_iter (int): Maximum number of gradient descent iterations. Defaults to 25.
+            step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
+            penalty (str): Regularization term; must be either 'l1' or 'l2'. Defaults to 'l2'.
+            C (float): Regularization strength; must be a positive float. Defaults to 1.0.
+
+        Returns:
+            self: The instance itself.
+        """
         self.priors = priors  # Prior probabilities of classes (n_classes x 1)
         self.__priors = None
         self.error_weights = error_weights  # Matrix of error weights (n_features x n_features)
@@ -29,6 +43,7 @@ class WeightedNB:
         self.weights_ = None  # WNB parameters (n_features x 1)
 
         self._fit_status = False  # True is correctly fitted; False otherwise
+        self.__ignore_fit_check = False  # A flag to ignore fit status when necessary
         self.cost_hist_ = None  # Cost value in each iteration
 
     def __check_inputs(self, X, y):
@@ -106,6 +121,20 @@ class WeightedNB:
 
     def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series],
             learning_hist: bool = False):
+        """Fits Gaussian Binary MLD-WNB according to X and y.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).
+                                                 Training vectors, where `n_samples` is the number of samples
+                                                 and `n_features` is the number of features.
+            y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). Target values.
+            learning_hist (bool): Whether or not to keep learning history
+                                  (i.e., the value of cost function in each learning iteration)
+
+        Returns:
+            self: The instance itself.
+        """
+        self._fit_status = False
 
         X, y = self.__prepare_X_y(X, y)
 
@@ -124,12 +153,12 @@ class WeightedNB:
         self.__prepare_parameters(X, y)
 
         self.weights_ = np.ones((self.n_features,))  # Initialize the weights
-        self.cost_hist_ = np.zeros((self.max_iter,))  # To store history of cost changes
+        self.cost_hist_ = np.array([np.nan for _ in range(self.max_iter)])  # To store history of cost changes
 
         # Learn the weights using gradient descent
         for _iter in range(self.max_iter):
             # Predict on X
-            y_hat = self.predict(X)
+            y_hat = self.__predict(X)
 
             # Calculate cost
             self.cost_hist_[_iter], _lambda = self.__calculate_cost(X, y, y_hat, learning_hist)
@@ -138,11 +167,10 @@ class WeightedNB:
             _grad = self.__calculate_grad(X, _lambda)
 
             # Add regularization
-            _grad += (self.C * np.sign(self.weights_)) if self.penalty == 'l1' else (2 * self.C * self.weights_)
-            # if self.penalty == 'l1':
-            #     _grad += self.C * np.sign(self.weights_)
-            # elif self.penalty == 'l2':
-            #     _grad += 2 * self.C * self.weights_
+            if self.penalty == 'l1':
+                _grad += self.C * np.sign(self.weights_)
+            elif self.penalty == 'l2':
+                _grad += 2 * self.C * self.weights_
 
             # Update weights
             self.weights_ = self.weights_ - self.step_size * _grad
@@ -191,14 +219,43 @@ class WeightedNB:
 
         return _grad
 
-    def predict(self, X: Union[np.ndarray, pd.DataFrame]):
+    def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """Performs classification on an array of test vectors X.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+
+        Returns:
+            np.ndarray: ndarray of shape (n_samples,). Predicted target values for X.
+        """
         p_hat = self.predict_log_proba(X)
         y_hat = self.classes_[np.argmax(p_hat, axis=1)]
         return y_hat
 
-    def predict_log_proba(self, X: Union[np.ndarray, pd.DataFrame]):
-        # if not self._fit_status:
-        #     raise Exception('Model is not fitted.')
+    def __predict(self, X):
+        self.__ignore_fit_check = True
+        p_hat = self.predict_log_proba(X)
+        return self.classes_[np.argmax(p_hat, axis=1)]
+
+    def predict_log_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """Returns log-probability estimates for the test vector X.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+
+        Returns:
+            np.ndarray: Array-like of shape (n_samples, n_classes).
+                        The log-probability of the samples for each class in the model.
+                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        """
+        if self.__ignore_fit_check:
+            self.__ignore_fit_check = False
+        else:
+            if not self._fit_status:
+                raise Exception(
+                    "This instance is not fitted yet. Call 'fit' with appropriate arguments "
+                    "before using this estimator."
+                )
 
         if not X.shape[1] == self.n_features:
             raise ValueError(
@@ -218,20 +275,33 @@ class WeightedNB:
 
         return log_proba
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """Returns probability estimates for the test vector X.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+
+        Returns:
+            np.ndarray: Array-like of shape (n_samples, n_classes).
+                        The probability of the samples for each class in the model.
+                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        """
         log_proba = self.predict_log_proba(X)
         proba = np.array([np.exp(row_log_proba) / (np.exp(row_log_proba)).sum() for row_log_proba in log_proba])
-
-        # proba = np.zeros(log_proba.shape)
-        # for i in range(1):
-        #     s_class = np.arange(1, self.n_classes + 1)
-        #     s_class = [c for c in s_class if c != i]
-        #     proba[:, i] = 1 / (1 + np.sum(np.exp(log_proba[:, s_class] - log_proba[:, i]), axis=1))
-        # proba[:, -1] = 1 - np.sum(proba, axis=1)
+        # proba = np.exp(self.predict_log_proba(X))
 
         return proba
 
-    def score(self, X, y):
+    def score(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series]) -> float:
+        """Return the classification accuracy of the model on the given test data and labels.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). Test samples.
+            y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). True labels for X.
+
+        Returns:
+            float: Accuracy of self.predict(X) with respect to y.
+        """
         y_hat = self.predict(X)
         y = self.__prepare_X_y(y=y)
         _score = (y == y_hat).sum() / len(y)
