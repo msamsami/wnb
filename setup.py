@@ -24,6 +24,6 @@ setup(
         'License :: OSI Approved :: MIT License',
     ],
     python_requires=">=3.4",
-    install_requires=['pandas==1.4.1', 'scipy==1.8.0'],
+    install_requires=['pandas==1.4.1', 'scikit-learn==1.0.2'],
     extras_require={},
 )
