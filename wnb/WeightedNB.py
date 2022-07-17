@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import numbers
-from typing import Union
+from typing import Union, Optional, Sequence
 import warnings
 
 import numpy as np
@@ -20,13 +20,13 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
     """
 
-    def __init__(self, priors: Union[list, np.ndarray, None] = None, error_weights: Union[np.ndarray, None] = None,
+    def __init__(self, priors: Optional[Sequence, np.ndarray] = None, error_weights: Optional[np.ndarray] = None,
                  max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0) -> None:
         """Initializes an object of the class.
 
         Args:
-            priors (Union[list, np.ndarray, None]): Prior probabilities. Defaults to None.
-            error_weights (Union[np.ndarray, None]): Matrix of error weights (n_classes * n_classes). Defaults to None.
+            priors (Optional[Sequence, np.ndarray]): Prior probabilities. Defaults to None.
+            error_weights (Optional[np.ndarray]): Matrix of error weights (n_classes * n_classes). Defaults to None.
             max_iter (int): Maximum number of gradient descent iterations. Defaults to 25.
             step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
             penalty (str): Regularization term; must be either 'l1' or 'l2'. Defaults to 'l2'.
@@ -327,6 +327,4 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                         The probability of the samples for each class in the model.
                         The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
         """
-        proba = np.exp(self.predict_log_proba(X))
-
-        return proba
+        return np.exp(self.predict_log_proba(X))
