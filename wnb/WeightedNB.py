@@ -1,11 +1,13 @@
+from abc import ABCMeta
+import numbers
+from typing import Union
 import warnings
+
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
 from scipy.special import logsumexp
-from typing import Union
-import numbers
-from abc import ABCMeta
+
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_array, as_float_array
@@ -171,8 +173,8 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                                                  Training vectors, where `n_samples` is the number of samples
                                                  and `n_features` is the number of features.
             y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). Target values.
-            learning_hist (bool): Whether or not to keep learning history
-                                  (i.e., the value of cost function in each learning iteration)
+            learning_hist (bool): Whether to keep the learning history (i.e., the value of cost function in each
+                                  learning iteration)
 
         Returns:
             self: The instance itself.
@@ -325,8 +327,6 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                         The probability of the samples for each class in the model.
                         The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
         """
-        # log_proba = self.predict_log_proba(X)
-        # proba = np.array([np.exp(row_log_proba) / (np.exp(row_log_proba)).sum() for row_log_proba in log_proba])
         proba = np.exp(self.predict_log_proba(X))
 
         return proba
