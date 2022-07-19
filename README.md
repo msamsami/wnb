@@ -1,17 +1,22 @@
 # MLD-WNB Classifier
 
+<div style="text-align:center">
+<img src="logo.png" alt="MLD-WNB logo" />
+</div>
+
+## Introduction
 Naive Bayes (NB) is recognized as one of the most popular classification algorithms in the machine learning community, but its conditional independence assumption rarely holds true in real-world applications. In order to alleviate its conditional independence assumption, many attribute weighting NB (WNB) approaches have been proposed. Most of the proposed methods involve computationally demanding optimization problems that do not allow for controlling the model's bias due to class imbalance.
 
 **Minimum Log-likelihood Difference WNB (MLD-WNB)** is a novel weighting approach that optimizes the weights according to the Bayes optimal decision rule and includes hyperparameters for controlling the model's bias. `wnb` library provides an efficient implementation of MLD-WNB which is compatible with Scikit-learn API.
 
-# Installation
+## Installation
 The easiest way to install the qna-bot is by using `pip`:
 ```commandline
 pip install git+https://github.com/msamsami/weighted-naive-bayes
 ```
 This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements.
 
-# Getting started
+## Getting started
 An MLD-WNB model can be set up and used in four simple steps:
 1. Import the `WeightedNB` class
 ```python
