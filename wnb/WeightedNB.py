@@ -248,15 +248,15 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         return _grad
 
     def __calculate_grad_slow(self, X, _lambda):
-        _grad = np.zeros((self.n_features,))
-        for i in range(self.n_samples):
+        _grad = np.zeros((self.n_features_in_,))
+        for i in range(self.__n_samples):
             x = X[i, :]
             _log_p = np.array(
                 [
-                    np.log(self.std[j, 0] / self.std[j, 1]) +
-                    0.5*((x[j] - self.mu[j, 0]) / self.std[j, 0])**2 -
-                    0.5*((x[j] - self.mu[j, 1]) / self.std[j, 1])**2
-                    for j in range(self.n_features)
+                    np.log(self.std_[j, 0] / self.std_[j, 1]) +
+                    0.5*((x[j] - self.mu_[j, 0]) / self.std_[j, 0])**2 -
+                    0.5*((x[j] - self.mu_[j, 1]) / self.std_[j, 1])**2
+                    for j in range(self.n_features_in_)
                 ]
             )
             _grad += _lambda[i] * _log_p
