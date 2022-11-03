@@ -16,13 +16,12 @@ setup(
     packages=['wnb'],
     classifiers=[
         'Topic :: Probabilistic Classification',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'License :: OSI Approved :: MIT License',
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=['pandas==1.4.1', 'scikit-learn==1.0.2'],
     extras_require={},
 )
