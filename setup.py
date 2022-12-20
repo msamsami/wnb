@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='wnb',
-    version='0.0.3',
+    version='0.0.4',
     description='Python library for the implementations of weighted Naive Bayes (WNB) classifiers.',
     keywords=['python', 'bayes', 'naivebayes', 'classifier', 'probabilistic'],
     author='Mehdi Samsami',

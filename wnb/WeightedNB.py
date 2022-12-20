@@ -20,12 +20,12 @@ class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
     """
 
-    def __init__(self, priors: Optional[Sequence, np.ndarray] = None, error_weights: Optional[np.ndarray] = None,
+    def __init__(self, priors: Optional[Union[list, np.ndarray]] = None, error_weights: Optional[np.ndarray] = None,
                  max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0) -> None:
         """Initializes an object of the class.
 
         Args:
-            priors (Optional[Sequence, np.ndarray]): Prior probabilities. Defaults to None.
+            priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
             error_weights (Optional[np.ndarray]): Matrix of error weights (n_classes * n_classes). Defaults to None.
             max_iter (int): Maximum number of gradient descent iterations. Defaults to 25.
             step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
