@@ -1,6 +1,6 @@
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "Mehdi Samsami"
 
-__all__ = ['WeightedNB', ]
+__all__ = ['GaussianWNB', ]
 
-from .WeightedNB import WeightedNB
+from .gwnb import GaussianWNB

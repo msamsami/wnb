@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import numbers
-from typing import Union, Optional, Sequence
+from typing import Union, Optional
 import warnings
 
 import numpy as np
@@ -15,7 +15,7 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import type_of_target
 
 
-class WeightedNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
+class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     """
     Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
     """
