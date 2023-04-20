@@ -5,6 +5,17 @@ import numpy as np
 from ._enums import Distribution
 
 
+__all__ = [
+    'NormalDist',
+    'LognormalDist',
+    'ExponentialDist',
+    'UniformDist',
+    'CategoricalDist',
+    'MultinomialDist',
+    'PoissonDist'
+]
+
+
 class NormalDist:
     name = Distribution.NORMAL
 
