@@ -42,18 +42,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         }
 
     def __check_inputs(self, X, y):
-        # Check if the number of distributions matches the number of features
-        if len(self.distributions) != self.n_features_in_:
-            raise ValueError(
-                "Number of specified distributions must match the number of features "
-                f"({len(self.distributions)} != {self.n_features_in_})"
-            )
-
-        # Check that all specified distributions are supported
-        for dist in self.distributions:
-            if not(isinstance(dist, Distribution) or dist in Distribution.__members__.values()):
-                raise ValueError(f"Distribution '{dist}' is not supported")
-
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
@@ -79,17 +67,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             raise ValueError(
                 "X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0])
             )
-
-        if self.priors is not None:
-            # Check that the provided priors match the number of classes
-            if len(self.priors) != self.n_classes_:
-                raise ValueError('Number of priors must match the number of classes.')
-            # Check that the sum of priors is 1
-            if not np.isclose(self.priors.sum(), 1.0):
-                raise ValueError('The sum of the priors should be 1.')
-            # Check that the priors are non-negative
-            if (self.priors < 0).any():
-                raise ValueError('Priors must be non-negative.')
 
     def __prepare_X_y(self, X=None, y=None):
         if X is not None:
@@ -119,17 +96,43 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Set priors if not specified
         if self.priors is None:
             _, class_count_ = np.unique(y, return_counts=True)
-            self.class_prior_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
+            self.priors_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
+
         else:
-            self.class_prior_ = self.priors
+            # Check that the provided priors match the number of classes
+            if len(self.priors) != self.n_classes_:
+                raise ValueError('Number of priors must match the number of classes.')
+            # Check that the sum of priors is 1
+            if not np.isclose(self.priors.sum(), 1.0):
+                raise ValueError('The sum of the priors should be 1.')
+            # Check that the priors are non-negative
+            if (self.priors < 0).any():
+                raise ValueError('Priors must be non-negative.')
+
+            self.priors_ = self.priors
+
+        # Convert to NumPy array if input priors is in a list
+        if type(self.priors_) is list:
+            self.class_prior_ = np.array(self.priors_)
 
         # Set distributions if not specified
         if self.distributions is None:
-            self.distributions = ['gaussian'] * self.n_features_in_
+            self.distributions_ = [Distribution.NORMAL] * self.n_features_in_
 
-        # Convert to NumPy array if input priors is in a list
-        if type(self.class_prior_) is list:
-            self.class_prior_ = np.array(self.class_prior_)
+        else:
+            # Check if the number of distributions matches the number of features
+            if len(self.distributions) != self.n_features_in_:
+                raise ValueError(
+                    "Number of specified distributions must match the number of features "
+                    f"({len(self.distributions)} != {self.n_features_in_})"
+                )
+
+            # Check that all specified distributions are supported
+            for dist in self.distributions:
+                if not (isinstance(dist, Distribution) or dist in Distribution.__members__.values()):
+                    raise ValueError(f"Distribution '{dist}' is not supported")
+
+            self.distributions_ = self.distributions
 
     def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series]):
         """Fits general Naive Bayes classifier according to X and y.
@@ -151,12 +154,16 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.__check_inputs(X, y)
 
+        y = y_
         self.__prepare_parameters(X, y)
 
-        self.likelihood_params_ = [
-            AllDistributions[self.distributions[i]].from_data(X[:, i])
-            for i in range(self.n_features_in_)
-        ]
+        self.likelihood_params_ = {
+            c: [
+                AllDistributions[self.distributions_[i]].from_data(X[y == c, i])
+                for i in range(self.n_features_in_)
+            ]
+            for c in range(self.n_classes_)
+        }
 
         return self
 
