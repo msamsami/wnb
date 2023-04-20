@@ -33,6 +33,9 @@ class NormalDist:
     def __call__(self, x: float) -> float:
         return self.pdf(x)
 
+    def __repr__(self) -> str:
+        return f"<NormalDist(mu={self.mu:.4f}, sigma={self.sigma:.4f})>"
+
 
 class LognormalDist:
     name = Distribution.LOGNORMAL
@@ -53,6 +56,9 @@ class LognormalDist:
     def __call__(self, x: float) -> float:
         return self.pdf(x)
 
+    def __repr__(self) -> str:
+        return f"<LognormalDist(mu={self.mu:.4f}, sigma={self.sigma:.4f})>"
+
 
 class ExponentialDist:
     name = Distribution.EXPONENTIAL
@@ -69,6 +75,9 @@ class ExponentialDist:
 
     def __call__(self, x: float) -> float:
         return self.pdf(x)
+
+    def __repr__(self) -> str:
+        return f"<ExponentialDist(rate={self.rate:.4f})>"
 
 
 class UniformDist:
@@ -88,6 +97,9 @@ class UniformDist:
     def __call__(self, x: float) -> float:
         return self.pdf(x)
 
+    def __repr__(self) -> str:
+        return f"<UniformDist(a={self.a:.4f}, b={self.b:.4f})>"
+
 
 class CategoricalDist:
     name = Distribution.CATEGORICAL
@@ -106,6 +118,9 @@ class CategoricalDist:
     def __call__(self, x: Any) -> float:
         return self.pmf(x)
 
+    def __repr__(self) -> str:
+        return f"<CategoricalDist(prob={self.prob})>"
+
 
 class MultinomialDist(CategoricalDist):
     name = Distribution.MULTINOMIAL
@@ -120,6 +135,9 @@ class MultinomialDist(CategoricalDist):
         else:
             return np.math.factorial(self.n) * np.product([p**v for v, p in self.prob.items()]) / \
                 np.product([np.math.factorial(v) for v in self.prob.keys()])
+
+    def __repr__(self) -> str:
+        return f"<MultinomialDist(n={self.n}, prob={self.prob})>"
 
 
 class PoissonDist:
@@ -137,3 +155,17 @@ class PoissonDist:
 
     def __call__(self, x: int) -> float:
         return self.pmf(x)
+
+    def __repr__(self) -> str:
+        return f"<PoissonDist(rate={self.rate})>"
+
+
+AllDistributions = {
+    Distribution.NORMAL: NormalDist,
+    Distribution.LOGNORMAL: LognormalDist,
+    Distribution.EXPONENTIAL: ExponentialDist,
+    Distribution.UNIFORM: UniformDist,
+    Distribution.CATEGORICAL: CategoricalDist,
+    Distribution.MULTINOMIAL: MultinomialDist,
+    Distribution.POISSON: PoissonDist
+}
