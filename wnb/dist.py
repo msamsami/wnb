@@ -22,7 +22,7 @@ class GaussianDist:
 
 
 class LogNormalDist:
-    name = "lognorm"
+    name = "lognormal"
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -42,7 +42,7 @@ class LogNormalDist:
 
 
 class ExponentialDist:
-    name = "exp"
+    name = "exponential"
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -89,3 +89,38 @@ class MultinomialDist(CategoricalDist):
         else:
             return np.math.factorial(self.n) * np.product([p**v for v, p in self.prob.items()]) / \
                 np.product([np.math.factorial(v) for v in self.prob.keys()])
+
+
+class PoissonDist:
+    name = "poisson"
+
+    def __init__(self, rate: float):
+        self.rate = rate
+
+    @classmethod
+    def from_data(cls, data):
+        return cls(rate=np.sum(data)/len(data))
+
+    def pmf(self, x: int) -> float:
+        return (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
+
+    def __call__(self, x: int) -> float:
+        return self.pmf(x)
+
+
+class UniformDist:
+    name = "uniform"
+
+    def __init__(self, a: float, b: float):
+        self.a = a
+        self.b = b
+
+    @classmethod
+    def from_data(cls, data):
+        return cls(a=np.min(data), b=np.max(data))
+
+    def pdf(self, x: float) -> float:
+        return 1 / (self.b - self.a) if self.a <= x <= self.b else 0.0
+
+    def __call__(self, x: float) -> float:
+        return self.pdf(x)
