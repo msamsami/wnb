@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from scipy.special import logsumexp
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
@@ -19,7 +20,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
     """
 
-    def __init__(self, *, priors: Optional[Union[Sequence, np.ndarray]] = None,
+    def __init__(self, *, priors: Optional[Union[Sequence[float], np.ndarray]] = None,
                  distributions: Optional[Sequence[str]] = None) -> None:
         """Initializes an object of the class.
 
@@ -38,6 +39,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
     def _more_tags(self):
         return {
+            'multilabel': True,
             'requires_y': True
         }
 
@@ -211,8 +213,21 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         X = self.__prepare_X_y(X=X)
 
-        log_proba = ...  # TODO: calculate log probability
+        log_joint = np.zeros((n_samples, self.n_classes_))
+        for c in range(self.n_classes_):
+            log_joint[:, c] = np.log(self.priors_[c]) + np.log(
+                np.sum(
+                    (
+                        likelihood(X[:, i])
+                        for i, likelihood in enumerate(self.likelihood_params_[c])
+                    ),
+                    axis=0
+                )
+            )
 
+        log_proba = log_joint - np.transpose(
+            np.repeat(logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0)
+        )
         return log_proba
 
     def predict_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
