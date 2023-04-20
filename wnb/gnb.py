@@ -11,6 +11,7 @@ from sklearn.utils import check_array, as_float_array
 from sklearn.utils.validation import check_is_fitted
 
 from ._enums import Distribution
+from .dist import AllDistributions
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
@@ -152,9 +153,10 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.__prepare_parameters(X, y)
 
-        self.likelihood_params_ = []
-
-        # TODO: calculate likelihood parameters for each feature
+        self.likelihood_params_ = [
+            AllDistributions[self.distributions[i]].from_data(X[:, i])
+            for i in range(self.n_features_in_)
+        ]
 
         return self
 
