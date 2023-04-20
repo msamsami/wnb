@@ -10,7 +10,7 @@ from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_array, as_float_array
 from sklearn.utils.validation import check_is_fitted
 
-SUPPORTED_DISTRIBUTIONS = ["gaussian", "lognormal", "exponential"]
+from ._enums import Distribution
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
@@ -50,7 +50,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that all specified distributions are supported
         for dist in self.distributions:
-            if dist not in SUPPORTED_DISTRIBUTIONS:
+            if not(isinstance(dist, Distribution) or dist in Distribution.__members__.values()):
                 raise ValueError(f"Distribution '{dist}' is not supported")
 
         # Check if only one class is present in label vector
