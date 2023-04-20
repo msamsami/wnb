@@ -5,8 +5,8 @@ from setuptools import setup
 
 setup(
     name='wnb',
-    version='0.0.5',
-    description='Python library for the implementations of weighted Naive Bayes (WNB) classifiers.',
+    version='0.1.0',
+    description='Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.',
     keywords=['python', 'bayes', 'naivebayes', 'classifier', 'probabilistic'],
     author='Mehdi Samsami',
     author_email='mehdisamsami@live.com',
@@ -15,6 +15,8 @@ setup(
     long_description_content_type='text/markdown',
     packages=['wnb'],
     classifiers=[
+        'Topic :: Machine Learning',
+        'Topic :: Pattern Recognition',
         'Topic :: Probabilistic Classification',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',

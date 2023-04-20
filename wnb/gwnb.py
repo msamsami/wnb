@@ -150,13 +150,13 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Update if no priors is provided
         if self.priors is None:
             _, class_count_ = np.unique(y, return_counts=True)
-            self.class_prior_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
+            self.priors_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
         else:
-            self.class_prior_ = self.priors
+            self.priors_ = self.priors
 
-        # Convert to NumPy array in input priors is in a list
-        if type(self.class_prior_) is list:
-            self.class_prior_ = np.array(self.class_prior_)
+        # Convert to NumPy array if input priors is in a list
+        if type(self.priors_) is list:
+            self.priors_ = np.array(self.priors_)
 
         # Update if no error weights is provided
         if self.error_weights is None:
@@ -225,7 +225,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Calculate cost
             _cost = 0
             for i in range(self.__n_samples):
-                _sum = np.log(self.class_prior_[1] / self.class_prior_[0])
+                _sum = np.log(self.priors_[1] / self.priors_[0])
                 x = X[i, :]
                 for j in range(self.n_features_in_):
                     _sum += self.coef_[j] * (np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 1], self.std_[j, 1]))
@@ -306,7 +306,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         X = self.__prepare_X_y(X=X)
 
-        log_priors = np.tile(np.log(self.class_prior_), (n_samples, 1))
+        log_priors = np.tile(np.log(self.priors_), (n_samples, 1))
         w_reshaped = np.tile(self.coef_.reshape(-1, 1), (1, self.n_classes_))
         term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std_)))
         var_inv = np.multiply(w_reshaped, 1/np.multiply(self.std_, self.std_))
