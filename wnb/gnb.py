@@ -126,7 +126,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         if self.distributions is None:
             self.distributions = ['gaussian'] * self.n_features_in_
 
-        # Convert to NumPy array in input priors is in a list
+        # Convert to NumPy array if input priors is in a list
         if type(self.class_prior_) is list:
             self.class_prior_ = np.array(self.class_prior_)
 
@@ -149,7 +149,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.__n_samples, self.n_features_in_ = X.shape  # Number of samples and features
 
         self.__check_inputs(X, y)
-        y = y_
 
         self.__prepare_parameters(X, y)
 

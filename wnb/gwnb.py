@@ -154,7 +154,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             self.class_prior_ = self.priors
 
-        # Convert to NumPy array in input priors is in a list
+        # Convert to NumPy array if input priors is in a list
         if type(self.class_prior_) is list:
             self.class_prior_ = np.array(self.class_prior_)
 
