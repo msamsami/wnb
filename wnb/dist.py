@@ -2,9 +2,11 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+from ._enums import Distribution
 
-class GaussianDist:
-    name = "gaussian"
+
+class NormalDist:
+    name = Distribution.NORMAL
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -21,8 +23,8 @@ class GaussianDist:
         return self.pdf(x)
 
 
-class LogNormalDist:
-    name = "lognormal"
+class LognormalDist:
+    name = Distribution.LOGNORMAL
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -42,7 +44,7 @@ class LogNormalDist:
 
 
 class ExponentialDist:
-    name = "exponential"
+    name = Distribution.EXPONENTIAL
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -58,8 +60,26 @@ class ExponentialDist:
         return self.pdf(x)
 
 
+class UniformDist:
+    name = Distribution.UNIFORM
+
+    def __init__(self, a: float, b: float):
+        self.a = a
+        self.b = b
+
+    @classmethod
+    def from_data(cls, data):
+        return cls(a=np.min(data), b=np.max(data))
+
+    def pdf(self, x: float) -> float:
+        return 1 / (self.b - self.a) if self.a <= x <= self.b else 0.0
+
+    def __call__(self, x: float) -> float:
+        return self.pdf(x)
+
+
 class CategoricalDist:
-    name = "categorical"
+    name = Distribution.CATEGORICAL
 
     def __init__(self, prob: Mapping[Any, float]):
         self.prob = prob
@@ -77,7 +97,7 @@ class CategoricalDist:
 
 
 class MultinomialDist(CategoricalDist):
-    name = "multinomial"
+    name = Distribution.MULTINOMIAL
 
     def __init__(self, n: int, prob: Mapping[Any, float]):
         self.n = n
@@ -92,7 +112,7 @@ class MultinomialDist(CategoricalDist):
 
 
 class PoissonDist:
-    name = "poisson"
+    name = Distribution.POISSON
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -106,21 +126,3 @@ class PoissonDist:
 
     def __call__(self, x: int) -> float:
         return self.pmf(x)
-
-
-class UniformDist:
-    name = "uniform"
-
-    def __init__(self, a: float, b: float):
-        self.a = a
-        self.b = b
-
-    @classmethod
-    def from_data(cls, data):
-        return cls(a=np.min(data), b=np.max(data))
-
-    def pdf(self, x: float) -> float:
-        return 1 / (self.b - self.a) if self.a <= x <= self.b else 0.0
-
-    def __call__(self, x: float) -> float:
-        return self.pdf(x)
