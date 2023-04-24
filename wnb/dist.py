@@ -10,6 +10,7 @@ __all__ = [
     'LognormalDist',
     'ExponentialDist',
     'UniformDist',
+    'ParetoDist',
     'CategoricalDist',
     'MultinomialDist',
     'PoissonDist'
@@ -99,6 +100,28 @@ class UniformDist:
 
     def __repr__(self) -> str:
         return f"<UniformDist(a={self.a:.4f}, b={self.b:.4f})>"
+
+
+class ParetoDist:
+    name = Distribution.PARETO
+
+    def __init__(self, x_m: float, alpha: float):
+        self.x_m = x_m
+        self.alpha = alpha
+
+    @classmethod
+    def from_data(cls, data):
+        x_m = np.min(data)
+        return cls(x_m=x_m, alpha=len(data) / np.sum(np.log(data / x_m)))
+
+    def pdf(self, x: float) -> float:
+        return (self.alpha * self.x_m**self.alpha) / x**(self.alpha + 1) if x >= self.x_m else 0.0
+
+    def __call__(self, x: float) -> float:
+        return self.pdf(x)
+
+    def __repr__(self) -> str:
+        return f"<ParetoDist(x_m={self.x_m:.4f}, alpha={self.alpha:.4f})>"
 
 
 class CategoricalDist:
