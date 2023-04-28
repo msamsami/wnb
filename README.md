@@ -1,6 +1,6 @@
 # WNB: General and weighted naive Bayes classifiers
 
-![](https://img.shields.io/badge/version-v0.1.1-green)
+![](https://img.shields.io/badge/version-v0.1.2-green)
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
 
 <p>
