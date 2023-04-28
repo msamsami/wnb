@@ -1,6 +1,7 @@
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+from scipy.special import gamma
 
 from ._enums import Distribution
 
@@ -11,6 +12,7 @@ __all__ = [
     'ExponentialDist',
     'UniformDist',
     'ParetoDist',
+    'GammaDist',
     'CategoricalDist',
     'MultinomialDist',
     'PoissonDist'
@@ -122,6 +124,31 @@ class ParetoDist:
 
     def __repr__(self) -> str:
         return f"<ParetoDist(x_m={self.x_m:.4f}, alpha={self.alpha:.4f})>"
+
+
+class GammaDist:
+    name = Distribution.GAMMA
+
+    def __init__(self, k: float, theta: float):
+        self.k = k
+        self.theta = theta
+
+    @classmethod
+    def from_data(cls, data):
+        n = len(data)
+        return cls(
+            k=n * np.sum(data) / (n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))),
+            theta=(n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))) / n**2
+        )
+
+    def pdf(self, x: float) -> float:
+        return (x ** (self.k-1) * np.exp(-x / self.theta)) / (gamma(self.k) * self.theta ** self.k)
+
+    def __call__(self, x: float) -> float:
+        return self.pdf(x)
+
+    def __repr__(self) -> str:
+        return f"<GammaDist(k={self.k:.4f}, theta={self.theta:.4f})>"
 
 
 class CategoricalDist:
