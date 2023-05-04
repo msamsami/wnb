@@ -45,12 +45,12 @@ A general naive Bayes model can be set up and used in four simple steps:
 
 1. Import the `GeneralNB` class as well as `Distribution` enum class
 ```python
-from wnb import GeneralNB, Distribution
+from wnb import GeneralNB, Distribution as D
 ```
 
 2. Initialize a classifier and specify the likelihood distributions
 ```python
-gnb = GeneralNB(distributions=[Distribution.NORMAL, Distribution.CATEGORICAL, Distribution.EXPONENTIAL])
+gnb = GeneralNB(distributions=[D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL])
 ```
 
 3. Fit the classifier to a training set (with three features)
