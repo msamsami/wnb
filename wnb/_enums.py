@@ -19,4 +19,5 @@ class Distribution(str, Enum):
     BERNOULLI = "Bernoulli"
     CATEGORICAL = "Categorical"
     MULTINOMIAL = "Multinomial"
+    GEOMETRIC = "Geometric"
     POISSON = "Poisson"

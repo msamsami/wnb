@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from scipy.special import gamma
 
-from ._enums import Distribution
+from ._enums import Distribution as D
 
 
 __all__ = [
@@ -22,7 +22,7 @@ __all__ = [
 
 
 class NormalDist:
-    name = Distribution.NORMAL
+    name = D.NORMAL
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -43,7 +43,7 @@ class NormalDist:
 
 
 class LognormalDist:
-    name = Distribution.LOGNORMAL
+    name = D.LOGNORMAL
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -66,7 +66,7 @@ class LognormalDist:
 
 
 class ExponentialDist:
-    name = Distribution.EXPONENTIAL
+    name = D.EXPONENTIAL
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -86,7 +86,7 @@ class ExponentialDist:
 
 
 class UniformDist:
-    name = Distribution.UNIFORM
+    name = D.UNIFORM
 
     def __init__(self, a: float, b: float):
         self.a = a
@@ -107,7 +107,7 @@ class UniformDist:
 
 
 class ParetoDist:
-    name = Distribution.PARETO
+    name = D.PARETO
 
     def __init__(self, x_m: float, alpha: float):
         self.x_m = x_m
@@ -129,7 +129,7 @@ class ParetoDist:
 
 
 class GammaDist:
-    name = Distribution.GAMMA
+    name = D.GAMMA
 
     def __init__(self, k: float, theta: float):
         self.k = k
@@ -154,7 +154,7 @@ class GammaDist:
 
 
 class BernoulliDist:
-    name = Distribution.BERNOULLI
+    name = D.BERNOULLI
 
     def __init__(self, p: float):
         self.p = p
@@ -180,7 +180,7 @@ class BernoulliDist:
 
 
 class CategoricalDist:
-    name = Distribution.CATEGORICAL
+    name = D.CATEGORICAL
 
     def __init__(self, prob: Mapping[Any, float]):
         self.prob = prob
@@ -201,7 +201,7 @@ class CategoricalDist:
 
 
 class MultinomialDist(CategoricalDist):
-    name = Distribution.MULTINOMIAL
+    name = D.MULTINOMIAL
 
     def __init__(self, n: int, prob: Mapping[Any, float]):
         self.n = n
@@ -218,8 +218,31 @@ class MultinomialDist(CategoricalDist):
         return f"<MultinomialDist(n={self.n}, prob={self.prob})>"
 
 
+class GeometricDist:
+    name = D.GEOMETRIC
+
+    def __init__(self, p: float):
+        self.p = p
+
+    @classmethod
+    def from_data(cls, data):
+        if any(x < 1 for x in data):
+            warnings.warn("Geometric data points should be greater than or equal to 1")
+
+        return cls(p=len(data) / np.sum(data))
+
+    def pmf(self, x: int) -> float:
+        return self.p * (1 - self.p)**(x-1) if x >= 1 else 0.0
+
+    def __call__(self, x: int) -> float:
+        return self.pmf(x)
+
+    def __repr__(self) -> str:
+        return f"<GeometricDist(p={self.p:.4f})>"
+
+
 class PoissonDist:
-    name = Distribution.POISSON
+    name = D.POISSON
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -239,14 +262,15 @@ class PoissonDist:
 
 
 AllDistributions = {
-    Distribution.NORMAL: NormalDist,
-    Distribution.LOGNORMAL: LognormalDist,
-    Distribution.EXPONENTIAL: ExponentialDist,
-    Distribution.UNIFORM: UniformDist,
-    Distribution.PARETO: ParetoDist,
-    Distribution.GAMMA: GammaDist,
-    Distribution.BERNOULLI: BernoulliDist,
-    Distribution.CATEGORICAL: CategoricalDist,
-    Distribution.MULTINOMIAL: MultinomialDist,
-    Distribution.POISSON: PoissonDist
+    D.NORMAL: NormalDist,
+    D.LOGNORMAL: LognormalDist,
+    D.EXPONENTIAL: ExponentialDist,
+    D.UNIFORM: UniformDist,
+    D.PARETO: ParetoDist,
+    D.GAMMA: GammaDist,
+    D.BERNOULLI: BernoulliDist,
+    D.CATEGORICAL: CategoricalDist,
+    D.MULTINOMIAL: MultinomialDist,
+    D.GEOMETRIC: GeometricDist,
+    D.POISSON: PoissonDist
 }
