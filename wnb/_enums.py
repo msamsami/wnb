@@ -16,6 +16,8 @@ class Distribution(str, Enum):
     UNIFORM = "Uniform"
     PARETO = "Pareto"
     GAMMA = "Gamma"
+    BERNOULLI = "Bernoulli"
     CATEGORICAL = "Categorical"
     MULTINOMIAL = "Multinomial"
+    GEOMETRIC = "Geometric"
     POISSON = "Poisson"
