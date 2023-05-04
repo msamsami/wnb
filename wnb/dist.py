@@ -1,4 +1,5 @@
 from typing import Any, Mapping, Sequence
+import warnings
 
 import numpy as np
 from scipy.special import gamma
@@ -13,6 +14,7 @@ __all__ = [
     'UniformDist',
     'ParetoDist',
     'GammaDist',
+    'BernoulliDist',
     'CategoricalDist',
     'MultinomialDist',
     'PoissonDist'
@@ -151,6 +153,32 @@ class GammaDist:
         return f"<GammaDist(k={self.k:.4f}, theta={self.theta:.4f})>"
 
 
+class BernoulliDist:
+    name = Distribution.BERNOULLI
+
+    def __init__(self, p: float):
+        self.p = p
+
+    @classmethod
+    def from_data(cls, data):
+        if any(x not in [0, 1] for x in data):
+            warnings.warn("Bernoulli data points should be either 0 or 1")
+
+        return cls(p=(np.array(data) == 1).sum() / len(data))
+
+    def pmf(self, x: int) -> float:
+        if x not in [0, 1]:
+            raise ValueError("Bernoulli data points should be either 0 or 1")
+
+        return self.p if x == 1 else 1 - self.p
+
+    def __call__(self, x: int) -> float:
+        return self.pmf(x)
+
+    def __repr__(self) -> str:
+        return f"<BernoulliDist(p={self.p:.4f})>"
+
+
 class CategoricalDist:
     name = Distribution.CATEGORICAL
 
@@ -207,7 +235,7 @@ class PoissonDist:
         return self.pmf(x)
 
     def __repr__(self) -> str:
-        return f"<PoissonDist(rate={self.rate})>"
+        return f"<PoissonDist(rate={self.rate:.4f})>"
 
 
 AllDistributions = {
@@ -215,6 +243,9 @@ AllDistributions = {
     Distribution.LOGNORMAL: LognormalDist,
     Distribution.EXPONENTIAL: ExponentialDist,
     Distribution.UNIFORM: UniformDist,
+    Distribution.PARETO: ParetoDist,
+    Distribution.GAMMA: GammaDist,
+    Distribution.BERNOULLI: BernoulliDist,
     Distribution.CATEGORICAL: CategoricalDist,
     Distribution.MULTINOMIAL: MultinomialDist,
     Distribution.POISSON: PoissonDist
