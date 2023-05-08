@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Union, Optional, Sequence
+from typing import Union, Optional, Sequence, Type
 import warnings
 
 import numpy as np
@@ -11,6 +11,7 @@ from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_array, as_float_array
 from sklearn.utils.validation import check_is_fitted
 
+from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
 from .dist import AllDistributions
 
@@ -20,19 +21,19 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
     """
 
-    def __init__(self, *, priors: Optional[Union[Sequence[float], np.ndarray]] = None,
-                 distributions: Optional[Sequence[str]] = None) -> None:
+    def __init__(self, *,
+                 priors: Optional[Union[Sequence[float], np.ndarray]] = None,
+                 distributions: Optional[Sequence[Union[
+                     str, Distribution, Type[ContinuousDistMixin], Type[DiscreteDistMixin]]]
+                 ] = None) -> None:
         """Initializes an object of the class.
 
         Args:
             priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
-            distributions (Optional[Sequence[str]]): Names of the distributions to be used for features' likelihoods.
-                                                     A sequence with same length of the number of features. If not
-                                                     specified, all likelihood will be considered Gaussian.
-                                                     Defaults to None.
+            distributions: Names of the distributions to be used for features' likelihoods. A sequence with same length
+                           of the number of features. If not specified, all likelihood will be considered Gaussian.
+                           Defaults to None.
 
-        Returns:
-            self: The instance itself.
         """
         self.priors = priors
         self.distributions = distributions
@@ -131,7 +132,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             # Check that all specified distributions are supported
             for dist in self.distributions:
-                if not (isinstance(dist, Distribution) or dist in Distribution.__members__.values()):
+                if not (
+                        isinstance(dist, Distribution) or
+                        dist in Distribution.__members__.values() or
+                        (hasattr(dist, 'from_data') and hasattr(dist, '__call__'))
+                ):
                     raise ValueError(f"Distribution '{dist}' is not supported")
 
             self.distributions_ = self.distributions
@@ -162,6 +167,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.likelihood_params_ = {
             c: [
                 AllDistributions[self.distributions_[i]].from_data(X[y == c, i])
+                if isinstance(self.distributions_[i], Distribution) or
+                   self.distributions_[i] in Distribution.__members__.values() else
+                self.distributions_[i].from_data(X[y == c, i])
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
