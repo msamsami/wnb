@@ -17,6 +17,7 @@ __all__ = [
     'BernoulliDist',
     'CategoricalDist',
     'MultinomialDist',
+    'GeometricDist',
     'PoissonDist'
 ]
 
@@ -167,10 +168,7 @@ class BernoulliDist:
         return cls(p=(np.array(data) == 1).sum() / len(data))
 
     def pmf(self, x: int) -> float:
-        if x not in [0, 1]:
-            raise ValueError("Bernoulli data points should be either 0 or 1")
-
-        return self.p if x == 1 else 1 - self.p
+        return 0.0 if x not in [0, 1] else self.p if x == 1 else 1 - self.p
 
     def __call__(self, x: int) -> float:
         return self.pmf(x)
