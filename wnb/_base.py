@@ -93,7 +93,7 @@ class DiscreteDistMixin(metaclass=ABCMeta):
         """Returns the value of probability mass function (PMF) at x.
 
         Args:
-            x (float): Input values.
+            x (float): Input value.
 
         Returns:
             float: Probability mass.
