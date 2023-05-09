@@ -75,7 +75,7 @@ class ExponentialDist(ContinuousDistMixin):
         return cls(rate=(len(data)-2) / np.sum(data))
 
     def pdf(self, x: float) -> float:
-        return self.rate * np.exp(-self.rate * x)
+        return self.rate * np.exp(-self.rate * x) if x >= 0 else 0.0
 
     def __repr__(self) -> str:
         return f"<ExponentialDist(rate={self.rate:.4f})>"
@@ -250,15 +250,6 @@ class PoissonDist(DiscreteDistMixin):
 
 
 AllDistributions = {
-    D.NORMAL: NormalDist,
-    D.LOGNORMAL: LognormalDist,
-    D.EXPONENTIAL: ExponentialDist,
-    D.UNIFORM: UniformDist,
-    D.PARETO: ParetoDist,
-    D.GAMMA: GammaDist,
-    D.BERNOULLI: BernoulliDist,
-    D.CATEGORICAL: CategoricalDist,
-    D.MULTINOMIAL: MultinomialDist,
-    D.GEOMETRIC: GeometricDist,
-    D.POISSON: PoissonDist
+    eval(cls).name: eval(cls)
+    for cls in __all__
 }
