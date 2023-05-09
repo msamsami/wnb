@@ -1,11 +1,29 @@
 from abc import ABCMeta
+from functools import wraps
+
+import numpy as np
 
 __all__ = [
     'ContinuousDistMixin',
     'DiscreteDistMixin'
 ]
 
-import numpy as np
+
+def vectorize(otypes=None, excluded=None, signature=None):
+    """
+    Numpy vectorization wrapper that works with class methods.
+    """
+
+    def decorator(func):
+        vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
+
+        @wraps(func)
+        def wrapper(*args):
+            return vectorized(*args)
+
+        return wrapper
+
+    return decorator
 
 
 class ContinuousDistMixin(metaclass=ABCMeta):
@@ -30,18 +48,19 @@ class ContinuousDistMixin(metaclass=ABCMeta):
         """
         pass
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: float) -> float:
         """Returns the value of probability density function (PDF) at x.
 
         Args:
-            x (np.ndarray): Input values; a flat numpy array.
+            x (float): Input value.
 
         Returns:
-            np.ndarray: Probability density.
+            float: Probability density.
         """
         pass
 
-    def __call__(self, x: np.ndarray) -> np.ndarray:
+    @vectorize(signature="(),()->()")
+    def __call__(self, x: float) -> float:
         return self.pdf(x)
 
     def __repr__(self) -> str:
@@ -70,18 +89,19 @@ class DiscreteDistMixin(metaclass=ABCMeta):
         """
         pass
 
-    def pmf(self, x: np.ndarray) -> np.ndarray:
+    def pmf(self, x: float) -> float:
         """Returns the value of probability mass function (PMF) at x.
 
         Args:
-            x (np.ndarray): Input values; a flat numpy array.
+            x (float): Input values.
 
         Returns:
             float: Probability mass.
         """
         pass
 
-    def __call__(self, x: np.ndarray) -> np.ndarray:
+    @vectorize(signature="(),()->()")
+    def __call__(self, x: float) -> float:
         return self.pmf(x)
 
     def __repr__(self) -> str:
