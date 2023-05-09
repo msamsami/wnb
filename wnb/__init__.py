@@ -1,12 +1,15 @@
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 __author__ = "Mehdi Samsami"
 
 __all__ = [
     'GeneralNB',
     'GaussianWNB',
-    'Distribution'
+    'Distribution',
+    'ContinuousDistMixin',
+    'DiscreteDistMixin'
 ]
 
+from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
 from .gnb import GeneralNB
 from .gwnb import GaussianWNB
