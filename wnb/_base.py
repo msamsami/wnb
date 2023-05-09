@@ -1,5 +1,12 @@
 from abc import ABCMeta
 
+__all__ = [
+    'ContinuousDistMixin',
+    'DiscreteDistMixin'
+]
+
+import numpy as np
+
 
 class ContinuousDistMixin(metaclass=ABCMeta):
     """
@@ -23,18 +30,18 @@ class ContinuousDistMixin(metaclass=ABCMeta):
         """
         pass
 
-    def pdf(self, x: float) -> float:
-        """Returns the value of probability density function at x.
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """Returns the value of probability density function (PDF) at x.
 
         Args:
-            x (float): Input value.
+            x (np.ndarray): Input values; a flat numpy array.
 
         Returns:
-            float: Probability density.
+            np.ndarray: Probability density.
         """
         pass
 
-    def __call__(self, x: float) -> float:
+    def __call__(self, x: np.ndarray) -> np.ndarray:
         return self.pdf(x)
 
     def __repr__(self) -> str:
@@ -63,18 +70,18 @@ class DiscreteDistMixin(metaclass=ABCMeta):
         """
         pass
 
-    def pmf(self, x: float) -> float:
-        """Returns the value of probability density function at x.
+    def pmf(self, x: np.ndarray) -> np.ndarray:
+        """Returns the value of probability mass function (PMF) at x.
 
         Args:
-            x (float): Input value.
+            x (np.ndarray): Input values; a flat numpy array.
 
         Returns:
-            float: Probability density.
+            float: Probability mass.
         """
         pass
 
-    def __call__(self, x: float) -> float:
+    def __call__(self, x: np.ndarray) -> np.ndarray:
         return self.pmf(x)
 
     def __repr__(self) -> str:
