@@ -1,5 +1,7 @@
 from abc import ABCMeta
+import inspect
 from functools import wraps
+from numbers import Number
 
 import numpy as np
 
@@ -26,18 +28,12 @@ def vectorize(otypes=None, excluded=None, signature=None):
     return decorator
 
 
-class ContinuousDistMixin(metaclass=ABCMeta):
+class DistMixin(metaclass=ABCMeta):
     """
-    Mixin class for all continuous probability distributions in wnb.
+    Mixin class for probability distributions in wnb.
     """
 
     name = None
-
-    def __init__(self, **kwargs):
-        """Initializes an instance of the probability distribution with given parameters.
-
-        """
-        pass
 
     @classmethod
     def from_data(cls, data):
@@ -45,6 +41,69 @@ class ContinuousDistMixin(metaclass=ABCMeta):
 
         Returns:
             self: An instance of the class.
+        """
+        pass
+
+    @classmethod
+    def _get_param_names(cls):
+        """Gets parameter names for the distribution instance.
+
+        """
+        init = getattr(cls.__init__, "deprecated_original", cls.__init__)
+        if init is object.__init__:
+            return []
+
+        init_signature = inspect.signature(init)
+        parameters = [
+            p
+            for p in init_signature.parameters.values()
+            if p.name != "self" and p.kind != p.VAR_KEYWORD
+        ]
+
+        for p in parameters:
+            if p.kind == p.VAR_POSITIONAL:
+                raise RuntimeError(
+                    "wnb estimators should always "
+                    "specify their parameters in the signature "
+                    "of their __init__ (no varargs). "
+                    "%s with constructor %s doesn't "
+                    "follow this convention." % (cls, init_signature)
+                )
+
+        return sorted([p.name for p in parameters])
+
+    def get_params(self) -> dict:
+        """Gets parameters for this distribution instance.
+
+        Returns:
+            dict: Parameter names mapped to their values.
+        """
+        out = dict()
+        for key in self._get_param_names():
+            value = getattr(self, key)
+            out[key] = value
+        return out
+
+    def __repr__(self) -> str:
+        return "".join([
+            "<",
+            self.__class__.__name__,
+            "(",
+            ", ".join(
+                [f"{k}={v:.4f}" if isinstance(v, Number) else f"{k}={v}" for k, v in self.get_params().items()]
+            ),
+            ")>"
+        ])
+
+
+class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
+    """
+    Mixin class for all continuous probability distributions in wnb.
+    """
+
+    def __init__(self, **kwargs):
+        """Initializes an instance of the continuous probability distribution with given parameters.
+
         """
         pass
 
@@ -63,29 +122,15 @@ class ContinuousDistMixin(metaclass=ABCMeta):
     def __call__(self, x: float) -> float:
         return self.pdf(x)
 
-    def __repr__(self) -> str:
-        pass
 
-
-class DiscreteDistMixin(metaclass=ABCMeta):
+class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
     """
     Mixin class for all discrete probability distributions in wnb.
     """
 
-    name = None
-
     def __init__(self, **kwargs):
-        """Initializes an instance of the probability distribution with given parameters.
+        """Initializes an instance of the discrete probability distribution with given parameters.
 
-        """
-        pass
-
-    @classmethod
-    def from_data(cls, data):
-        """Creates an instance of the class from given data. Distribution parameters will be estimated from the data.
-
-        Returns:
-            self: An instance of the class.
         """
         pass
 
@@ -103,6 +148,3 @@ class DiscreteDistMixin(metaclass=ABCMeta):
     @vectorize(signature="(),()->()")
     def __call__(self, x: float) -> float:
         return self.pmf(x)
-
-    def __repr__(self) -> str:
-        pass

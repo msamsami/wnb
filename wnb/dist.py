@@ -38,9 +38,6 @@ class NormalDist(ContinuousDistMixin):
     def pdf(self, x: float) -> float:
         return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(-0.5 * (((x - self.mu) / self.sigma)**2))
 
-    def __repr__(self) -> str:
-        return f"<NormalDist(mu={self.mu:.4f}, sigma={self.sigma:.4f})>"
-
 
 class LognormalDist(ContinuousDistMixin):
     name = D.LOGNORMAL
@@ -59,9 +56,6 @@ class LognormalDist(ContinuousDistMixin):
     def pdf(self, x: float) -> float:
         return (1.0 / (x * np.sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((np.log(x - self.mu) / self.sigma)**2))
 
-    def __repr__(self) -> str:
-        return f"<LognormalDist(mu={self.mu:.4f}, sigma={self.sigma:.4f})>"
-
 
 class ExponentialDist(ContinuousDistMixin):
     name = D.EXPONENTIAL
@@ -76,9 +70,6 @@ class ExponentialDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return self.rate * np.exp(-self.rate * x) if x >= 0 else 0.0
-
-    def __repr__(self) -> str:
-        return f"<ExponentialDist(rate={self.rate:.4f})>"
 
 
 class UniformDist(ContinuousDistMixin):
@@ -96,9 +87,6 @@ class UniformDist(ContinuousDistMixin):
     def pdf(self, x: float) -> float:
         return 1 / (self.b - self.a) if self.a <= x <= self.b else 0.0
 
-    def __repr__(self) -> str:
-        return f"<UniformDist(a={self.a:.4f}, b={self.b:.4f})>"
-
 
 class ParetoDist(ContinuousDistMixin):
     name = D.PARETO
@@ -115,9 +103,6 @@ class ParetoDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return (self.alpha * self.x_m**self.alpha) / x**(self.alpha + 1) if x >= self.x_m else 0.0
-
-    def __repr__(self) -> str:
-        return f"<ParetoDist(x_m={self.x_m:.4f}, alpha={self.alpha:.4f})>"
 
 
 class GammaDist(ContinuousDistMixin):
@@ -139,9 +124,6 @@ class GammaDist(ContinuousDistMixin):
     def pdf(self, x: float) -> float:
         return (x ** (self.k-1) * np.exp(-x / self.theta)) / (gamma(self.k) * self.theta ** self.k)
 
-    def __repr__(self) -> str:
-        return f"<GammaDist(k={self.k:.4f}, theta={self.theta:.4f})>"
-
 
 class BernoulliDist(DiscreteDistMixin):
     name = D.BERNOULLI
@@ -160,9 +142,6 @@ class BernoulliDist(DiscreteDistMixin):
     def pmf(self, x: int) -> float:
         return 0.0 if x not in [0, 1] else self.p if x == 1 else 1 - self.p
 
-    def __repr__(self) -> str:
-        return f"<BernoulliDist(p={self.p:.4f})>"
-
 
 class CategoricalDist(DiscreteDistMixin):
     name = D.CATEGORICAL
@@ -178,9 +157,6 @@ class CategoricalDist(DiscreteDistMixin):
 
     def pmf(self, x: Any) -> float:
         return self.prob.get(x)
-
-    def __repr__(self) -> str:
-        return f"<CategoricalDist(prob={self.prob})>"
 
 
 class MultinomialDist(DiscreteDistMixin):
@@ -206,9 +182,6 @@ class MultinomialDist(DiscreteDistMixin):
             return np.math.factorial(self.n) * np.product([p**v for v, p in self.prob.items()]) / \
                 np.product([np.math.factorial(v) for v in self.prob.keys()])
 
-    def __repr__(self) -> str:
-        return f"<MultinomialDist(n={self.n}, prob={self.prob})>"
-
 
 class GeometricDist(DiscreteDistMixin):
     name = D.GEOMETRIC
@@ -227,9 +200,6 @@ class GeometricDist(DiscreteDistMixin):
     def pmf(self, x: int) -> float:
         return self.p * (1 - self.p)**(x-1) if x >= 1 else 0.0
 
-    def __repr__(self) -> str:
-        return f"<GeometricDist(p={self.p:.4f})>"
-
 
 class PoissonDist(DiscreteDistMixin):
     name = D.POISSON
@@ -244,9 +214,6 @@ class PoissonDist(DiscreteDistMixin):
 
     def pmf(self, x: int) -> float:
         return (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
-
-    def __repr__(self) -> str:
-        return f"<PoissonDist(rate={self.rate:.4f})>"
 
 
 AllDistributions = {
