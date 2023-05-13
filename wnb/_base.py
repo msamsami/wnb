@@ -2,8 +2,12 @@ from abc import ABCMeta
 import inspect
 from functools import wraps
 from numbers import Number
+from typing import List, Tuple, Union
+import warnings
 
 import numpy as np
+
+from ._enums import Distribution
 
 __all__ = [
     'ContinuousDistMixin',
@@ -33,7 +37,8 @@ class DistMixin(metaclass=ABCMeta):
     Mixin class for probability distributions in wnb.
     """
 
-    name = None
+    name: Union[str, Distribution] = None
+    _support: Union[List[float], Tuple[float, float]] = None
 
     @classmethod
     def from_data(cls, data):
@@ -84,6 +89,23 @@ class DistMixin(metaclass=ABCMeta):
             out[key] = value
         return out
 
+    @property
+    def support(self) -> Union[List[float], Tuple[float, float]]:
+        """Returns the support of the probability distribution.
+
+        If support is a list, the support is a limited number of discrete values. If it is a tuple, it indicates a
+        limited set/range of continuous values.
+
+        """
+        return self._support
+
+    def _check_support(self, x):
+        if (isinstance(self.support, list) and x not in self.support) or \
+           (isinstance(self.support, tuple) and (x < self.support[0] or x > self.support[1])):
+            warnings.warn("Value doesn't lie within the support of the distribution", RuntimeWarning)
+        else:
+            pass
+
     def __repr__(self) -> str:
         return "".join([
             "<",
@@ -100,6 +122,8 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
     """
     Mixin class for all continuous probability distributions in wnb.
     """
+
+    _type = "continuous"
 
     def __init__(self, **kwargs):
         """Initializes an instance of the continuous probability distribution with given parameters.
@@ -120,6 +144,7 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
 
     @vectorize(signature="(),()->()")
     def __call__(self, x: float) -> float:
+        self._check_support(x)
         return self.pdf(x)
 
 
@@ -127,6 +152,8 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
     """
     Mixin class for all discrete probability distributions in wnb.
     """
+
+    _type = "discrete"
 
     def __init__(self, **kwargs):
         """Initializes an instance of the discrete probability distribution with given parameters.
@@ -147,4 +174,5 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
 
     @vectorize(signature="(),()->()")
     def __call__(self, x: float) -> float:
+        self._check_support(x)
         return self.pmf(x)
