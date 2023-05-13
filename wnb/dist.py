@@ -1,5 +1,4 @@
 from typing import Any, Mapping, Sequence
-import warnings
 
 import numpy as np
 from scipy.special import gamma
@@ -25,6 +24,7 @@ __all__ = [
 
 class NormalDist(ContinuousDistMixin):
     name = D.NORMAL
+    _support = (-np.inf, np.inf)
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -41,6 +41,7 @@ class NormalDist(ContinuousDistMixin):
 
 class LognormalDist(ContinuousDistMixin):
     name = D.LOGNORMAL
+    _support = (0, np.inf)
 
     def __init__(self, mu: float, sigma: float):
         self.mu = mu
@@ -59,6 +60,7 @@ class LognormalDist(ContinuousDistMixin):
 
 class ExponentialDist(ContinuousDistMixin):
     name = D.EXPONENTIAL
+    _support = (0, np.inf)
 
     def __init__(self, rate: float):
         self.rate = rate
@@ -78,6 +80,7 @@ class UniformDist(ContinuousDistMixin):
     def __init__(self, a: float, b: float):
         self.a = a
         self.b = b
+        self._support = (a, b)
         super().__init__()
 
     @classmethod
@@ -94,6 +97,7 @@ class ParetoDist(ContinuousDistMixin):
     def __init__(self, x_m: float, alpha: float):
         self.x_m = x_m
         self.alpha = alpha
+        self._support = (self.x_m, np.inf)
         super().__init__()
 
     @classmethod
@@ -107,6 +111,7 @@ class ParetoDist(ContinuousDistMixin):
 
 class GammaDist(ContinuousDistMixin):
     name = D.GAMMA
+    _support = (0, np.inf)
 
     def __init__(self, k: float, theta: float):
         self.k = k
@@ -127,6 +132,7 @@ class GammaDist(ContinuousDistMixin):
 
 class BernoulliDist(DiscreteDistMixin):
     name = D.BERNOULLI
+    _support = [0, 1]
 
     def __init__(self, p: float):
         self.p = p
@@ -134,9 +140,6 @@ class BernoulliDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data):
-        if any(x not in [0, 1] for x in data):
-            warnings.warn("Bernoulli data points should be either 0 or 1")
-
         return cls(p=(np.array(data) == 1).sum() / len(data))
 
     def pmf(self, x: int) -> float:
@@ -148,6 +151,7 @@ class CategoricalDist(DiscreteDistMixin):
 
     def __init__(self, prob: Mapping[Any, float]):
         self.prob = prob
+        self._support = list(self.prob.keys())
         super().__init__()
 
     @classmethod
@@ -165,13 +169,11 @@ class MultinomialDist(DiscreteDistMixin):
     def __init__(self, n: int, prob: Mapping[Any, float]):
         self.n = n
         self.prob = prob
+        self._support = [i for i in range(self.n+1)]
         super().__init__()
 
     @classmethod
     def from_data(cls, data: Sequence[int]):
-        if any(not isinstance(x, int) or x < 0 for x in data):
-            warnings.warn("Multinomial data points should be integers greater than or equal to 0")
-
         values, counts = np.unique(data, return_counts=True)
         return cls(n=int(np.sum(values)), prob={v: c / len(data) for v, c in zip(values, counts)})
 
@@ -185,6 +187,7 @@ class MultinomialDist(DiscreteDistMixin):
 
 class GeometricDist(DiscreteDistMixin):
     name = D.GEOMETRIC
+    _support = (1, np.inf)
 
     def __init__(self, p: float):
         self.p = p
@@ -192,9 +195,6 @@ class GeometricDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data):
-        if any(x < 1 for x in data):
-            warnings.warn("Geometric data points should be greater than or equal to 1")
-
         return cls(p=len(data) / np.sum(data))
 
     def pmf(self, x: int) -> float:
@@ -203,6 +203,7 @@ class GeometricDist(DiscreteDistMixin):
 
 class PoissonDist(DiscreteDistMixin):
     name = D.POISSON
+    _support = (0, np.inf)
 
     def __init__(self, rate: float):
         self.rate = rate
