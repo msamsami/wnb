@@ -99,7 +99,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Set priors if not specified
         if self.priors is None:
             _, class_count_ = np.unique(y, return_counts=True)
-            self.priors_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
+            self.class_prior_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
 
         else:
             # Check that the provided priors match the number of classes
@@ -112,11 +112,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             if (self.priors < 0).any():
                 raise ValueError('Priors must be non-negative.')
 
-            self.priors_ = self.priors
+            self.class_prior_ = self.priors
 
         # Convert to NumPy array if input priors is in a list
-        if type(self.priors_) is list:
-            self.class_prior_ = np.array(self.priors_)
+        if type(self.class_prior_) is list:
+            self.class_prior_ = np.array(self.class_prior_)
 
         # Set distributions if not specified
         if self.distributions is None:
@@ -223,14 +223,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         log_joint = np.zeros((n_samples, self.n_classes_))
         for c in range(self.n_classes_):
-            log_joint[:, c] = np.log(self.priors_[c]) + np.log(
-                np.sum(
-                    (
-                        likelihood(X[:, i])
-                        for i, likelihood in enumerate(self.likelihood_params_[c])
-                    ),
-                    axis=0
-                )
+            log_joint[:, c] = np.log(self.class_prior_[c]) + np.sum(
+                (
+                    np.log(likelihood(X[:, i]))
+                    for i, likelihood in enumerate(self.likelihood_params_[c])
+                ),
+                axis=0
             )
 
         log_proba = log_joint - np.transpose(
