@@ -33,7 +33,7 @@ class NormalDist(ContinuousDistMixin):
 
     @classmethod
     def from_data(cls, data: np.ndarray):
-        return cls(mu=np.mean(data), sigma=np.std(data, ddof=1))
+        return cls(mu=np.mean(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
         return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(-0.5 * (((x - self.mu) / self.sigma)**2))
