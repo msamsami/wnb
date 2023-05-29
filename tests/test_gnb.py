@@ -1,7 +1,8 @@
 import numpy as np
 
 import pytest
-from sklearn.utils._testing import assert_almost_equal, assert_array_equal, assert_array_almost_equal, assert_allclose
+from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
+from sklearn.naive_bayes import GaussianNB
 
 from wnb import GeneralNB, Distribution as D
 
@@ -36,6 +37,30 @@ def test_gnb():
     y_pred_proba = clf.predict_proba(X)
     y_pred_log_proba = clf.predict_log_proba(X)
     assert_array_almost_equal(np.log(y_pred_proba), y_pred_log_proba, 8)
+
+
+def test_gnb_vs_sklearn():
+    """General Naive Bayes classification vs sklearn Gaussian Naive Bayes classification.
+
+    Checks that GeneralNB with gaussian likelihoods returns the same outputs as the sklearn GaussianNB.
+    """
+    clf1 = GeneralNB()
+    clf1.fit(X, y)
+
+    clf2 = GaussianNB()
+    clf2.fit(X, y)
+
+    y_pred1 = clf1.predict(X)
+    y_pred2 = clf2.predict(X)
+    assert_array_equal(y_pred1, y_pred2)
+
+    y_pred_proba1 = clf1.predict_proba(X)
+    y_pred_proba2 = clf2.predict_proba(X)
+    assert_array_almost_equal(y_pred_proba1, y_pred_proba2, 6)
+
+    y_pred_log_proba1 = clf1.predict_log_proba(X)
+    y_pred_log_proba2 = clf2.predict_log_proba(X)
+    assert_array_almost_equal(y_pred_log_proba1, y_pred_log_proba2, 5)
 
 
 def test_gnb_prior(global_random_seed):
@@ -80,7 +105,7 @@ def test_gnb_priors_sum_isclose():
     """
     Test whether the class prior sum is properly tested.
     """
-    X = np.array(
+    X_ = np.array(
         [
             [-1, -1],
             [-2, -1],
@@ -95,9 +120,9 @@ def test_gnb_priors_sum_isclose():
         ]
     )
     priors = np.array([0.08, 0.14, 0.03, 0.16, 0.11, 0.16, 0.07, 0.14, 0.11, 0.0])
-    Y = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    y_ = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     clf = GeneralNB(priors=priors)
-    clf.fit(X, Y)
+    clf.fit(X_, y_)
 
 
 def test_gnb_wrong_nb_priors():
