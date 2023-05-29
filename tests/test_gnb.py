@@ -165,3 +165,14 @@ def test_gnb_wrong_nb_dist():
     msg = "Number of specified distributions must match the number of features"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
+
+
+def test_gnb_invalid_dist():
+    """
+    Test whether an error is raised if an invalid distribution is provided.
+    """
+    clf = GeneralNB(distributions=["Normal", "Borel"])
+
+    msg = "Distribution 'Borel' is not supported"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
