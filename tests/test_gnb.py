@@ -90,7 +90,7 @@ def test_gnb_neg_priors():
 
 def test_gnb_priors():
     """
-    Test whether the class prior override is properly used.
+    Test whether the class priors override is properly used.
     """
     clf = GeneralNB(priors=np.array([0.3, 0.7])).fit(X, y)
     assert_array_almost_equal(
@@ -103,7 +103,7 @@ def test_gnb_priors():
 
 def test_gnb_priors_sum_isclose():
     """
-    Test whether the class prior sum is properly tested.
+    Test whether the class priors sum is properly tested.
     """
     X_ = np.array(
         [
@@ -127,7 +127,7 @@ def test_gnb_priors_sum_isclose():
 
 def test_gnb_wrong_nb_priors():
     """
-    Test whether an error is raised if the number of prior is different from the number of class.
+    Test whether an error is raised if the number of priors is different from the number of classes.
     """
     clf = GeneralNB(priors=np.array([0.25, 0.25, 0.25, 0.25]))
 
@@ -138,7 +138,7 @@ def test_gnb_wrong_nb_priors():
 
 def test_gnb_prior_greater_one():
     """
-    Test if an error is raised if the sum of prior greater than one.
+    Test if an error is raised if the sum of priors greater than one.
     """
     clf = GeneralNB(priors=np.array([2.0, 1.0]))
 
@@ -149,8 +149,19 @@ def test_gnb_prior_greater_one():
 
 def test_gnb_prior_large_bias():
     """
-    Test if good prediction when class prior favor largely one class.
+    Test if good prediction when class priors favor largely one class.
     """
     clf = GeneralNB(priors=np.array([0.01, 0.99]))
     clf.fit(X, y)
     assert clf.predict(np.array([[-0.1, -0.1]])) == np.array([2])
+
+
+def test_gnb_wrong_nb_dist():
+    """
+    Test whether an error is raised if the number of distributions is different from the number of features.
+    """
+    clf = GeneralNB(distributions=[D.NORMAL, D.GAMMA, D.PARETO])
+
+    msg = "Number of specified distributions must match the number of features"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
