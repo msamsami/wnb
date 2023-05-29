@@ -126,7 +126,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Check if the number of distributions matches the number of features
             if len(self.distributions) != self.n_features_in_:
                 raise ValueError(
-                    "Number of specified distributions must match the number of features "
+                    "Number of specified distributions must match the number of features."
                     f"({len(self.distributions)} != {self.n_features_in_})"
                 )
 
@@ -153,10 +153,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        X, y = self.__prepare_X_y(X, y)
-
         self.classes_, y_ = np.unique(y, return_inverse=True)  # Unique class labels and their indices
         self.n_classes_ = len(self.classes_)  # Number of classes
+
+        X, y = self.__prepare_X_y(X, y)
+
         self.__n_samples, self.n_features_in_ = X.shape  # Number of samples and features
 
         self.__check_inputs(X, y)
