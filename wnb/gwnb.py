@@ -119,7 +119,10 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 % self.max_iter
             )
 
-    def _prepare_X_y(self, X=None, y=None):
+    def _prepare_X_y(self, X=None, y=None, from_fit=False):
+        if from_fit and y is None:
+            raise ValueError("requires y to be passed, but the target y is None")
+
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
@@ -181,7 +184,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        X, y = self._prepare_X_y(X, y)
+        X, y = self._prepare_X_y(X, y, from_fit=True)
 
         self.classes_, y_ = np.unique(y, return_inverse=True)  # Unique class labels and their indices
         self.n_classes_ = len(self.classes_)  # Number of classes
