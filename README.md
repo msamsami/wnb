@@ -3,9 +3,10 @@
 ![](https://img.shields.io/badge/version-v0.1.11-green)
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
 ![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
+![https://pypi.org/project/wnb/](https://img.shields.io/pypi/v/wnb)
 
 <p>
-<img src="logo.png" alt="wnb logo" width="275" />
+<img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/logo.png" alt="wnb logo" width="275" />
 <br>
 </p>
 
@@ -32,7 +33,7 @@ of gaussian MLD-WNB.
 ## Install
 The easiest way to install the wnb library is by using `pip`:
 ```commandline
-pip install git+https://github.com/msamsami/weighted-naive-bayes
+pip install wnb
 ```
 This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. 
 Furthermore, it is fully compatible with Scikit-learn API.
