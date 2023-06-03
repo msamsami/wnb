@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import numbers
-from typing import Union, Optional
+from typing import Union, Optional, Sequence
 import warnings
 
 import numpy as np
@@ -10,7 +10,7 @@ from scipy.special import logsumexp
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import check_array, as_float_array
+from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import type_of_target
 
@@ -20,12 +20,14 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
     """
 
-    def __init__(self, priors: Optional[Union[list, np.ndarray]] = None, error_weights: Optional[np.ndarray] = None,
+    def __init__(self, *,
+                 priors: Optional[Union[Sequence[float], np.ndarray]] = None,
+                 error_weights: Optional[np.ndarray] = None,
                  max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0) -> None:
         """Initializes an object of the class.
 
         Args:
-            priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
+            priors (Optional[Union[Sequence[float], np.ndarray]]): Prior probabilities. Defaults to None.
             error_weights (Optional[np.ndarray]): Matrix of error weights (n_classes * n_classes). Defaults to None.
             max_iter (int): Maximum number of gradient descent iterations. Defaults to 25.
             step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
@@ -229,7 +231,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 x = X[i, :]
                 for j in range(self.n_features_in_):
                     _sum += self.coef_[j] * (np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 1], self.std_[j, 1]))
-                                                - np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 0], self.std_[j, 0])))
+                                             - np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 0], self.std_[j, 0])))
                 _cost += _lambda[i] * _sum
         else:
             _cost = None
@@ -247,6 +249,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return _grad
 
+    @deprecated()
     def __calculate_grad_slow(self, X, _lambda):
         _grad = np.zeros((self.n_features_in_,))
         for i in range(self.__n_samples):
