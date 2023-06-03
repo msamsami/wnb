@@ -48,7 +48,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             'requires_y': True
         }
 
-    def __check_inputs(self, X, y):
+    def _check_inputs(self, X, y):
         # Check that the dataset has only two unique labels
         if type_of_target(y) != 'binary':
             warnings.warn('This version of MLD-WNB only supports binary classification.')
@@ -117,7 +117,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 % self.max_iter
             )
 
-    def __prepare_X_y(self, X=None, y=None):
+    def _prepare_X_y(self, X=None, y=None):
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
@@ -141,7 +141,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         output = output[0] if len(output) == 1 else output
         return output
 
-    def __prepare_parameters(self, X, y):
+    def _prepare_parameters(self, X, y):
         # Calculate mean and standard deviation of features for each class
         for c in range(self.n_classes_):
             self.mu_[:, c] = np.mean(X[y == c, :], axis=0)  # Calculate mean of features for class c
@@ -179,13 +179,13 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        X, y = self.__prepare_X_y(X, y)
+        X, y = self._prepare_X_y(X, y)
 
         self.classes_, y_ = np.unique(y, return_inverse=True)  # Unique class labels and their indices
         self.n_classes_ = len(self.classes_)  # Number of classes
         self.__n_samples, self.n_features_in_ = X.shape  # Number of samples and features
 
-        self.__check_inputs(X, y)
+        self._check_inputs(X, y)
         y = y_
 
         self.mu_ = np.zeros((self.n_features_in_, self.n_classes_))  # Mean of features (n_features x 1)
@@ -193,7 +193,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.coef_ = np.ones((self.n_features_in_,))  # WNB coefficients (n_features x 1)
         self.cost_hist_ = np.array([np.nan for _ in range(self.max_iter)])  # To store cost value in each iteration
 
-        self.__prepare_parameters(X, y)
+        self._prepare_parameters(X, y)
 
         # Learn the weights using gradient descent
         self.n_iter_ = 0
@@ -304,7 +304,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         n_samples = X.shape[0]
 
-        X = self.__prepare_X_y(X=X)
+        X = self._prepare_X_y(X=X)
 
         log_priors = np.tile(np.log(self.class_prior_), (n_samples, 1))
         w_reshaped = np.tile(self.coef_.reshape(-1, 1), (1, self.n_classes_))
