@@ -25,7 +25,7 @@ def get_random_normal_x_binary_y(global_random_seed):
     return X1, y1
 
 
-def test_gnb():
+def test_gwnb():
     """Binary Gaussian MLD-WNB classification
 
     Checks that GaussianWNB implements fit and predict and returns correct values for a simple toy dataset.
@@ -39,9 +39,47 @@ def test_gnb():
     assert_array_almost_equal(np.log(y_pred_proba), y_pred_log_proba, 8)
 
 
-def test_gnb_estimator():
+def test_gwnb_estimator():
     """
     Test whether GaussianWNB estimator adheres to scikit-learn conventions.
     """
     check_estimator(GaussianWNB())
     assert is_classifier(GaussianWNB)
+
+
+def test_gwnb_prior(global_random_seed):
+    """
+    Test whether class priors are properly set.
+    """
+    clf = GaussianWNB().fit(X, y)
+    assert_array_almost_equal(np.array([3, 3]) / 6.0, clf.class_prior_, 8)
+
+    X1, y1 = get_random_normal_x_binary_y(global_random_seed)
+    clf = GaussianWNB().fit(X1, y1)
+
+    # Check that the class priors sum to 1
+    assert_array_almost_equal(clf.class_prior_.sum(), 1)
+
+
+def test_gwnb_neg_priors():
+    """
+    Test whether an error is raised in case of negative priors.
+    """
+    clf = GaussianWNB(priors=np.array([-1.0, 2.0]))
+
+    msg = "Priors must be non-negative"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_priors():
+    """
+    Test whether the class priors override is properly used.
+    """
+    clf = GaussianWNB(priors=np.array([0.3, 0.7])).fit(X, y)
+    assert_array_almost_equal(
+        clf.predict_proba([[-0.1, -0.1]]),
+        np.array([[0.823571, 0.176429]]),
+        8,
+    )
+    assert_array_almost_equal(clf.class_prior_, np.array([0.3, 0.7]))
