@@ -114,3 +114,29 @@ def test_gwnb_prior_large_bias():
     clf = GaussianWNB(priors=np.array([0.01, 0.99]))
     clf.fit(X, y)
     assert clf.predict(np.array([[-0.1, -0.1]])) == np.array([2])
+
+
+def test_gwnb_non_binary():
+    """
+    Test if an error is raised when given non-binary targets.
+    """
+    X_ = np.array(
+        [
+            [-1, -1],
+            [-2, -1],
+            [-3, -2],
+            [-4, -5],
+            [-5, -4],
+            [1, 1],
+            [2, 1],
+            [3, 2],
+            [4, 4],
+            [5, 5],
+        ]
+    )
+    y_ = np.array([1, 2, 3, 4, 4, 3, 2, 1, 1, 2])
+    clf = GaussianWNB()
+
+    msg = "Unknown label type: non-binary"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X_, y_)
