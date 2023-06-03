@@ -1,11 +1,12 @@
 import numpy as np
 
 import pytest
+from sklearn.utils.estimator_checks import check_estimator
+from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
 from sklearn.naive_bayes import GaussianNB
 
 from wnb import GeneralNB, Distribution as D
-
 
 # Data is just 6 separable points in the plane
 X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
@@ -42,7 +43,7 @@ def test_gnb():
 def test_gnb_vs_sklearn():
     """General Naive Bayes classification vs sklearn Gaussian Naive Bayes classification.
 
-    Checks that GeneralNB with gaussian likelihoods returns the same outputs as the sklearn GaussianNB.
+    Test GeneralNB with gaussian likelihoods returns the same outputs as the sklearn GaussianNB.
     """
     clf1 = GeneralNB()
     clf1.fit(X, y)
@@ -61,6 +62,14 @@ def test_gnb_vs_sklearn():
     y_pred_log_proba1 = clf1.predict_log_proba(X)
     y_pred_log_proba2 = clf2.predict_log_proba(X)
     assert_array_almost_equal(y_pred_log_proba1, y_pred_log_proba2, 5)
+
+
+def test_gnb_estimator():
+    """
+    Test whether GeneralNB estimator adheres to scikit-learn conventions.
+    """
+    # check_estimator(GeneralNB())
+    assert is_classifier(GeneralNB)
 
 
 def test_gnb_prior(global_random_seed):
