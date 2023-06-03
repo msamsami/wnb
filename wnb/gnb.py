@@ -44,7 +44,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             'requires_y': True
         }
 
-    def __check_inputs(self, X, y):
+    def _check_inputs(self, X, y):
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
@@ -71,7 +71,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 "X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0])
             )
 
-    def __prepare_X_y(self, X=None, y=None):
+    def _prepare_X_y(self, X=None, y=None):
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
@@ -95,7 +95,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         output = output[0] if len(output) == 1 else output
         return output
 
-    def __prepare_parameters(self, X, y):
+    def _prepare_parameters(self, X, y):
         # Set priors if not specified
         if self.priors is None:
             _, class_count_ = np.unique(y, return_counts=True)
@@ -156,14 +156,14 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.classes_, y_ = np.unique(y, return_inverse=True)  # Unique class labels and their indices
         self.n_classes_ = len(self.classes_)  # Number of classes
 
-        X, y = self.__prepare_X_y(X, y)
+        X, y = self._prepare_X_y(X, y)
 
         self.__n_samples, self.n_features_in_ = X.shape  # Number of samples and features
 
-        self.__check_inputs(X, y)
+        self._check_inputs(X, y)
 
         y = y_
-        self.__prepare_parameters(X, y)
+        self._prepare_parameters(X, y)
 
         self.likelihood_params_ = {
             c: [
@@ -220,7 +220,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         n_samples = X.shape[0]
 
-        X = self.__prepare_X_y(X=X)
+        X = self._prepare_X_y(X=X)
 
         log_joint = np.zeros((n_samples, self.n_classes_))
         for c in range(self.n_classes_):
