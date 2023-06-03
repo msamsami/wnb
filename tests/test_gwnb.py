@@ -1,6 +1,7 @@
 import numpy as np
 
 import pytest
+from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
 
@@ -36,3 +37,11 @@ def test_gnb():
     y_pred_proba = clf.predict_proba(X)
     y_pred_log_proba = clf.predict_log_proba(X)
     assert_array_almost_equal(np.log(y_pred_proba), y_pred_log_proba, 8)
+
+
+def test_gnb_estimator():
+    """
+    Test whether GaussianWNB estimator adheres to scikit-learn conventions.
+    """
+    check_estimator(GaussianWNB())
+    assert is_classifier(GaussianWNB)
