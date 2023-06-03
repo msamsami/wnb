@@ -204,10 +204,10 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y_hat = self.__predict(X)
 
             # Calculate cost
-            self.cost_hist_[self.n_iter_], _lambda = self.__calculate_cost(X, y, y_hat, learning_hist)
+            self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(X, y, y_hat, learning_hist)
 
             # Calculate gradients (most time-consuming)
-            _grad = self.__calculate_grad(X, _lambda)
+            _grad = self._calculate_grad(X, _lambda)
 
             # Add regularization
             if self.penalty == 'l1':
@@ -220,7 +220,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def __calculate_cost(self, X, y, y_hat, learning_hist):
+    def _calculate_cost(self, X, y, y_hat, learning_hist):
         _lambda = [self.error_weights_[y[i], y_hat[i]] for i in range(self.__n_samples)]
 
         if learning_hist:
@@ -238,7 +238,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return _cost, _lambda
 
-    def __calculate_grad(self, X, _lambda):
+    def _calculate_grad(self, X, _lambda):
         _grad = np.repeat(np.log(self.std_[:, 0] / self.std_[:, 1]).reshape(1, -1), self.__n_samples, axis=0)
         _grad += 0.5 * ((X - np.repeat(self.mu_[:, 0].reshape(1, -1), self.__n_samples, axis=0)) /
                         (np.repeat(self.std_[:, 0].reshape(1, -1), self.__n_samples, axis=0))) ** 2
@@ -250,7 +250,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         return _grad
 
     @deprecated()
-    def __calculate_grad_slow(self, X, _lambda):
+    def _calculate_grad_slow(self, X, _lambda):
         _grad = np.zeros((self.n_features_in_,))
         for i in range(self.__n_samples):
             x = X[i, :]
