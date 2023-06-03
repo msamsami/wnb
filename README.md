@@ -2,6 +2,7 @@
 
 ![](https://img.shields.io/badge/version-v0.1.11-green)
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
+![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 
 <p>
 <img src="logo.png" alt="wnb logo" width="275" />
