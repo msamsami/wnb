@@ -83,3 +83,34 @@ def test_gwnb_priors():
         8,
     )
     assert_array_almost_equal(clf.class_prior_, np.array([0.3, 0.7]))
+
+
+def test_gwnb_wrong_nb_priors():
+    """
+    Test whether an error is raised if the number of priors is different from the number of classes.
+    """
+    clf = GaussianWNB(priors=np.array([0.25, 0.25, 0.25, 0.25]))
+
+    msg = "Number of priors must match the number of classes"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_prior_greater_one():
+    """
+    Test if an error is raised if the sum of priors greater than one.
+    """
+    clf = GaussianWNB(priors=np.array([2.0, 1.0]))
+
+    msg = "The sum of the priors should be 1"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_prior_large_bias():
+    """
+    Test if good prediction when class priors favor largely one class.
+    """
+    clf = GaussianWNB(priors=np.array([0.01, 0.99]))
+    clf.fit(X, y)
+    assert clf.predict(np.array([[-0.1, -0.1]])) == np.array([2])
