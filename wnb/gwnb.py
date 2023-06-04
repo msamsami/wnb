@@ -223,6 +223,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Update weights
             self.coef_ = self.coef_ - self.step_size * _grad
 
+        self.cost_hist_ = None if not self.learning_hist else self.cost_hist_
+
         return self
 
     def _calculate_cost(self, X, y, y_hat, learning_hist):
@@ -239,7 +241,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                                              - np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 0], self.std_[j, 0])))
                 _cost += _lambda[i] * _sum
         else:
-            _cost = None
+            _cost = np.nan
 
         return _cost, _lambda
 
