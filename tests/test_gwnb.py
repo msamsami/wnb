@@ -140,3 +140,19 @@ def test_gwnb_non_binary():
     msg = "Unknown label type: non-binary"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X_, y_)
+
+
+def test_gwnb_wrong_error_weights():
+    """
+    Test if error weight is a square array of size (n_classes, n_classes).
+    """
+    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3]]))
+
+    msg = "The shape of error weights matrix does not match the number of classes"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3], [-2, 1, 1.5]]))
+    msg = "The shape of error weights matrix does not match the number of classes"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
