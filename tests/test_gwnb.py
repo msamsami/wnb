@@ -144,7 +144,7 @@ def test_gwnb_non_binary():
 
 def test_gwnb_wrong_error_weights():
     """
-    Test if error weight is a square array of size (n_classes, n_classes).
+    Test whether an error is raised in case error weight is not a square array of size (n_classes, n_classes).
     """
     clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3]]))
 
@@ -160,10 +160,21 @@ def test_gwnb_wrong_error_weights():
 
 def test_gwnb_wrong_penalty():
     """
-    Test if given regularization penalty is supported.
+    Test whether an error is raised in case regularization penalty is not supported.
     """
     clf = GaussianWNB(penalty="dropout")
 
     msg = "Regularization type must be either 'l1' or 'l2'"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_neg_C():
+    """
+    Test whether an error is raised in case of negative regularization parameter, C.
+    """
+    clf = GaussianWNB(C=-0.6)
+
+    msg = "Regularization parameter must be positive"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
