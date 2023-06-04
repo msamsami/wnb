@@ -23,7 +23,11 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     def __init__(self, *,
                  priors: Optional[Union[Sequence[float], np.ndarray]] = None,
                  error_weights: Optional[np.ndarray] = None,
-                 max_iter: int = 25, step_size: float = 1e-4, penalty: str = 'l2', C: float = 1.0) -> None:
+                 max_iter: int = 25,
+                 step_size: float = 1e-4,
+                 penalty: str = 'l2',
+                 C: float = 1.0,
+                 learning_hist: bool = False) -> None:
         """Initializes an object of the class.
 
         Args:
@@ -33,9 +37,9 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
             penalty (str): Regularization term; must be either 'l1' or 'l2'. Defaults to 'l2'.
             C (float): Regularization strength; must be a positive float. Defaults to 1.0.
+            learning_hist (bool): Whether to record the learning history, i.e., the value of cost function in each
+                                  learning iteration.
 
-        Returns:
-            self: The instance itself.
         """
         self.priors = priors  # Prior probabilities of classes (n_classes x 1)
         self.error_weights = error_weights  # Matrix of error weights (n_features x n_features)
@@ -43,6 +47,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.step_size = step_size  # Learning rate
         self.penalty = penalty  # Regularization type ('l1' or 'l2')
         self.C = C  # Regularization parameter
+        self.learning_hist = learning_hist
 
     def _more_tags(self):
         return {
@@ -169,8 +174,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             self.error_weights_ = self.error_weights
 
-    def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series],
-            learning_hist: bool = False):
+    def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series]):
         """Fits Gaussian Binary MLD-WNB according to X and y.
 
         Args:
@@ -178,8 +182,6 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                                                  Training vectors, where `n_samples` is the number of samples
                                                  and `n_features` is the number of features.
             y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). Target values.
-            learning_hist (bool): Whether to keep the learning history (i.e., the value of cost function in each
-                                  learning iteration)
 
         Returns:
             self: The instance itself.
@@ -207,7 +209,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y_hat = self.__predict(X)
 
             # Calculate cost
-            self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(X, y, y_hat, learning_hist)
+            self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(X, y, y_hat, self.learning_hist)
 
             # Calculate gradients (most time-consuming)
             _grad = self._calculate_grad(X, _lambda)
@@ -220,6 +222,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             # Update weights
             self.coef_ = self.coef_ - self.step_size * _grad
+
+        self.cost_hist_ = None if not self.learning_hist else self.cost_hist_
 
         return self
 
@@ -237,7 +241,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                                              - np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 0], self.std_[j, 0])))
                 _cost += _lambda[i] * _sum
         else:
-            _cost = None
+            _cost = np.nan
 
         return _cost, _lambda
 
@@ -315,9 +319,9 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         log_priors = np.tile(np.log(self.class_prior_), (n_samples, 1))
         w_reshaped = np.tile(self.coef_.reshape(-1, 1), (1, self.n_classes_))
         term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std_)))
-        var_inv = np.multiply(w_reshaped, 1/np.multiply(self.std_, self.std_))
+        var_inv = np.multiply(w_reshaped, 1.0/np.multiply(self.std_, self.std_))
         mu_by_var = np.multiply(self.mu_, var_inv)
-        term2 = -0.5*(np.matmul(np.multiply(X, X), var_inv) - 2*np.matmul(X, mu_by_var)
+        term2 = -0.5*(np.matmul(np.multiply(X, X), var_inv) - 2.0*np.matmul(X, mu_by_var)
                       + np.sum(self.mu_.conj()*mu_by_var, axis=0))
         log_proba = log_priors + term1 + term2
 

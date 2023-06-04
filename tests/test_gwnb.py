@@ -140,3 +140,61 @@ def test_gwnb_non_binary():
     msg = "Unknown label type: non-binary"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X_, y_)
+
+
+def test_gwnb_wrong_error_weights():
+    """
+    Test whether an error is raised in case error weight is not a square array of size (n_classes, n_classes).
+    """
+    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3]]))
+
+    msg = "The shape of error weights matrix does not match the number of classes"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3], [-2, 1, 1.5]]))
+    msg = "The shape of error weights matrix does not match the number of classes"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_wrong_penalty():
+    """
+    Test whether an error is raised in case regularization penalty is not supported.
+    """
+    clf = GaussianWNB(penalty="dropout")
+
+    msg = "Regularization type must be either 'l1' or 'l2'"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_neg_C():
+    """
+    Test whether an error is raised in case of negative regularization parameter, C.
+    """
+    clf = GaussianWNB(C=-0.6)
+
+    msg = "Regularization parameter must be positive"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_neg_max_iter():
+    """
+    Test whether an error is raised in case number of iteration is negative.
+    """
+    clf = GaussianWNB(max_iter=-10)
+
+    msg = "Maximum number of iteration must be a positive integer"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+def test_gwnb_no_cost_hist():
+    """
+    Test whether cost_hist_ is None if learning_hist is not enabled.
+    """
+    clf = GaussianWNB(max_iter=10)
+    clf.fit(X, y)
+    assert clf.cost_hist_ is None
