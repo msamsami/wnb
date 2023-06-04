@@ -189,3 +189,12 @@ def test_gwnb_neg_max_iter():
     msg = "Maximum number of iteration must be a positive integer"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
+
+
+def test_gwnb_no_cost_hist():
+    """
+    Test whether cost_hist_ is None if learning_hist is not enabled.
+    """
+    clf = GaussianWNB(max_iter=10)
+    clf.fit(X, y)
+    assert clf.cost_hist_ is None
