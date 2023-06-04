@@ -178,3 +178,14 @@ def test_gwnb_neg_C():
     msg = "Regularization parameter must be positive"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
+
+
+def test_gwnb_neg_max_iter():
+    """
+    Test whether an error is raised in case number of iteration is negative.
+    """
+    clf = GaussianWNB(max_iter=-10)
+
+    msg = "Maximum number of iteration must be a positive integer"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
