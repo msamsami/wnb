@@ -156,3 +156,14 @@ def test_gwnb_wrong_error_weights():
     msg = "The shape of error weights matrix does not match the number of classes"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
+
+
+def test_gwnb_wrong_penalty():
+    """
+    Test if given regularization penalty is supported.
+    """
+    clf = GaussianWNB(penalty="dropout")
+
+    msg = "Regularization type must be either 'l1' or 'l2'"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
