@@ -4,6 +4,8 @@
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
 ![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 [![](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
+![](https://img.shields.io/pypi/dm/wnb)
+
 
 <p>
 <img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/logo.png" alt="wnb logo" width="275" />
