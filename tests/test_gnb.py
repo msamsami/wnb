@@ -4,7 +4,7 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
-from sklearn.naive_bayes import GaussianNB, BernoulliNB
+from sklearn.naive_bayes import GaussianNB, BernoulliNB, CategoricalNB
 
 from wnb import GeneralNB, Distribution as D
 
@@ -70,8 +70,8 @@ def test_gnb_vs_sklearn_bernoulli():
     Test GeneralNB with bernoulli likelihoods returns the same outputs as the sklearn BernoulliNB.
     """
     rng = np.random.RandomState(1)
-    X_ = rng.randint(2, size=(100, 100))
-    y_ = rng.randint(1, 5, size=(100, ))
+    X_ = rng.randint(2, size=(150, 100))
+    y_ = rng.randint(1, 5, size=(150, ))
 
     clf1 = GeneralNB(distributions=[D.BERNOULLI for _ in range(100)])
     clf1.fit(X_, y_)
@@ -88,6 +88,45 @@ def test_gnb_vs_sklearn_bernoulli():
     assert_array_almost_equal(y_pred_proba1, y_pred_proba2, 6)
 
     y_pred_log_proba1 = clf1.predict_log_proba(X_[2:3])
+    y_pred_log_proba2 = clf2.predict_log_proba(X_[2:3])
+    assert_array_almost_equal(y_pred_log_proba1, y_pred_log_proba2, 5)
+
+
+def test_gnb_vs_sklearn_categorical():
+    """General Naive Bayes classification vs sklearn Categorical Naive Bayes classification.
+
+    Test GeneralNB with categorical likelihoods returns the same outputs as the sklearn CategoricalNB.
+    """
+    categorical_values = [
+        ["cat", "dog"],
+        ["morning", "noon", "afternoon", "evening"],
+        ["apple", "orange", "watermelon"],
+        ["black", "white"]
+    ]
+    rng = np.random.RandomState(24)
+    X_str_ = np.empty((150, 4)).astype("str")
+    X_ = np.zeros((150, 4))
+    for i, options in enumerate(categorical_values):
+        rnd_values = rng.randint(len(options), size=(150, ))
+        X_str_[:, i] = np.array(options)[rnd_values]
+        X_[:, i] = rnd_values
+    y_ = rng.randint(1, 4, size=(150, ))
+
+    clf1 = GeneralNB(distributions=[D.CATEGORICAL for _ in range(len(categorical_values))])
+    clf1.fit(X_str_, y_)
+
+    clf2 = CategoricalNB(alpha=1e-10, force_alpha=True)
+    clf2.fit(X_, y_)
+
+    y_pred1 = clf1.predict(X_str_[2:3])
+    y_pred2 = clf2.predict(X_[2:3])
+    assert_array_equal(y_pred1, y_pred2)
+
+    y_pred_proba1 = clf1.predict_proba(X_str_[2:3])
+    y_pred_proba2 = clf2.predict_proba(X_[2:3])
+    assert_array_almost_equal(y_pred_proba1, y_pred_proba2, 6)
+
+    y_pred_log_proba1 = clf1.predict_log_proba(X_str_[2:3])
     y_pred_log_proba2 = clf2.predict_log_proba(X_[2:3])
     assert_array_almost_equal(y_pred_log_proba1, y_pred_log_proba2, 5)
 
