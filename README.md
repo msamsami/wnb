@@ -92,7 +92,12 @@ wnb.predict(x_test)
 ```
 
 ## Tests
-To run the tests, first install development requirements `pip install -r requirements_dev.txt`, then:
+To run the tests, install development requirements:
+```
+pip install -r requirements_dev.txt
+```
+
+Then, run pytest:
 ```
 pytest
 ```
