@@ -16,7 +16,7 @@ __all__ = [
     'GammaDist',
     'BernoulliDist',
     'CategoricalDist',
-    'MultinomialDist',
+    # 'MultinomialDist',
     'GeometricDist',
     'PoissonDist'
 ]
