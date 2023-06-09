@@ -157,7 +157,7 @@ class CategoricalDist(DiscreteDistMixin):
     @classmethod
     def from_data(cls, data):
         values, counts = np.unique(data, return_counts=True)
-        return cls(prob={v: c/len(data) for v, c in zip(values, counts)})
+        return cls(prob={v: (c + 1e-10)/len(data) for v, c in zip(values, counts)})  # TODO: use alpha instead of 1e-10
 
     def pmf(self, x: Any) -> float:
         return self.prob.get(x, 0.0)
