@@ -90,3 +90,9 @@ wnb.fit(X, y)
 ```python
 wnb.predict(x_test)
 ```
+
+## Tests
+To run the tests, first install development requirements `pip install -r requirements_dev.txt`, then:
+```
+pytest
+```
