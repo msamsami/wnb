@@ -160,7 +160,7 @@ class CategoricalDist(DiscreteDistMixin):
         return cls(prob={v: c/len(data) for v, c in zip(values, counts)})
 
     def pmf(self, x: Any) -> float:
-        return self.prob.get(x)
+        return self.prob.get(x, 0.0)
 
 
 class MultinomialDist(DiscreteDistMixin):
