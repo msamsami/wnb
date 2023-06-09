@@ -140,7 +140,7 @@ class BernoulliDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data):
-        return cls(p=(np.array(data) == 1).sum() / len(data))
+        return cls(p=((np.array(data) == 1).sum() + 1e-10) / len(data))  # TODO: use alpha instead of 1e-10
 
     def pmf(self, x: int) -> float:
         return 0.0 if x not in self._support else self.p if x == 1 else 1 - self.p
