@@ -166,7 +166,7 @@ class CategoricalDist(DiscreteDistMixin):
 class MultinomialDist(DiscreteDistMixin):
     name = D.MULTINOMIAL
 
-    def __init__(self, n: int, prob: Mapping[Any, float]):
+    def __init__(self, n: int, prob: Mapping[int, float]):
         self.n = n
         self.prob = prob
         self._support = [i for i in range(self.n+1)]
@@ -181,8 +181,8 @@ class MultinomialDist(DiscreteDistMixin):
         if sum(x) != self.n:
             return 0.0
         else:
-            return np.math.factorial(self.n) * np.product([p**v for v, p in self.prob.items()]) / \
-                np.product([np.math.factorial(v) for v in self.prob.keys()])
+            return np.math.factorial(self.n) * np.product([self.prob.get(v, 0.0)**v for v in x]) / \
+                np.product([np.math.factorial(v) for v in x])
 
 
 class GeometricDist(DiscreteDistMixin):
