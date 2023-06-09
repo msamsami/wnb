@@ -4,7 +4,7 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
 
 from wnb import GeneralNB, Distribution as D
 
@@ -40,10 +40,10 @@ def test_gnb():
     assert_array_almost_equal(np.log(y_pred_proba), y_pred_log_proba, 8)
 
 
-def test_gnb_vs_sklearn():
+def test_gnb_vs_sklearn_gaussian():
     """General Naive Bayes classification vs sklearn Gaussian Naive Bayes classification.
 
-    Test GeneralNB with gaussian likelihoods returns the same outputs as the sklearn GaussianNB.
+    Test GeneralNB with gaussian likelihoods returns the same outputs as the sklearn MultinomialNB.
     """
     clf1 = GeneralNB()
     clf1.fit(X, y)
