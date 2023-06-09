@@ -143,7 +143,7 @@ class BernoulliDist(DiscreteDistMixin):
         return cls(p=(np.array(data) == 1).sum() / len(data))
 
     def pmf(self, x: int) -> float:
-        return 0.0 if x not in [0, 1] else self.p if x == 1 else 1 - self.p
+        return 0.0 if x not in self._support else self.p if x == 1 else 1 - self.p
 
 
 class CategoricalDist(DiscreteDistMixin):
