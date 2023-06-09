@@ -93,8 +93,7 @@ class DistMixin(metaclass=ABCMeta):
     def support(self) -> Union[List[float], Tuple[float, float]]:
         """Returns the support of the probability distribution.
 
-        If support is a list, the support is a limited number of discrete values. If it is a tuple, it indicates a
-        limited set/range of continuous values.
+        If support is a list, it represents a limited number of discrete values. If it is a tuple, it indicates a limited or unlimited range of continuous values.
 
         """
         return self._support
