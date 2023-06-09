@@ -16,7 +16,7 @@ __all__ = [
     'GammaDist',
     'BernoulliDist',
     'CategoricalDist',
-    'MultinomialDist',
+    # 'MultinomialDist',
     'GeometricDist',
     'PoissonDist'
 ]
@@ -140,10 +140,10 @@ class BernoulliDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data):
-        return cls(p=(np.array(data) == 1).sum() / len(data))
+        return cls(p=((np.array(data) == 1).sum() + 1e-10) / len(data))  # TODO: use alpha instead of 1e-10
 
     def pmf(self, x: int) -> float:
-        return 0.0 if x not in [0, 1] else self.p if x == 1 else 1 - self.p
+        return 0.0 if x not in self._support else self.p if x == 1 else 1 - self.p
 
 
 class CategoricalDist(DiscreteDistMixin):
@@ -157,32 +157,32 @@ class CategoricalDist(DiscreteDistMixin):
     @classmethod
     def from_data(cls, data):
         values, counts = np.unique(data, return_counts=True)
-        return cls(prob={v: c/len(data) for v, c in zip(values, counts)})
+        return cls(prob={v: (c + 1e-10)/len(data) for v, c in zip(values, counts)})  # TODO: use alpha instead of 1e-10
 
     def pmf(self, x: Any) -> float:
-        return self.prob.get(x)
+        return self.prob.get(x, 0.0)
 
 
-class MultinomialDist(DiscreteDistMixin):
-    name = D.MULTINOMIAL
-
-    def __init__(self, n: int, prob: Mapping[Any, float]):
-        self.n = n
-        self.prob = prob
-        self._support = [i for i in range(self.n+1)]
-        super().__init__()
-
-    @classmethod
-    def from_data(cls, data: Sequence[int]):
-        values, counts = np.unique(data, return_counts=True)
-        return cls(n=int(np.sum(values)), prob={v: c / len(data) for v, c in zip(values, counts)})
-
-    def pmf(self, x: Sequence[int]) -> float:
-        if sum(x) != self.n:
-            return 0.0
-        else:
-            return np.math.factorial(self.n) * np.product([p**v for v, p in self.prob.items()]) / \
-                np.product([np.math.factorial(v) for v in self.prob.keys()])
+# class MultinomialDist(DiscreteDistMixin):
+#     name = D.MULTINOMIAL
+#
+#     def __init__(self, n: int, prob: Mapping[int, float]):
+#         self.n = n
+#         self.prob = prob
+#         self._support = [i for i in range(self.n+1)]
+#         super().__init__()
+#
+#     @classmethod
+#     def from_data(cls, data: Sequence[int]):
+#         values, counts = np.unique(data, return_counts=True)
+#         return cls(n=int(np.sum(values)), prob={v: c / len(data) for v, c in zip(values, counts)})
+#
+#     def pmf(self, x: Sequence[int]) -> float:
+#         if sum(x) != self.n:
+#             return 0.0
+#         else:
+#             return np.math.factorial(self.n) * np.product([self.prob.get(v, 0.0)**v for v in x]) / \
+#                 np.product([np.math.factorial(v) for v in x])
 
 
 class GeometricDist(DiscreteDistMixin):
@@ -221,3 +221,6 @@ AllDistributions = {
     eval(cls).name: eval(cls)
     for cls in __all__
 }
+
+
+NonNumericDistributions = [D.CATEGORICAL, ]
