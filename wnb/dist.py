@@ -221,3 +221,6 @@ AllDistributions = {
     eval(cls).name: eval(cls)
     for cls in __all__
 }
+
+
+NonNumericDistributions = [D.CATEGORICAL, ]

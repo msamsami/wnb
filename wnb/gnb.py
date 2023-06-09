@@ -13,7 +13,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
-from .dist import AllDistributions
+from .dist import AllDistributions, NonNumericDistributions
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
@@ -44,6 +44,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             'requires_y': True
         }
 
+    def _get_distributions(self):
+        try:
+            if self.distributions_ is not None:
+                return self.distributions_
+        except:
+            return self.distributions if self.distributions is not None else []
+
     def _check_inputs(self, X, y):
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
@@ -53,7 +60,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_sparse=False,
             accept_large_sparse=False,
-            dtype='numeric',
+            dtype=None if any(d in self._get_distributions() for d in NonNumericDistributions) else 'numeric',
             force_all_finite=True,
             ensure_2d=True,
             ensure_min_samples=1,
@@ -76,7 +83,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
                 X = X.values
-            X = as_float_array(X)
+            X = X if any(d in self._get_distributions() for d in NonNumericDistributions) else as_float_array(X)
 
         if y is not None:
             # Convert to a NumPy array
@@ -210,7 +217,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_is_fitted(self)
 
         # Input validation
-        X = check_array(array=X, accept_large_sparse=False, force_all_finite=True, estimator=self)
+        X = check_array(
+            array=X,
+            accept_large_sparse=False,
+            force_all_finite=True,
+            dtype=None if any(d in self._get_distributions() for d in NonNumericDistributions) else 'numeric',
+            estimator=self
+        )
 
         # Check if the number of input features matches the data seen during fit
         if not X.shape[1] == self.n_features_in_:
