@@ -155,9 +155,8 @@ class BernoulliDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data, **kwargs):
-        return cls(
-            p=((np.array(data) == 1).sum() + 1e-10) / len(data)
-        )  # TODO: use alpha instead of 1e-10
+        alpha = kwargs.get("alpha", 1e-10)
+        return cls(p=((np.array(data) == 1).sum() + alpha) / len(data))
 
     def pmf(self, x: int) -> float:
         return 0.0 if x not in self._support else self.p if x == 1 else 1 - self.p
@@ -173,10 +172,9 @@ class CategoricalDist(DiscreteDistMixin):
 
     @classmethod
     def from_data(cls, data, **kwargs):
+        alpha = kwargs.get("alpha", 1e-10)
         values, counts = np.unique(data, return_counts=True)
-        return cls(
-            prob={v: (c + 1e-10) / len(data) for v, c in zip(values, counts)}
-        )  # TODO: use alpha instead of 1e-10
+        return cls(prob={v: (c + alpha) / len(data) for v, c in zip(values, counts)})
 
     def pmf(self, x: Any) -> float:
         return self.prob.get(x, 0.0)

@@ -35,6 +35,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 ]
             ]
         ] = None,
+        alpha: float = 1e-10,
     ) -> None:
         """Initializes an instance of the GeneralNB class.
 
@@ -43,10 +44,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             distributions: Probability distributions to be used for features' likelihoods. A sequence with same length
                            of the number of features. If not specified, all likelihood will be considered Gaussian.
                            Defaults to None.
+            alpha (float): Additive (Laplace/Lidstone) smoothing parameter (set alpha=0 for no smoothing). Defaults to 1e-10.
 
         """
         self.priors = priors
         self.distributions = distributions
+        self.alpha = alpha
 
     def _more_tags(self):
         return {"multilabel": True, "requires_y": True}
@@ -56,7 +59,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             if self.distributions_ is not None:
                 return self.distributions_
         except:
-            return self.distributions if self.distributions is not None else []
+            return self.distributions or []
 
     def _check_inputs(self, X, y):
         # Check if only one class is present in label vector
@@ -202,10 +205,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_ = {
             c: [
-                AllDistributions[self.distributions_[i]].from_data(X[y == c, i])
+                AllDistributions[self.distributions_[i]].from_data(
+                    X[y == c, i], alpha=self.alpha
+                )
                 if isinstance(self.distributions_[i], Distribution)
                 or self.distributions_[i] in Distribution.__members__.values()
-                else self.distributions_[i].from_data(X[y == c, i])
+                else self.distributions_[i].from_data(X[y == c, i], alpha=self.alpha)
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
