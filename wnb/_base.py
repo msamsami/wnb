@@ -1,6 +1,6 @@
 from abc import ABCMeta
-import inspect
 from functools import wraps
+import inspect
 from numbers import Number
 from typing import List, Tuple, Union
 import warnings
@@ -9,10 +9,7 @@ import numpy as np
 
 from ._enums import Distribution
 
-__all__ = [
-    'ContinuousDistMixin',
-    'DiscreteDistMixin'
-]
+__all__ = ["ContinuousDistMixin", "DiscreteDistMixin"]
 
 
 def vectorize(otypes=None, excluded=None, signature=None):
@@ -21,7 +18,9 @@ def vectorize(otypes=None, excluded=None, signature=None):
     """
 
     def decorator(func):
-        vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
+        vectorized = np.vectorize(
+            func, otypes=otypes, excluded=excluded, signature=signature
+        )
 
         @wraps(func)
         def wrapper(*args):
@@ -42,7 +41,8 @@ class DistMixin(metaclass=ABCMeta):
 
     @classmethod
     def from_data(cls, data):
-        """Creates an instance of the class from given data. Distribution parameters will be estimated from the data.
+        """Creates an instance of the class from given data.
+        Distribution parameters will be estimated from data.
 
         Returns:
             self: An instance of the class.
@@ -93,28 +93,39 @@ class DistMixin(metaclass=ABCMeta):
     def support(self) -> Union[List[float], Tuple[float, float]]:
         """Returns the support of the probability distribution.
 
-        If support is a list, it represents a limited number of discrete values. If it is a tuple, it indicates a limited or unlimited range of continuous values.
+        If support is a list, it represents a limited number of discrete values.
+        If it is a tuple, it indicates a limited or unlimited range of continuous values.
 
         """
         return self._support
 
     def _check_support(self, x):
-        if (isinstance(self.support, list) and x not in self.support) or \
-           (isinstance(self.support, tuple) and (x < self.support[0] or x > self.support[1])):
-            warnings.warn("Value doesn't lie within the support of the distribution", RuntimeWarning)
+        if (isinstance(self.support, list) and x not in self.support) or (
+            isinstance(self.support, tuple)
+            and (x < self.support[0] or x > self.support[1])
+        ):
+            warnings.warn(
+                "Value doesn't lie within the support of the distribution",
+                RuntimeWarning,
+            )
         else:
             pass
 
     def __repr__(self) -> str:
-        return "".join([
-            "<",
-            self.__class__.__name__,
-            "(",
-            ", ".join(
-                [f"{k}={v:.4f}" if isinstance(v, Number) else f"{k}={v}" for k, v in self.get_params().items()]
-            ),
-            ")>"
-        ])
+        return "".join(
+            [
+                "<",
+                self.__class__.__name__,
+                "(",
+                ", ".join(
+                    [
+                        f"{k}={v:.4f}" if isinstance(v, Number) else f"{k}={v}"
+                        for k, v in self.get_params().items()
+                    ]
+                ),
+                ")>",
+            ]
+        )
 
 
 class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
