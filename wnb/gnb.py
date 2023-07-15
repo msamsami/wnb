@@ -21,35 +21,45 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
     """
 
-    def __init__(self, *,
-                 priors: Optional[Union[Sequence[float], np.ndarray]] = None,
-                 distributions: Optional[Sequence[Union[
-                     str, Distribution, Type[ContinuousDistMixin], Type[DiscreteDistMixin]]]
-                 ] = None) -> None:
-        """Initializes an object of the class.
+    def __init__(
+        self,
+        *,
+        priors: Optional[Union[Sequence[float], np.ndarray]] = None,
+        distributions: Optional[
+            Sequence[
+                Union[
+                    str,
+                    Distribution,
+                    Type[ContinuousDistMixin],
+                    Type[DiscreteDistMixin],
+                ]
+            ]
+        ] = None,
+        alpha: float = 1e-10,
+    ) -> None:
+        """Initializes an instance of the GeneralNB class.
 
         Args:
             priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
-            distributions: Names of the distributions to be used for features' likelihoods. A sequence with same length
+            distributions: Probability distributions to be used for features' likelihoods. A sequence with same length
                            of the number of features. If not specified, all likelihood will be considered Gaussian.
                            Defaults to None.
+            alpha (float): Additive (Laplace/Lidstone) smoothing parameter (set alpha=0 for no smoothing). Defaults to 1e-10.
 
         """
         self.priors = priors
         self.distributions = distributions
+        self.alpha = alpha
 
     def _more_tags(self):
-        return {
-            'multilabel': True,
-            'requires_y': True
-        }
+        return {"multilabel": True, "requires_y": True}
 
     def _get_distributions(self):
         try:
             if self.distributions_ is not None:
                 return self.distributions_
         except:
-            return self.distributions if self.distributions is not None else []
+            return self.distributions or []
 
     def _check_inputs(self, X, y):
         # Check if only one class is present in label vector
@@ -60,12 +70,14 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_sparse=False,
             accept_large_sparse=False,
-            dtype=None if any(d in self._get_distributions() for d in NonNumericDistributions) else 'numeric',
+            dtype=None
+            if any(d in self._get_distributions() for d in NonNumericDistributions)
+            else "numeric",
             force_all_finite=True,
             ensure_2d=True,
             ensure_min_samples=1,
             ensure_min_features=1,
-            estimator=self
+            estimator=self,
         )
 
         # Check if X contains complex values
@@ -75,7 +87,8 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Check that the number of samples and labels are compatible
         if self.__n_samples != y.shape[0]:
             raise ValueError(
-                "X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0])
+                "X.shape[0]=%d and y.shape[0]=%d are incompatible."
+                % (X.shape[0], y.shape[0])
             )
 
     def _prepare_X_y(self, X=None, y=None):
@@ -83,7 +96,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
                 X = X.values
-            X = X if any(d in self._get_distributions() for d in NonNumericDistributions) else as_float_array(X)
+            X = (
+                X
+                if any(d in self._get_distributions() for d in NonNumericDistributions)
+                else as_float_array(X)
+            )
 
         if y is not None:
             # Convert to a NumPy array
@@ -94,7 +111,10 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             # Warning in case of y being 2d
             if y.ndim > 1:
-                warnings.warn("A column-vector y was passed when a 1d array was expected.", DataConversionWarning)
+                warnings.warn(
+                    "A column-vector y was passed when a 1d array was expected.",
+                    DataConversionWarning,
+                )
 
             y = y.flatten()
 
@@ -106,18 +126,20 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Set priors if not specified
         if self.priors is None:
             _, class_count_ = np.unique(y, return_counts=True)
-            self.class_prior_ = class_count_ / class_count_.sum()  # Calculate empirical prior probabilities
+            self.class_prior_ = (
+                class_count_ / class_count_.sum()
+            )  # Calculate empirical prior probabilities
 
         else:
             # Check that the provided priors match the number of classes
             if len(self.priors) != self.n_classes_:
-                raise ValueError('Number of priors must match the number of classes.')
+                raise ValueError("Number of priors must match the number of classes.")
             # Check that the sum of priors is 1
             if not np.isclose(self.priors.sum(), 1.0):
-                raise ValueError('The sum of the priors should be 1.')
+                raise ValueError("The sum of the priors should be 1.")
             # Check that the priors are non-negative
             if (self.priors < 0).any():
-                raise ValueError('Priors must be non-negative.')
+                raise ValueError("Priors must be non-negative.")
 
             self.class_prior_ = self.priors
 
@@ -140,16 +162,20 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Check that all specified distributions are supported
             for dist in self.distributions:
                 if not (
-                        isinstance(dist, Distribution) or
-                        dist in Distribution.__members__.values() or
-                        (hasattr(dist, 'from_data') and hasattr(dist, '__call__'))
+                    isinstance(dist, Distribution)
+                    or dist in Distribution.__members__.values()
+                    or (hasattr(dist, "from_data") and hasattr(dist, "__call__"))
                 ):
-                    raise ValueError(f"Distribution '{dist}' is not supported")
+                    raise ValueError(f"Distribution '{dist}' is not supported.")
 
             self.distributions_ = self.distributions
 
-    def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.DataFrame, pd.Series]):
-        """Fits general Naive Bayes classifier according to X and y.
+    def fit(
+        self,
+        X: Union[np.ndarray, pd.DataFrame],
+        y: Union[np.ndarray, pd.DataFrame, pd.Series],
+    ):
+        """Fits general Naive Bayes classifier to X and y.
 
         Args:
             X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).
@@ -160,12 +186,17 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        self.classes_, y_ = np.unique(y, return_inverse=True)  # Unique class labels and their indices
+        self.classes_, y_ = np.unique(
+            y, return_inverse=True
+        )  # Unique class labels and their indices
         self.n_classes_ = len(self.classes_)  # Number of classes
 
         X, y = self._prepare_X_y(X, y)
 
-        self.__n_samples, self.n_features_in_ = X.shape  # Number of samples and features
+        (
+            self.__n_samples,
+            self.n_features_in_,
+        ) = X.shape  # Number of samples and features
 
         self._check_inputs(X, y)
 
@@ -174,10 +205,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_ = {
             c: [
-                AllDistributions[self.distributions_[i]].from_data(X[y == c, i])
-                if isinstance(self.distributions_[i], Distribution) or
-                   self.distributions_[i] in Distribution.__members__.values() else
-                self.distributions_[i].from_data(X[y == c, i])
+                AllDistributions[self.distributions_[i]].from_data(
+                    X[y == c, i], alpha=self.alpha
+                )
+                if isinstance(self.distributions_[i], Distribution)
+                or self.distributions_[i] in Distribution.__members__.values()
+                else self.distributions_[i].from_data(X[y == c, i], alpha=self.alpha)
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
@@ -221,14 +254,17 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_large_sparse=False,
             force_all_finite=True,
-            dtype=None if any(d in self._get_distributions() for d in NonNumericDistributions) else 'numeric',
-            estimator=self
+            dtype=None
+            if any(d in self._get_distributions() for d in NonNumericDistributions)
+            else "numeric",
+            estimator=self,
         )
 
         # Check if the number of input features matches the data seen during fit
         if not X.shape[1] == self.n_features_in_:
             raise ValueError(
-                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
+                "Expected input with %d features, got %d instead."
+                % (self.n_features_in_, X.shape[1])
             )
 
         n_samples = X.shape[0]
@@ -238,15 +274,17 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         log_joint = np.zeros((n_samples, self.n_classes_))
         for c in range(self.n_classes_):
             log_joint[:, c] = np.log(self.class_prior_[c]) + np.sum(
-                (
+                [
                     np.log(likelihood(X[:, i]))
                     for i, likelihood in enumerate(self.likelihood_params_[c])
-                ),
-                axis=0
+                ],
+                axis=0,
             )
 
         log_proba = log_joint - np.transpose(
-            np.repeat(logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0)
+            np.repeat(
+                logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0
+            )
         )
         return log_proba
 
