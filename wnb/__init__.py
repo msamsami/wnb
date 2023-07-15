@@ -1,4 +1,4 @@
-__version__ = "0.1.14"
+__version__ = "0.1.15"
 __author__ = "Mehdi Samsami"
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     "ContinuousDistMixin",
     "DiscreteDistMixin",
 ]
+
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
