@@ -269,10 +269,10 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         log_joint = np.zeros((n_samples, self.n_classes_))
         for c in range(self.n_classes_):
             log_joint[:, c] = np.log(self.class_prior_[c]) + np.sum(
-                (
+                [
                     np.log(likelihood(X[:, i]))
                     for i, likelihood in enumerate(self.likelihood_params_[c])
-                ),
+                ],
                 axis=0,
             )
 
