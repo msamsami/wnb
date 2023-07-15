@@ -40,9 +40,11 @@ class DistMixin(metaclass=ABCMeta):
     _support: Union[List[float], Tuple[float, float]] = None
 
     @classmethod
-    def from_data(cls, data):
-        """Creates an instance of the class from given data.
-        Distribution parameters will be estimated from data.
+    def from_data(cls, data, **kwargs):
+        """Creates an instance of the class from given data. Distribution parameters will be estimated from data.
+
+        Args:
+            data: Input data from which distribution parameters will be estimated.
 
         Returns:
             self: An instance of the class.

@@ -32,7 +32,7 @@ class NormalDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray):
+    def from_data(cls, data: np.ndarray, **kwargs):
         return cls(mu=np.average(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
@@ -51,7 +51,7 @@ class LognormalDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray):
+    def from_data(cls, data: np.ndarray, **kwargs):
         mu_hat = np.sum(np.log(data)) / len(data)
         sigma_hat = np.sum((np.log(data) - mu_hat) ** 2) / len(data)
         return cls(mu=mu_hat, sigma=sigma_hat)
@@ -71,7 +71,7 @@ class ExponentialDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray):
+    def from_data(cls, data: np.ndarray, **kwargs):
         return cls(rate=(len(data) - 2) / np.sum(data))
 
     def pdf(self, x: float) -> float:
@@ -88,7 +88,7 @@ class UniformDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         return cls(a=np.min(data), b=np.max(data))
 
     def pdf(self, x: float) -> float:
@@ -105,7 +105,7 @@ class ParetoDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         x_m = np.min(data)
         return cls(x_m=x_m, alpha=len(data) / np.sum(np.log(data / x_m)))
 
@@ -127,7 +127,7 @@ class GammaDist(ContinuousDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         n = len(data)
         return cls(
             k=n
@@ -154,7 +154,7 @@ class BernoulliDist(DiscreteDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         return cls(
             p=((np.array(data) == 1).sum() + 1e-10) / len(data)
         )  # TODO: use alpha instead of 1e-10
@@ -172,7 +172,7 @@ class CategoricalDist(DiscreteDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         values, counts = np.unique(data, return_counts=True)
         return cls(
             prob={v: (c + 1e-10) / len(data) for v, c in zip(values, counts)}
@@ -192,7 +192,7 @@ class CategoricalDist(DiscreteDistMixin):
 #         super().__init__()
 #
 #     @classmethod
-#     def from_data(cls, data: Sequence[int]):
+#     def from_data(cls, data: Sequence[int], **kwargs):
 #         values, counts = np.unique(data, return_counts=True)
 #         return cls(n=int(np.sum(values)), prob={v: c / len(data) for v, c in zip(values, counts)})
 #
@@ -213,7 +213,7 @@ class GeometricDist(DiscreteDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         return cls(p=len(data) / np.sum(data))
 
     def pmf(self, x: int) -> float:
@@ -229,7 +229,7 @@ class PoissonDist(DiscreteDistMixin):
         super().__init__()
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, **kwargs):
         return cls(rate=np.sum(data) / len(data))
 
     def pmf(self, x: int) -> float:
