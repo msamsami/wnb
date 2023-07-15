@@ -31,7 +31,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         C: float = 1.0,
         learning_hist: bool = False
     ) -> None:
-        """Initializes an object of the class.
+        """Initializes an instance of the GaussianWNB class.
 
         Args:
             priors (Optional[Union[Sequence[float], np.ndarray]]): Prior probabilities. Defaults to None.
@@ -44,16 +44,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                                   learning iteration.
 
         """
-        self.priors = priors  # Prior probabilities of classes (n_classes x 1)
-        self.error_weights = (
-            error_weights  # Matrix of error weights (n_features x n_features)
-        )
-        self.max_iter = (
-            max_iter  # Maximum number of iterations of the learning algorithm
-        )
-        self.step_size = step_size  # Learning rate
-        self.penalty = penalty  # Regularization type ('l1' or 'l2')
-        self.C = C  # Regularization parameter
+        self.priors = priors
+        self.error_weights = error_weights
+        self.max_iter = max_iter
+        self.step_size = step_size
+        self.penalty = penalty
+        self.C = C
         self.learning_hist = learning_hist
 
     def _more_tags(self):
@@ -69,7 +65,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
-            raise ValueError("Classifier can't train when only one class is present")
+            raise ValueError("Classifier can't train when only one class is present.")
 
         X = check_array(
             array=X,
@@ -126,13 +122,13 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Check that the maximum number of iterations is a positive integer
         if not isinstance(self.max_iter, numbers.Number) or self.max_iter < 0:
             raise ValueError(
-                "Maximum number of iteration must be a positive integer; got (max_iter=%r)"
+                "Maximum number of iteration must be a positive integer; got (max_iter=%r)."
                 % self.max_iter
             )
 
     def _prepare_X_y(self, X=None, y=None, from_fit=False):
         if from_fit and y is None:
-            raise ValueError("requires y to be passed, but the target y is None")
+            raise ValueError("requires y to be passed, but the target y is None.")
 
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
@@ -194,7 +190,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         X: Union[np.ndarray, pd.DataFrame],
         y: Union[np.ndarray, pd.DataFrame, pd.Series],
     ):
-        """Fits Gaussian Binary MLD-WNB according to X and y.
+        """Fits Gaussian Binary MLD-WNB to X and y.
 
         Args:
             X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).

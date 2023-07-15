@@ -36,11 +36,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ]
         ] = None,
     ) -> None:
-        """Initializes an object of the class.
+        """Initializes an instance of the GeneralNB class.
 
         Args:
             priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
-            distributions: Names of the distributions to be used for features' likelihoods. A sequence with same length
+            distributions: Probability distributions to be used for features' likelihoods. A sequence with same length
                            of the number of features. If not specified, all likelihood will be considered Gaussian.
                            Defaults to None.
 
@@ -163,7 +163,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                     or dist in Distribution.__members__.values()
                     or (hasattr(dist, "from_data") and hasattr(dist, "__call__"))
                 ):
-                    raise ValueError(f"Distribution '{dist}' is not supported")
+                    raise ValueError(f"Distribution '{dist}' is not supported.")
 
             self.distributions_ = self.distributions
 
@@ -172,7 +172,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         X: Union[np.ndarray, pd.DataFrame],
         y: Union[np.ndarray, pd.DataFrame, pd.Series],
     ):
-        """Fits general Naive Bayes classifier according to X and y.
+        """Fits general Naive Bayes classifier to X and y.
 
         Args:
             X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).
