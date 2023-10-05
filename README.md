@@ -1,7 +1,7 @@
 # WNB: General and weighted naive Bayes classifiers
 
-![](https://img.shields.io/badge/version-v0.1.15-green)
-![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
+![](https://img.shields.io/badge/version-v0.1.16-green)
+![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 ![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 [![](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![](https://img.shields.io/pypi/dm/wnb)
@@ -34,7 +34,7 @@ of gaussian MLD-WNB.
 
 ## Install
 The easiest way to install the wnb library is by using `pip`:
-```commandline
+```
 pip install wnb
 ```
 This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. 
@@ -95,6 +95,11 @@ wnb.predict(x_test)
 To run the tests, install development requirements:
 ```
 pip install -r requirements_dev.txt
+```
+
+Or, install the package with dev extras:
+```
+pip install wnb[dev]
 ```
 
 Then, run pytest:
