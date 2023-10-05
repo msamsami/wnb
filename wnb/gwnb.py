@@ -14,6 +14,8 @@ from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import type_of_target
 
+__all__ = ["GaussianWNB", ]
+
 
 class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     """
@@ -361,7 +363,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         )
 
         # Check if the number of input features matches the data seen during fit
-        if not X.shape[1] == self.n_features_in_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 "Expected input with %d features, got %d instead."
                 % (self.n_features_in_, X.shape[1])

@@ -15,6 +15,8 @@ from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
 from .dist import AllDistributions, NonNumericDistributions
 
+__all__ = ["GeneralNB",]
+
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     """
@@ -58,7 +60,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         try:
             if self.distributions_ is not None:
                 return self.distributions_
-        except:
+        except Exception:
             return self.distributions or []
 
     def _check_inputs(self, X, y):
@@ -218,10 +220,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def __predict(self, X):
-        p_hat = self.predict_log_proba(X)
-        return np.argmax(p_hat, axis=1)
-
     def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """Performs classification on an array of test vectors X.
 
@@ -261,7 +259,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         )
 
         # Check if the number of input features matches the data seen during fit
-        if not X.shape[1] == self.n_features_in_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 "Expected input with %d features, got %d instead."
                 % (self.n_features_in_, X.shape[1])
