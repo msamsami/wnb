@@ -53,8 +53,8 @@ class DistMixin(metaclass=ABCMeta):
 
     @classmethod
     def _get_param_names(cls):
-        """Gets parameter names for the distribution instance.
-
+        """
+        Gets parameter names for the distribution instance.
         """
         init = getattr(cls.__init__, "deprecated_original", cls.__init__)
         if init is object.__init__:
@@ -97,7 +97,6 @@ class DistMixin(metaclass=ABCMeta):
 
         If support is a list, it represents a limited number of discrete values.
         If it is a tuple, it indicates a limited or unlimited range of continuous values.
-
         """
         return self._support
 
@@ -110,8 +109,6 @@ class DistMixin(metaclass=ABCMeta):
                 "Value doesn't lie within the support of the distribution",
                 RuntimeWarning,
             )
-        else:
-            pass
 
     def __repr__(self) -> str:
         return "".join(
@@ -138,8 +135,8 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
     _type = "continuous"
 
     def __init__(self, **kwargs):
-        """Initializes an instance of the continuous probability distribution with given parameters.
-
+        """
+        Initializes an instance of the continuous probability distribution with given parameters.
         """
         pass
 
@@ -168,8 +165,8 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
     _type = "discrete"
 
     def __init__(self, **kwargs):
-        """Initializes an instance of the discrete probability distribution with given parameters.
-
+        """
+        Initializes an instance of the discrete probability distribution with given parameters.
         """
         pass
 

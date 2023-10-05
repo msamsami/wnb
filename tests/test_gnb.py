@@ -71,7 +71,7 @@ def test_gnb_vs_sklearn_bernoulli():
     """
     rng = np.random.RandomState(1)
     X_ = rng.randint(2, size=(150, 100))
-    y_ = rng.randint(1, 5, size=(150, ))
+    y_ = rng.randint(1, 5, size=(150,))
 
     clf1 = GeneralNB(distributions=[D.BERNOULLI for _ in range(100)])
     clf1.fit(X_, y_)
@@ -101,18 +101,20 @@ def test_gnb_vs_sklearn_categorical():
         ["cat", "dog"],
         ["morning", "noon", "afternoon", "evening"],
         ["apple", "orange", "watermelon"],
-        ["black", "white"]
+        ["black", "white"],
     ]
     rng = np.random.RandomState(24)
     X_str_ = np.empty((150, 4)).astype("str")
     X_ = np.zeros((150, 4))
     for i, options in enumerate(categorical_values):
-        rnd_values = rng.randint(len(options), size=(150, ))
+        rnd_values = rng.randint(len(options), size=(150,))
         X_str_[:, i] = np.array(options)[rnd_values]
         X_[:, i] = rnd_values
-    y_ = rng.randint(1, 4, size=(150, ))
+    y_ = rng.randint(1, 4, size=(150,))
 
-    clf1 = GeneralNB(distributions=[D.CATEGORICAL for _ in range(len(categorical_values))])
+    clf1 = GeneralNB(
+        distributions=[D.CATEGORICAL for _ in range(len(categorical_values))]
+    )
     clf1.fit(X_str_, y_)
 
     clf2 = CategoricalNB(alpha=1e-10, force_alpha=True)

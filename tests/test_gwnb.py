@@ -79,7 +79,7 @@ def test_gwnb_priors():
     clf = GaussianWNB(priors=np.array([0.3, 0.7])).fit(X, y)
     assert_array_almost_equal(
         clf.predict_proba([[-0.1, -0.1]]),
-        np.array([[0.823571, 0.176429]]),
+        np.array([[0.82357095, 0.17642905]]),
         8,
     )
     assert_array_almost_equal(clf.class_prior_, np.array([0.3, 0.7]))

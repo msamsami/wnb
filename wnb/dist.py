@@ -1,11 +1,10 @@
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 import numpy as np
 from scipy.special import gamma
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution as D
-
 
 __all__ = [
     "NormalDist",
@@ -16,7 +15,6 @@ __all__ = [
     "GammaDist",
     "BernoulliDist",
     "CategoricalDist",
-    # 'MultinomialDist',
     "GeometricDist",
     "PoissonDist",
 ]
@@ -36,7 +34,7 @@ class NormalDist(ContinuousDistMixin):
         return cls(mu=np.average(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
-        return (1.0 / np.sqrt(2 * np.pi * self.sigma ** 2)) * np.exp(
+        return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(
             -0.5 * (((x - self.mu) / self.sigma) ** 2)
         )
 
@@ -111,7 +109,7 @@ class ParetoDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return (
-            (self.alpha * self.x_m ** self.alpha) / x ** (self.alpha + 1)
+            (self.alpha * self.x_m**self.alpha) / x ** (self.alpha + 1)
             if x >= self.x_m
             else 0.0
         )
@@ -136,12 +134,12 @@ class GammaDist(ContinuousDistMixin):
             theta=(
                 n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))
             )
-            / n ** 2,
+            / n**2,
         )
 
     def pdf(self, x: float) -> float:
         return (x ** (self.k - 1) * np.exp(-x / self.theta)) / (
-            gamma(self.k) * self.theta ** self.k
+            gamma(self.k) * self.theta**self.k
         )
 
 
@@ -159,7 +157,13 @@ class BernoulliDist(DiscreteDistMixin):
         return cls(p=((np.array(data) == 1).sum() + alpha) / len(data))
 
     def pmf(self, x: int) -> float:
-        return 0.0 if x not in self._support else self.p if x == 1 else 1 - self.p
+        if x not in self._support:
+            return 0.0
+        else:
+            if x == 1:
+                return self.p
+            else:
+                return 1 - self.p
 
 
 class CategoricalDist(DiscreteDistMixin):
@@ -178,28 +182,6 @@ class CategoricalDist(DiscreteDistMixin):
 
     def pmf(self, x: Any) -> float:
         return self.prob.get(x, 0.0)
-
-
-# class MultinomialDist(DiscreteDistMixin):
-#     name = D.MULTINOMIAL
-#
-#     def __init__(self, n: int, prob: Mapping[int, float]):
-#         self.n = n
-#         self.prob = prob
-#         self._support = [i for i in range(self.n+1)]
-#         super().__init__()
-#
-#     @classmethod
-#     def from_data(cls, data: Sequence[int], **kwargs):
-#         values, counts = np.unique(data, return_counts=True)
-#         return cls(n=int(np.sum(values)), prob={v: c / len(data) for v, c in zip(values, counts)})
-#
-#     def pmf(self, x: Sequence[int]) -> float:
-#         if sum(x) != self.n:
-#             return 0.0
-#         else:
-#             return np.math.factorial(self.n) * np.product([self.prob.get(v, 0.0)**v for v in x]) / \
-#                 np.product([np.math.factorial(v) for v in x])
 
 
 class GeometricDist(DiscreteDistMixin):
@@ -231,7 +213,7 @@ class PoissonDist(DiscreteDistMixin):
         return cls(rate=np.sum(data) / len(data))
 
     def pmf(self, x: int) -> float:
-        return (np.exp(-self.rate) * self.rate ** x) / np.math.factorial(x)
+        return (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
 
 
 AllDistributions = {eval(cls).name: eval(cls) for cls in __all__}
