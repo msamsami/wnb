@@ -53,9 +53,7 @@ class DistMixin(metaclass=ABCMeta):
 
     @classmethod
     def _get_param_names(cls):
-        """Gets parameter names for the distribution instance.
-
-        """
+        """Gets parameter names for the distribution instance."""
         init = getattr(cls.__init__, "deprecated_original", cls.__init__)
         if init is object.__init__:
             return []
@@ -138,9 +136,7 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
     _type = "continuous"
 
     def __init__(self, **kwargs):
-        """Initializes an instance of the continuous probability distribution with given parameters.
-
-        """
+        """Initializes an instance of the continuous probability distribution with given parameters."""
         pass
 
     def pdf(self, x: float) -> float:
@@ -168,9 +164,7 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
     _type = "discrete"
 
     def __init__(self, **kwargs):
-        """Initializes an instance of the discrete probability distribution with given parameters.
-
-        """
+        """Initializes an instance of the discrete probability distribution with given parameters."""
         pass
 
     def pmf(self, x: float) -> float:

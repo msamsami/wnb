@@ -36,7 +36,7 @@ class NormalDist(ContinuousDistMixin):
         return cls(mu=np.average(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
-        return (1.0 / np.sqrt(2 * np.pi * self.sigma ** 2)) * np.exp(
+        return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(
             -0.5 * (((x - self.mu) / self.sigma) ** 2)
         )
 
@@ -111,7 +111,7 @@ class ParetoDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return (
-            (self.alpha * self.x_m ** self.alpha) / x ** (self.alpha + 1)
+            (self.alpha * self.x_m**self.alpha) / x ** (self.alpha + 1)
             if x >= self.x_m
             else 0.0
         )
@@ -136,12 +136,12 @@ class GammaDist(ContinuousDistMixin):
             theta=(
                 n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))
             )
-            / n ** 2,
+            / n**2,
         )
 
     def pdf(self, x: float) -> float:
         return (x ** (self.k - 1) * np.exp(-x / self.theta)) / (
-            gamma(self.k) * self.theta ** self.k
+            gamma(self.k) * self.theta**self.k
         )
 
 
@@ -231,7 +231,7 @@ class PoissonDist(DiscreteDistMixin):
         return cls(rate=np.sum(data) / len(data))
 
     def pmf(self, x: int) -> float:
-        return (np.exp(-self.rate) * self.rate ** x) / np.math.factorial(x)
+        return (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
 
 
 AllDistributions = {eval(cls).name: eval(cls) for cls in __all__}
