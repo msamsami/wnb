@@ -14,7 +14,9 @@ from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import type_of_target
 
-__all__ = ["GaussianWNB", ]
+__all__ = [
+    "GaussianWNB",
+]
 
 
 class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):

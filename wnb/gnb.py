@@ -15,7 +15,9 @@ from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
 from .dist import AllDistributions, NonNumericDistributions
 
-__all__ = ["GeneralNB",]
+__all__ = [
+    "GeneralNB",
+]
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
