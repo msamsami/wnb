@@ -25,6 +25,15 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
     """
 
+    feature_names_in_: np.ndarray
+    n_features_in_: int
+    classes_: np.ndarray
+    class_prior_: np.ndarray
+    class_count_: np.ndarray
+    n_classes_: int
+    distributions_: list
+    likelihood_params_: dict
+
     def __init__(
         self,
         *,
@@ -89,7 +98,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             raise ValueError("Complex data not supported")
 
         # Check that the number of samples and labels are compatible
-        if self.__n_samples != y.shape[0]:
+        if X.shape[0] != y.shape[0]:
             raise ValueError(
                 "X.shape[0]=%d and y.shape[0]=%d are incompatible."
                 % (X.shape[0], y.shape[0])
@@ -123,15 +132,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y = y.flatten()
 
         output = tuple(item for item in [X, y] if item is not None)
-        output = output[0] if len(output) == 1 else output
-        return output
+        return output[0] if len(output) == 1 else output
 
-    def _prepare_parameters(self, X, y):
+    def _prepare_parameters(self):
         # Set priors if not specified
         if self.priors is None:
-            _, class_count_ = np.unique(y, return_counts=True)
             self.class_prior_ = (
-                class_count_ / class_count_.sum()
+                self.class_count_ / self.class_count_.sum()
             )  # Calculate empirical prior probabilities
 
         else:
@@ -190,22 +197,20 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        self.classes_, y_ = np.unique(
-            y, return_inverse=True
-        )  # Unique class labels and their indices
+        self.classes_, y_, self.class_count_ = np.unique(
+            y, return_counts=True, return_inverse=True
+        )  # Unique class labels, their indices, and class counts
         self.n_classes_ = len(self.classes_)  # Number of classes
 
-        X, y = self._prepare_X_y(X, y)
+        self._check_n_features(X=X, reset=True)
+        self._check_feature_names(X=X, reset=True)
 
-        (
-            self.__n_samples,
-            self.n_features_in_,
-        ) = X.shape  # Number of samples and features
+        X, y = self._prepare_X_y(X, y)
 
         self._check_inputs(X, y)
 
         y = y_
-        self._prepare_parameters(X, y)
+        self._prepare_parameters()
 
         self.likelihood_params_ = {
             c: [
