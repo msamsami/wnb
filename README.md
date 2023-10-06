@@ -78,7 +78,7 @@ from wnb import GaussianWNB
 
 2. Initialize a classifier
 ```python
-wnb = GaussianWNB(step_size=1e-2, max_iter=25)
+wnb = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
 ```
 
 3. Fit the classifier to a training set
@@ -105,4 +105,18 @@ pip install wnb[dev]
 Then, run pytest:
 ```
 pytest
+```
+
+## Citation
+If you utilize this repository, please consider citing it with:
+
+```
+@misc{wnb,
+  author = {Mehdi Samsami},
+  title = {WNB: General and weighted naive Bayes classifiers},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/msamsami/weighted-naive-bayes}},
+}
 ```
