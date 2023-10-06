@@ -9,6 +9,7 @@ from scipy.special import logsumexp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_array, as_float_array
+from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
@@ -65,7 +66,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.alpha = alpha
 
     def _more_tags(self):
-        return {"multilabel": True, "requires_y": True}
+        return {"requires_y": True}
 
     def _get_distributions(self):
         try:
@@ -75,6 +76,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             return self.distributions or []
 
     def _check_inputs(self, X, y):
+        # Check if the targets are suitable for classification
+        check_classification_targets(y)
+
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
@@ -104,7 +108,10 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 % (X.shape[0], y.shape[0])
             )
 
-    def _prepare_X_y(self, X=None, y=None):
+    def _prepare_X_y(self, X=None, y=None, from_fit=False):
+        if from_fit and y is None:
+            raise ValueError("requires y to be passed, but the target y is None.")
+
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
@@ -197,15 +204,15 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
+        self._check_n_features(X=X, reset=True)
+        self._check_feature_names(X=X, reset=True)
+
+        X, y = self._prepare_X_y(X, y, from_fit=True)
+
         self.classes_, y_, self.class_count_ = np.unique(
             y, return_counts=True, return_inverse=True
         )  # Unique class labels, their indices, and class counts
         self.n_classes_ = len(self.classes_)  # Number of classes
-
-        self._check_n_features(X=X, reset=True)
-        self._check_feature_names(X=X, reset=True)
-
-        X, y = self._prepare_X_y(X, y)
 
         self._check_inputs(X, y)
 
