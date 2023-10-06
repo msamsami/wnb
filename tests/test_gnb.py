@@ -137,7 +137,7 @@ def test_gnb_estimator():
     """
     Test whether GeneralNB estimator adheres to scikit-learn conventions.
     """
-    # check_estimator(GeneralNB())
+    check_estimator(GeneralNB())
     assert is_classifier(GeneralNB)
 
 

@@ -9,6 +9,7 @@ from scipy.special import logsumexp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_array, as_float_array
+from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
@@ -24,6 +25,15 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     """
     A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
     """
+
+    feature_names_in_: np.ndarray
+    n_features_in_: int
+    classes_: np.ndarray
+    class_prior_: np.ndarray
+    class_count_: np.ndarray
+    n_classes_: int
+    distributions_: list
+    likelihood_params_: dict
 
     def __init__(
         self,
@@ -56,7 +66,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.alpha = alpha
 
     def _more_tags(self):
-        return {"multilabel": True, "requires_y": True}
+        return {"requires_y": True}
 
     def _get_distributions(self):
         try:
@@ -66,6 +76,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             return self.distributions or []
 
     def _check_inputs(self, X, y):
+        # Check if the targets are suitable for classification
+        check_classification_targets(y)
+
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
@@ -89,13 +102,16 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             raise ValueError("Complex data not supported")
 
         # Check that the number of samples and labels are compatible
-        if self.__n_samples != y.shape[0]:
+        if X.shape[0] != y.shape[0]:
             raise ValueError(
                 "X.shape[0]=%d and y.shape[0]=%d are incompatible."
                 % (X.shape[0], y.shape[0])
             )
 
-    def _prepare_X_y(self, X=None, y=None):
+    def _prepare_X_y(self, X=None, y=None, from_fit=False):
+        if from_fit and y is None:
+            raise ValueError("requires y to be passed, but the target y is None.")
+
         if X is not None:
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
@@ -123,15 +139,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y = y.flatten()
 
         output = tuple(item for item in [X, y] if item is not None)
-        output = output[0] if len(output) == 1 else output
-        return output
+        return output[0] if len(output) == 1 else output
 
-    def _prepare_parameters(self, X, y):
+    def _prepare_parameters(self):
         # Set priors if not specified
         if self.priors is None:
-            _, class_count_ = np.unique(y, return_counts=True)
             self.class_prior_ = (
-                class_count_ / class_count_.sum()
+                self.class_count_ / self.class_count_.sum()
             )  # Calculate empirical prior probabilities
 
         else:
@@ -190,22 +204,20 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
-        self.classes_, y_ = np.unique(
-            y, return_inverse=True
-        )  # Unique class labels and their indices
+        self._check_n_features(X=X, reset=True)
+        self._check_feature_names(X=X, reset=True)
+
+        X, y = self._prepare_X_y(X, y, from_fit=True)
+
+        self.classes_, y_, self.class_count_ = np.unique(
+            y, return_counts=True, return_inverse=True
+        )  # Unique class labels, their indices, and class counts
         self.n_classes_ = len(self.classes_)  # Number of classes
-
-        X, y = self._prepare_X_y(X, y)
-
-        (
-            self.__n_samples,
-            self.n_features_in_,
-        ) = X.shape  # Number of samples and features
 
         self._check_inputs(X, y)
 
         y = y_
-        self._prepare_parameters(X, y)
+        self._prepare_parameters()
 
         self.likelihood_params_ = {
             c: [

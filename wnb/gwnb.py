@@ -12,7 +12,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.multiclass import type_of_target
+from sklearn.utils.multiclass import type_of_target, check_classification_targets
 
 __all__ = [
     "GaussianWNB",
@@ -23,6 +23,20 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     """
     Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
     """
+
+    feature_names_in_: np.ndarray
+    n_features_in_: int
+    classes_: np.ndarray
+    class_prior_: np.ndarray
+    class_count_: np.ndarray
+    n_classes_: int
+    error_weights_: np.ndarray
+    theta_: np.ndarray
+    std_: np.ndarray
+    var_: np.ndarray
+    coef_: np.ndarray
+    cost_hist_: np.ndarray
+    n_iter_: int
 
     def __init__(
         self,
@@ -60,6 +74,9 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         return {"binary_only": True, "requires_y": True}
 
     def _check_inputs(self, X, y):
+        # Check if the targets are suitable for classification
+        check_classification_targets(y)
+
         # Check that the dataset has only two unique labels
         if type_of_target(y) != "binary":
             warnings.warn(
@@ -157,24 +174,23 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y = y.flatten()
 
         output = tuple(item for item in [X, y] if item is not None)
-        output = output[0] if len(output) == 1 else output
-        return output
+        return output[0] if len(output) == 1 else output
 
     def _prepare_parameters(self, X, y):
         # Calculate mean and standard deviation of features for each class
         for c in range(self.n_classes_):
-            self.mu_[:, c] = np.mean(
+            self.theta_[:, c] = np.mean(
                 X[y == c, :], axis=0
             )  # Calculate mean of features for class c
             self.std_[:, c] = np.std(
                 X[y == c, :], axis=0
             )  # Calculate std of features for class c
+        self.var_ = np.square(self.std_)  # Calculate variance of features using std
 
         # Update if no priors is provided
         if self.priors is None:
-            _, class_count_ = np.unique(y, return_counts=True)
             self.class_prior_ = (
-                class_count_ / class_count_.sum()
+                self.class_count_ / self.class_count_.sum()
             )  # Calculate empirical prior probabilities
         else:
             self.class_prior_ = self.priors
@@ -205,32 +221,36 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns:
             self: The instance itself.
         """
+        self._check_n_features(X=X, reset=True)
+        self._check_feature_names(X=X, reset=True)
+
         X, y = self._prepare_X_y(X, y, from_fit=True)
 
-        self.classes_, y_ = np.unique(
-            y, return_inverse=True
-        )  # Unique class labels and their indices
+        self.classes_, y_, self.class_count_ = np.unique(
+            y, return_counts=True, return_inverse=True
+        )  # Unique class labels, their indices, and class counts
         self.n_classes_ = len(self.classes_)  # Number of classes
-        (
-            self.__n_samples,
-            self.n_features_in_,
-        ) = X.shape  # Number of samples and features
+
+        self.__n_samples = X.shape[0]  # Number of samples (for internal use)
 
         self._check_inputs(X, y)
         y = y_
 
-        self.mu_ = np.zeros(
+        self.theta_ = np.zeros(
             (self.n_features_in_, self.n_classes_)
-        )  # Mean of features (n_features x 1)
+        )  # Mean of each feature per class (n_features x n_classes)
         self.std_ = np.zeros(
             (self.n_features_in_, self.n_classes_)
-        )  # Standard deviation of features (n_features x 1)
+        )  # Standard deviation of each feature per class (n_features x n_classes)
+        self.var_ = np.zeros(
+            (self.n_features_in_, self.n_classes_)
+        )  # Variance of each feature per class (n_features x n_classes)
         self.coef_ = np.ones(
             (self.n_features_in_,)
         )  # WNB coefficients (n_features x 1)
         self.cost_hist_ = np.array(
             [np.nan for _ in range(self.max_iter)]
-        )  # To store cost value in each iteration
+        )  # Cost value of each iteration
 
         self._prepare_parameters(X, y)
 
@@ -257,6 +277,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Update weights
             self.coef_ = self.coef_ - self.step_size * _grad
 
+        self.n_iter_ += 1
         self.cost_hist_ = None if not self.learning_hist else self.cost_hist_
 
         return self
@@ -272,9 +293,11 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 x = X[i, :]
                 for j in range(self.n_features_in_):
                     _sum += self.coef_[j] * (
-                        np.log(1e-20 + norm.pdf(x[j], self.mu_[j, 1], self.std_[j, 1]))
+                        np.log(
+                            1e-20 + norm.pdf(x[j], self.theta_[j, 1], self.std_[j, 1])
+                        )
                         - np.log(
-                            1e-20 + norm.pdf(x[j], self.mu_[j, 0], self.std_[j, 0])
+                            1e-20 + norm.pdf(x[j], self.theta_[j, 0], self.std_[j, 0])
                         )
                     )
                 _cost += _lambda[i] * _sum
@@ -292,7 +315,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _grad += (
             0.5
             * (
-                (X - np.repeat(self.mu_[:, 0].reshape(1, -1), self.__n_samples, axis=0))
+                (
+                    X
+                    - np.repeat(
+                        self.theta_[:, 0].reshape(1, -1), self.__n_samples, axis=0
+                    )
+                )
                 / (np.repeat(self.std_[:, 0].reshape(1, -1), self.__n_samples, axis=0))
             )
             ** 2
@@ -300,7 +328,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _grad -= (
             0.5
             * (
-                (X - np.repeat(self.mu_[:, 1].reshape(1, -1), self.__n_samples, axis=0))
+                (
+                    X
+                    - np.repeat(
+                        self.theta_[:, 1].reshape(1, -1), self.__n_samples, axis=0
+                    )
+                )
                 / (np.repeat(self.std_[:, 1].reshape(1, -1), self.__n_samples, axis=0))
             )
             ** 2
@@ -320,8 +353,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             _log_p = np.array(
                 [
                     np.log(self.std_[j, 0] / self.std_[j, 1])
-                    + 0.5 * ((x[j] - self.mu_[j, 0]) / self.std_[j, 0]) ** 2
-                    - 0.5 * ((x[j] - self.mu_[j, 1]) / self.std_[j, 1]) ** 2
+                    + 0.5 * ((x[j] - self.theta_[j, 0]) / self.std_[j, 0]) ** 2
+                    - 0.5 * ((x[j] - self.theta_[j, 1]) / self.std_[j, 1]) ** 2
                     for j in range(self.n_features_in_)
                 ]
             )
@@ -379,11 +412,11 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         w_reshaped = np.tile(self.coef_.reshape(-1, 1), (1, self.n_classes_))
         term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std_)))
         var_inv = np.multiply(w_reshaped, 1.0 / np.multiply(self.std_, self.std_))
-        mu_by_var = np.multiply(self.mu_, var_inv)
+        mu_by_var = np.multiply(self.theta_, var_inv)
         term2 = -0.5 * (
             np.matmul(np.multiply(X, X), var_inv)
             - 2.0 * np.matmul(X, mu_by_var)
-            + np.sum(self.mu_.conj() * mu_by_var, axis=0)
+            + np.sum(self.theta_.conj() * mu_by_var, axis=0)
         )
         log_proba = log_priors + term1 + term2
 
