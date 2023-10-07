@@ -1,6 +1,6 @@
 # WNB: General and weighted naive Bayes classifiers
 
-![](https://img.shields.io/badge/version-v0.1.18-green)
+![](https://img.shields.io/badge/version-v0.1.19-green)
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 ![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 [![](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
@@ -78,7 +78,7 @@ from wnb import GaussianWNB
 
 2. Initialize a classifier
 ```python
-wnb = GaussianWNB(step_size=1e-2, max_iter=25)
+wnb = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
 ```
 
 3. Fit the classifier to a training set
@@ -105,4 +105,18 @@ pip install wnb[dev]
 Then, run pytest:
 ```
 pytest
+```
+
+## Citation
+If you utilize this repository, please consider citing it with:
+
+```
+@misc{wnb,
+  author = {Mohammd Mehdi Samsami},
+  title = {WNB: General and weighted naive Bayes classifiers},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/msamsami/weighted-naive-bayes}},
+}
 ```
