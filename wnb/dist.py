@@ -53,13 +53,12 @@ class LognormalDist(ContinuousDistMixin):
 
     @classmethod
     def from_data(cls, data: np.ndarray, **kwargs):
-        mu_hat = np.sum(np.log(data)) / len(data)
-        sigma_hat = np.sum((np.log(data) - mu_hat) ** 2) / len(data)
-        return cls(mu=mu_hat, sigma=sigma_hat)
+        log_data = np.log(data)
+        return cls(mu=np.average(log_data), sigma=np.std(log_data))
 
     def pdf(self, x: float) -> float:
-        return (1.0 / (x * np.sigma * np.sqrt(2 * np.pi))) * np.exp(
-            -0.5 * ((np.log(x - self.mu) / self.sigma) ** 2)
+        return (1.0 / (x * self.sigma * np.sqrt(2 * np.pi))) * np.exp(
+            -0.5 * ((np.log(x) - self.mu) / self.sigma) ** 2
         )
 
 
@@ -81,6 +80,7 @@ class ExponentialDist(ContinuousDistMixin):
 
 class UniformDist(ContinuousDistMixin):
     name = D.UNIFORM
+    _support = None
 
     def __init__(self, a: float, b: float):
         self.a = a
@@ -98,6 +98,7 @@ class UniformDist(ContinuousDistMixin):
 
 class ParetoDist(ContinuousDistMixin):
     name = D.PARETO
+    _support = None
 
     def __init__(self, x_m: float, alpha: float):
         self.x_m = x_m
@@ -212,6 +213,7 @@ class BernoulliDist(DiscreteDistMixin):
 
 class CategoricalDist(DiscreteDistMixin):
     name = D.CATEGORICAL
+    _support = None
 
     def __init__(self, prob: Mapping[Any, float]):
         self.prob = prob
