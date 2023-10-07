@@ -1,6 +1,6 @@
 # WNB: General and weighted naive Bayes classifiers
 
-![](https://img.shields.io/badge/version-v0.1.19-green)
+![](https://img.shields.io/badge/version-v0.1.20-green)
 ![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 ![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 [![](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
@@ -32,7 +32,7 @@ Difference WNB (MLD-WNB) is a novel weighting approach that optimizes the weight
 rule and includes hyperparameters for controlling the model's bias. **WNB** library provides an efficient implementation
 of gaussian MLD-WNB.
 
-## Install
+## Installation
 The easiest way to install the wnb library is by using `pip`:
 ```
 pip install wnb
