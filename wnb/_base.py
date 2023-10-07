@@ -36,8 +36,8 @@ class DistMixin(metaclass=ABCMeta):
     Mixin class for probability distributions in wnb.
     """
 
-    name: Union[str, Distribution] = None
-    _support: Union[List[float], Tuple[float, float]] = None
+    name: Union[str, Distribution]
+    _support: Union[List[float], Tuple[float, float]]
 
     @classmethod
     def from_data(cls, data, **kwargs):

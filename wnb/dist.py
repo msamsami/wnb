@@ -1,7 +1,7 @@
 from typing import Any, Mapping
 
 import numpy as np
-from scipy.special import gamma
+from scipy.special import gamma, beta
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution as D
@@ -13,6 +13,7 @@ __all__ = [
     "UniformDist",
     "ParetoDist",
     "GammaDist",
+    "BetaDist",
     "BernoulliDist",
     "CategoricalDist",
     "GeometricDist",
@@ -140,6 +141,31 @@ class GammaDist(ContinuousDistMixin):
     def pdf(self, x: float) -> float:
         return (x ** (self.k - 1) * np.exp(-x / self.theta)) / (
             gamma(self.k) * self.theta**self.k
+        )
+
+
+class BetaDist(ContinuousDistMixin):
+    name = D.BETA
+    _support = (0, 1)
+
+    def __init__(self, alpha: float, beta: float):
+        self.alpha = alpha
+        self.beta = beta
+        super().__init__()
+
+    @classmethod
+    def from_data(cls, data, **kwargs):
+        mu_hat = np.average(data)
+        var_hat = np.var(data, ddof=1)
+        multiplied_term = (mu_hat * (1 - mu_hat) / var_hat) - 1
+        return cls(
+            alpha=mu_hat * multiplied_term,
+            beta=(1 - mu_hat) * multiplied_term,
+        )
+
+    def pdf(self, x: float) -> float:
+        return ((x ** (self.alpha - 1)) * (1 - x) ** (self.beta - 1)) / beta(
+            self.alpha, self.beta
         )
 
 
