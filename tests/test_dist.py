@@ -1,7 +1,7 @@
 import numpy as np
 
 import pytest
-from scipy.stats import norm, lognorm, expon, uniform, pareto
+from scipy.stats import norm, lognorm, expon, uniform, pareto, gamma, beta, chi2
 from sklearn.utils._testing import assert_array_almost_equal
 
 from wnb import Distribution as D
@@ -12,6 +12,9 @@ from wnb.dist import (
     ExponentialDist,
     UniformDist,
     ParetoDist,
+    GammaDist,
+    BetaDist,
+    ChiSquaredDist,
 )
 
 out_of_support_warn_msg = "Value doesn't lie within the support of the distribution"
@@ -137,3 +140,66 @@ def test_pareto_out_of_support_data():
 
     with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
         pareto_wnb(-5)
+
+
+def test_gamma_pdf():
+    """
+    Test whether pdf method of GammaDist returns the same result as pdf method of scipy.stats.gamma.
+    """
+    gamma_wnb = GammaDist(k=1, theta=3)
+    gamma_scipy = gamma(a=1, scale=3)
+    X = np.random.uniform(0, 100, size=10000)
+    assert_array_almost_equal(gamma_wnb(X), gamma_scipy.pdf(X), decimal=10)
+
+
+def test_gamma_out_of_support_data():
+    """
+    Test whether a warning is issued when calling GammaDist with out-of-support data.
+    """
+    X = np.random.gamma(shape=1, scale=3, size=1000)
+    gamma_wnb = GammaDist.from_data(X)
+
+    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
+        gamma_wnb(-5)
+
+
+def test_beta_pdf():
+    """
+    Test whether pdf method of BetaDist returns the same result as pdf method of scipy.stats.beta.
+    """
+    beta_wnb = BetaDist(alpha=1, beta=5)
+    beta_scipy = beta(a=1, b=5)
+    X = np.random.uniform(0.01, 0.99, size=10000)
+    assert_array_almost_equal(beta_wnb(X), beta_scipy.pdf(X), decimal=10)
+
+
+def test_beta_out_of_support_data():
+    """
+    Test whether a warning is issued when calling BetaDist with out-of-support data.
+    """
+    X = np.random.beta(a=1, b=5, size=1000)
+    beta_wnb = BetaDist.from_data(X)
+
+    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
+        beta_wnb(1.01)
+
+
+def test_chi2_pdf():
+    """
+    Test whether pdf method of ChiSquaredDist returns the same result as pdf method of scipy.stats.chi2.
+    """
+    chi2_wnb = ChiSquaredDist(k=4)
+    chi2_scipy = chi2(df=4)
+    X = np.random.uniform(0, 100, size=10000)
+    assert_array_almost_equal(chi2_wnb(X), chi2_scipy.pdf(X), decimal=10)
+
+
+def test_chi2_out_of_support_data():
+    """
+    Test whether a warning is issued when calling ChiSquaredDist with out-of-support data.
+    """
+    X = np.random.chisquare(df=4, size=1000)
+    chi2_wnb = ChiSquaredDist.from_data(X)
+
+    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
+        chi2_wnb(-5)
