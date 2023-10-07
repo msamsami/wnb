@@ -1,7 +1,7 @@
 import numpy as np
 
 import pytest
-from scipy.stats import norm, lognorm, expon, uniform
+from scipy.stats import norm, lognorm, expon, uniform, pareto
 from sklearn.utils._testing import assert_array_almost_equal
 
 from wnb import Distribution as D
@@ -11,6 +11,7 @@ from wnb.dist import (
     LognormalDist,
     ExponentialDist,
     UniformDist,
+    ParetoDist,
 )
 
 out_of_support_warn_msg = "Value doesn't lie within the support of the distribution"
@@ -115,3 +116,24 @@ def test_uniform_out_of_support_data():
 
     with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
         uniform_wnb(3)
+
+
+def test_pareto_pdf():
+    """
+    Test whether pdf method of ParetoDist returns the same result as pdf method of scipy.stats.pareto.
+    """
+    pareto_wnb = ParetoDist(x_m=5, alpha=0.5)
+    pareto_scipy = pareto(b=0.5, scale=5)
+    X = np.random.uniform(0, 100, size=10000)
+    assert_array_almost_equal(pareto_wnb(X), pareto_scipy.pdf(X), decimal=10)
+
+
+def test_pareto_out_of_support_data():
+    """
+    Test whether a warning is issued when calling ParetoDist with out-of-support data.
+    """
+    X = np.random.pareto(a=0.5, size=1000)
+    pareto_wnb = ParetoDist.from_data(X)
+
+    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
+        pareto_wnb(-5)
