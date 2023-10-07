@@ -2,6 +2,7 @@ from typing import Any, Mapping
 
 import numpy as np
 from scipy.special import gamma, beta
+from scipy.stats import chi2
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution as D
@@ -167,6 +168,22 @@ class BetaDist(ContinuousDistMixin):
         return ((x ** (self.alpha - 1)) * (1 - x) ** (self.beta - 1)) / beta(
             self.alpha, self.beta
         )
+
+
+class ChiSquaredDist(ContinuousDistMixin):
+    name = D.CHI_SQUARED
+    _support = (0, np.inf)
+
+    def __init__(self, k: int):
+        self.k = k
+        super().__init__()
+
+    @classmethod
+    def from_data(cls, data, **kwargs):
+        return cls(k=round(np.average(data)))
+
+    def pdf(self, x: float) -> float:
+        return chi2.pdf(x, self.k)
 
 
 class BernoulliDist(DiscreteDistMixin):
