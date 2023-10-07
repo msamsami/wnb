@@ -58,7 +58,7 @@ class LognormalDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return (1.0 / (x * self.sigma * np.sqrt(2 * np.pi))) * np.exp(
-            -0.5 * ((np.log(x - self.mu) / self.sigma) ** 2)
+            -0.5 * ((np.log(x) - self.mu) / self.sigma) ** 2
         )
 
 
