@@ -15,6 +15,7 @@ __all__ = [
     "ParetoDist",
     "GammaDist",
     "BetaDist",
+    "ChiSquaredDist",
     "BernoulliDist",
     "CategoricalDist",
     "GeometricDist",
