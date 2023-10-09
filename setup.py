@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="wnb",
-    version="0.1.20",
+    version="0.2.0",
     description="Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.",
     keywords=["python", "bayes", "naivebayes", "classifier", "probabilistic"],
     author="Mehdi Samsami",
@@ -33,6 +33,6 @@ setup(
         "License :: OSI Approved :: BSD License",
     ],
     python_requires=">=3.7",
-    install_requires=["pandas==1.4.1", "scikit-learn>=1.0.2"],
+    install_requires=["pandas>=1.4.1", "scipy>=1.8.0", "scikit-learn>=1.0.2"],
     extras_require={"dev": ["pytest==7.3.1", "black>=23.9.0"]},
 )

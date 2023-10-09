@@ -205,10 +205,7 @@ class BernoulliDist(DiscreteDistMixin):
         if x not in self._support:
             return 0.0
         else:
-            if x == 1:
-                return self.p
-            else:
-                return 1 - self.p
+            return self.p if x == 1 else 1 - self.p
 
 
 class CategoricalDist(DiscreteDistMixin):
@@ -243,7 +240,11 @@ class GeometricDist(DiscreteDistMixin):
         return cls(p=len(data) / np.sum(data))
 
     def pmf(self, x: int) -> float:
-        return self.p * (1 - self.p) ** (x - 1) if x >= 1 else 0.0
+        return (
+            self.p * (1 - self.p) ** (x - 1)
+            if x >= self._support[0] and x - int(x) == 0
+            else 0.0
+        )
 
 
 class PoissonDist(DiscreteDistMixin):
@@ -259,7 +260,11 @@ class PoissonDist(DiscreteDistMixin):
         return cls(rate=np.sum(data) / len(data))
 
     def pmf(self, x: int) -> float:
-        return (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
+        return (
+            (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
+            if x >= self._support[0] and x - int(x) == 0
+            else 0.0
+        )
 
 
 AllDistributions = {eval(cls).name: eval(cls) for cls in __all__}
