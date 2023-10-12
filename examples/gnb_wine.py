@@ -5,7 +5,7 @@ from sklearn.naive_bayes import GaussianNB
 from wnb import GeneralNB, Distribution as D
 
 
-# Load the breast cancer wisconsin dataset
+# Load the wine dataset
 wine = load_wine()
 X = wine["data"]
 y = wine["target"]
