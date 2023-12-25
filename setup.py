@@ -2,10 +2,14 @@ import codecs
 from os import path
 from setuptools import setup, find_packages
 
+# Get __version__
+with open(path.join("wnb", "__init__.py")) as f:
+    exec(f.readlines(1)[0])
+
 
 setup(
     name="wnb",
-    version="0.2.0",
+    version=__version__,
     description="Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.",
     keywords=["python", "bayes", "naivebayes", "classifier", "probabilistic"],
     author="Mehdi Samsami",
