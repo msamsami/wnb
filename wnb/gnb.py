@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Union, Optional, Sequence, Type
+from typing import Optional, Sequence
 import warnings
 
 import numpy as np
@@ -12,8 +12,8 @@ from sklearn.utils import check_array, as_float_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
-from ._base import ContinuousDistMixin, DiscreteDistMixin
 from ._enums import Distribution
+from ._typing import MatrixLike, ArrayLike, Float, DistibutionLike
 from .dist import AllDistributions, NonNumericDistributions
 
 __all__ = [
@@ -22,45 +22,64 @@ __all__ = [
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
-    """
-    A general Naive Bayes classifier that allows you to specify the likelihood distribution for each feature.
+    """An extendable Naive Bayes classifier that supports distinct likelihood distributions for individual features,
+    enabling more tailored modeling beyond the standard single-distribution approaches such as GaussianNB and BernoulliNB.
+
+    Parameters
+    ----------
+    priors : array-like of shape (n_classes,), default=None
+        Prior probabilities of the classes. If specified, the priors are not
+        adjusted according to the data.
+    distributions : sequence of distribution-like of length n_features, default=None
+        Probability distributions to be used for features' likelihoods. If not specified,
+        all likelihoods will be considered Gaussian.
+    alpha : float, default=1e-10
+        Additive (Laplace/Lidstone) smoothing parameter. Set alpha=0 for no smoothing.
+
+    Attributes
+    ----------
+    class_count_ : ndarray of shape (n_classes,)
+        Number of training samples observed in each class.
+
+    class_prior_ : ndarray of shape (n_classes,)
+        Probability of each class.
+
+    classes_ : ndarray of shape (n_classes,)
+        Class labels known to the classifier.
+
+    n_classes_ : int
+        Number of classes seen during :term:`fit`.
+
+    n_features_in_ : int
+        Number of features seen during :term:`fit`.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during :term:`fit`. Defined only when `X`
+        has feature names that are all strings.
+
+    distributions_ : list of length n_features_in_
+        List of likelihood distributions used to fit to features.
+
+    likelihood_params_ : dict
+        A mapping from class labels to their fitted likelihood distributions.
     """
 
-    feature_names_in_: np.ndarray
-    n_features_in_: int
-    classes_: np.ndarray
-    class_prior_: np.ndarray
     class_count_: np.ndarray
+    class_prior_: np.ndarray
+    classes_: np.ndarray
     n_classes_: int
+    n_features_in_: int
+    feature_names_in_: np.ndarray
     distributions_: list
     likelihood_params_: dict
 
     def __init__(
         self,
         *,
-        priors: Optional[Union[Sequence[float], np.ndarray]] = None,
-        distributions: Optional[
-            Sequence[
-                Union[
-                    str,
-                    Distribution,
-                    Type[ContinuousDistMixin],
-                    Type[DiscreteDistMixin],
-                ]
-            ]
-        ] = None,
-        alpha: float = 1e-10,
+        priors: Optional[ArrayLike] = None,
+        distributions: Optional[Sequence[DistibutionLike]] = None,
+        alpha: Float = 1e-10,
     ) -> None:
-        """Initializes an instance of the GeneralNB class.
-
-        Args:
-            priors (Optional[Union[list, np.ndarray]]): Prior probabilities. Defaults to None.
-            distributions: Probability distributions to be used for features' likelihoods. A sequence with same length
-                           of the number of features. If not specified, all likelihood will be considered Gaussian.
-                           Defaults to None.
-            alpha (float): Additive (Laplace/Lidstone) smoothing parameter (set alpha=0 for no smoothing). Defaults to 1e-10.
-
-        """
         self.priors = priors
         self.distributions = distributions
         self.alpha = alpha
@@ -188,21 +207,22 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             self.distributions_ = self.distributions
 
-    def fit(
-        self,
-        X: Union[np.ndarray, pd.DataFrame],
-        y: Union[np.ndarray, pd.DataFrame, pd.Series],
-    ):
-        """Fits general Naive Bayes classifier to X and y.
+    def fit(self, X: MatrixLike, y: ArrayLike):
+        """Fits general Naive Bayes classifier according to X, y.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).
-                                                 Training vectors, where `n_samples` is the number of samples
-                                                 and `n_features` is the number of features.
-            y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). Target values.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training vectors, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
 
-        Returns:
-            self: The instance itself.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
         """
         self._check_n_features(X=X, reset=True)
         self._check_feature_names(X=X, reset=True)
@@ -234,29 +254,37 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+    def predict(self, X: MatrixLike) -> np.ndarray:
         """Performs classification on an array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: ndarray of shape (n_samples,). Predicted target values for X.
+        Returns
+        -------
+        C : ndarray of shape (n_samples,)
+            Predicted target values for X.
         """
         p_hat = self.predict_log_proba(X)
         y_hat = self.classes_[np.argmax(p_hat, axis=1)]
         return y_hat
 
-    def predict_log_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
-        """Returns log-probability estimates for the test vector X.
+    def predict_log_proba(self, X: MatrixLike) -> np.ndarray:
+        """Returns log-probability estimates for the array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: Array-like of shape (n_samples, n_classes).
-                        The log-probability of the samples for each class in the model.
-                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        Returns
+        -------
+        C : array-like of shape (n_samples, n_classes)
+            Returns the log-probability of the samples for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
         """
         # Check is fit had been called
         check_is_fitted(self)
@@ -300,15 +328,19 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         )
         return log_proba
 
-    def predict_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
-        """Returns probability estimates for the test vector X.
+    def predict_proba(self, X: MatrixLike) -> np.ndarray:
+        """Returns probability estimates for the array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: Array-like of shape (n_samples, n_classes).
-                        The probability of the samples for each class in the model.
-                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        Returns
+        -------
+        C : array-like of shape (n_samples, n_classes)
+            Returns the probability of the samples for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
         """
         return np.exp(self.predict_log_proba(X))
