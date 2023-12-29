@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import numbers
-from typing import Union, Optional, Sequence
+from typing import Optional
 import warnings
 
 import numpy as np
@@ -14,22 +14,85 @@ from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import type_of_target, check_classification_targets
 
+from ._typing import MatrixLike, ArrayLike, Int, Float
+
 __all__ = [
     "GaussianWNB",
 ]
 
 
 class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
-    """
-    Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) Classifier
+    """Binary Gaussian Minimum Log-likelihood Difference Weighted Naive Bayes (MLD-WNB) classifier
+
+    Parameters
+    ----------
+    priors : array-like of shape (n_classes,), default=None
+        Prior probabilities of the classes. If specified, the priors are not
+        adjusted according to the data.
+    error_weights : array-like of shape (n_classes, n_classes), default=None
+        Matrix of error weights. If not specified, equal weight is assigned to the
+        errors of both classes.
+    max_iter : int, default=25
+        Maximum number of gradient descent iterations.
+    step_size : float, default=1e-4
+        Step size of weight update (i.e., learning rate).
+    penalty : str, default="l2"
+        Regularization term, either 'l1' or 'l2'.
+    C : float, default=1.0
+        Regularization strength. Must be strictly positive.
+    learning_hist : bool, default=False
+        Whether to record the learning history, i.e., the value of cost function
+        in each learning iteration.
+
+    Attributes
+    ----------
+    class_count_ : ndarray of shape (n_classes,)
+        Number of training samples observed in each class.
+
+    class_prior_ : ndarray of shape (n_classes,)
+        Probability of each class.
+
+    classes_ : ndarray of shape (n_classes,)
+        Class labels known to the classifier.
+
+    n_classes_ : int
+        Number of classes seen during :term:`fit`.
+
+    n_features_in_ : int
+        Number of features seen during :term:`fit`.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during :term:`fit`. Defined only when `X`
+        has feature names that are all strings.
+
+    error_weights_ : ndarray of shape (n_classes, n_classes)
+        Specified matrix of error weights.
+
+    theta_ : ndarray of shape (n_features, n_classes)
+        Mean of each feature per class.
+
+    std_ : ndarray of shape (n_features, n_classes)
+        Standard deviation of each feature per class.
+
+    var_ : ndarray of shape (n_features, n_classes)
+        Variance of each feature per class.
+
+    coef_ : ndarray of shape (n_features,)
+        Weights assigned to the features.
+
+    cost_hist_ : ndarray of shape (max_iter,)
+        Cost value in each iteration of the optimization.
+
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
     """
 
-    feature_names_in_: np.ndarray
-    n_features_in_: int
-    classes_: np.ndarray
-    class_prior_: np.ndarray
     class_count_: np.ndarray
+    class_prior_: np.ndarray
+    classes_: np.ndarray
     n_classes_: int
+    n_features_in_: int
+    feature_names_in_: np.ndarray
     error_weights_: np.ndarray
     theta_: np.ndarray
     std_: np.ndarray
@@ -41,27 +104,14 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     def __init__(
         self,
         *,
-        priors: Optional[Union[Sequence[float], np.ndarray]] = None,
+        priors: Optional[ArrayLike] = None,
         error_weights: Optional[np.ndarray] = None,
-        max_iter: int = 25,
-        step_size: float = 1e-4,
+        max_iter: Int = 25,
+        step_size: Float = 1e-4,
         penalty: str = "l2",
-        C: float = 1.0,
+        C: Float = 1.0,
         learning_hist: bool = False
     ) -> None:
-        """Initializes an instance of the GaussianWNB class.
-
-        Args:
-            priors (Optional[Union[Sequence[float], np.ndarray]]): Prior probabilities. Defaults to None.
-            error_weights (Optional[np.ndarray]): Matrix of error weights (n_classes * n_classes). Defaults to None.
-            max_iter (int): Maximum number of gradient descent iterations. Defaults to 25.
-            step_size (float): Step size of weight update (i.e., learning rate). Defaults to 1e-4.
-            penalty (str): Regularization term; must be either 'l1' or 'l2'. Defaults to 'l2'.
-            C (float): Regularization strength; must be a positive float. Defaults to 1.0.
-            learning_hist (bool): Whether to record the learning history, i.e., the value of cost function in each
-                                  learning iteration.
-
-        """
         self.priors = priors
         self.error_weights = error_weights
         self.max_iter = max_iter
@@ -205,21 +255,22 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             self.error_weights_ = self.error_weights
 
-    def fit(
-        self,
-        X: Union[np.ndarray, pd.DataFrame],
-        y: Union[np.ndarray, pd.DataFrame, pd.Series],
-    ):
-        """Fits Gaussian Binary MLD-WNB to X and y.
+    def fit(self, X: MatrixLike, y: ArrayLike):
+        """Fits Gaussian Binary MLD-WNB classifier according to X, y.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features).
-                                                 Training vectors, where `n_samples` is the number of samples
-                                                 and `n_features` is the number of features.
-            y (Union[np.ndarray, pd.DataFrame, pd.Series]): Array-like of shape (n_samples,). Target values.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training vectors, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
 
-        Returns:
-            self: The instance itself.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
         """
         self._check_n_features(X=X, reset=True)
         self._check_feature_names(X=X, reset=True)
@@ -250,7 +301,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         )  # WNB coefficients (n_features x 1)
         self.cost_hist_ = np.array(
             [np.nan for _ in range(self.max_iter)]
-        )  # Cost value of each iteration
+        )  # Cost value in each iteration
 
         self._prepare_parameters(X, y)
 
@@ -365,29 +416,37 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         p_hat = self.predict_log_proba(X)
         return np.argmax(p_hat, axis=1)
 
-    def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+    def predict(self, X: MatrixLike) -> np.ndarray:
         """Performs classification on an array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: ndarray of shape (n_samples,). Predicted target values for X.
+        Returns
+        -------
+        C : ndarray of shape (n_samples,)
+            Predicted target values for X.
         """
         p_hat = self.predict_log_proba(X)
         y_hat = self.classes_[np.argmax(p_hat, axis=1)]
         return y_hat
 
-    def predict_log_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
-        """Returns log-probability estimates for the test vector X.
+    def predict_log_proba(self, X: MatrixLike) -> np.ndarray:
+        """Returns log-probability estimates for the array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: Array-like of shape (n_samples, n_classes).
-                        The log-probability of the samples for each class in the model.
-                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        Returns
+        -------
+        C : array-like of shape (n_samples, n_classes)
+            Returns the log-probability of the samples for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
         """
         # Check is fit had been called
         check_is_fitted(self)
@@ -427,15 +486,19 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         )
         return log_proba
 
-    def predict_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
-        """Returns probability estimates for the test vector X.
+    def predict_proba(self, X: MatrixLike) -> np.ndarray:
+        """Returns probability estimates for the array of test vectors X.
 
-        Args:
-            X (Union[np.ndarray, pd.DataFrame]): Array-like of shape (n_samples, n_features). The input samples.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: Array-like of shape (n_samples, n_classes).
-                        The probability of the samples for each class in the model.
-                        The columns correspond to the classes in sorted order, as they appear in the attribute `classes_`.
+        Returns
+        -------
+        C : array-like of shape (n_samples, n_classes)
+            Returns the probability of the samples for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
         """
         return np.exp(self.predict_log_proba(X))
