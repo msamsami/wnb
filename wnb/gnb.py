@@ -22,7 +22,7 @@ __all__ = [
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
-    """An extendable Naive Bayes classifier that supports distinct likelihood distributions for individual features,
+    """A General Naive Bayes classifier that supports distinct likelihood distributions for individual features,
     enabling more tailored modeling beyond the standard single-distribution approaches such as GaussianNB and BernoulliNB.
 
     Parameters
@@ -57,7 +57,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Names of features seen during :term:`fit`. Defined only when `X`
         has feature names that are all strings.
 
-    distributions_ : list of length n_features_in_
+    distributions_ : list of length `n_features_in_`
         List of likelihood distributions used to fit to features.
 
     likelihood_params_ : dict
