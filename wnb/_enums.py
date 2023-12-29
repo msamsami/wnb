@@ -1,9 +1,11 @@
 from enum import Enum
 
+from ._enum_meta import CaseInsensitiveEnumMeta
+
 __all__ = ["Distribution"]
 
 
-class Distribution(str, Enum):
+class Distribution(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """
     Names of probability distributions.
     """

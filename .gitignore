@@ -134,3 +134,4 @@ dmypy.json
 # Test files
 /test
 test.ipynb
+dummy.py
