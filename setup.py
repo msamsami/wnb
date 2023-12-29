@@ -2,7 +2,6 @@ import codecs
 from os import path
 from setuptools import setup, find_packages
 
-# Get __version__
 with open(path.join("wnb", "__init__.py")) as f:
     exec(f.readlines(1)[0])
 
