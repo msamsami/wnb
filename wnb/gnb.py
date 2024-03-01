@@ -106,9 +106,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_sparse=False,
             accept_large_sparse=False,
-            dtype=None
-            if any(d in self._get_distributions() for d in NonNumericDistributions)
-            else "numeric",
+            dtype=(
+                None
+                if any(d in self._get_distributions() for d in NonNumericDistributions)
+                else "numeric"
+            ),
             force_all_finite=True,
             ensure_2d=True,
             ensure_min_samples=1,
@@ -241,12 +243,16 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_ = {
             c: [
-                AllDistributions[self.distributions_[i]].from_data(
-                    X[y == c, i], alpha=self.alpha
+                (
+                    AllDistributions[self.distributions_[i]].from_data(
+                        X[y == c, i], alpha=self.alpha
+                    )
+                    if isinstance(self.distributions_[i], Distribution)
+                    or self.distributions_[i] in Distribution.__members__.values()
+                    else self.distributions_[i].from_data(
+                        X[y == c, i], alpha=self.alpha
+                    )
                 )
-                if isinstance(self.distributions_[i], Distribution)
-                or self.distributions_[i] in Distribution.__members__.values()
-                else self.distributions_[i].from_data(X[y == c, i], alpha=self.alpha)
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
@@ -294,9 +300,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_large_sparse=False,
             force_all_finite=True,
-            dtype=None
-            if any(d in self._get_distributions() for d in NonNumericDistributions)
-            else "numeric",
+            dtype=(
+                None
+                if any(d in self._get_distributions() for d in NonNumericDistributions)
+                else "numeric"
+            ),
             estimator=self,
         )
 
