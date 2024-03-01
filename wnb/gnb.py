@@ -106,9 +106,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_sparse=False,
             accept_large_sparse=False,
-            dtype=None
-            if any(d in self._get_distributions() for d in NonNumericDistributions)
-            else "numeric",
+            dtype=(
+                None
+                if any(d in self._get_distributions() for d in NonNumericDistributions)
+                else "numeric"
+            ),
             force_all_finite=True,
             ensure_2d=True,
             ensure_min_samples=1,
@@ -309,9 +311,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             array=X,
             accept_large_sparse=False,
             force_all_finite=True,
-            dtype=None
-            if any(d in self._get_distributions() for d in NonNumericDistributions)
-            else "numeric",
+            dtype=(
+                None
+                if any(d in self._get_distributions() for d in NonNumericDistributions)
+                else "numeric"
+            ),
             estimator=self,
         )
 
