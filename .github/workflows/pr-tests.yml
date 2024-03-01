@@ -1,0 +1,31 @@
+# This workflow will run the unit tests on a PR
+
+name: Run Tests for PR
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+    contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install -r requirements_dev.txt
+
+    - name: Run tests
+      run: |
+        pytest
