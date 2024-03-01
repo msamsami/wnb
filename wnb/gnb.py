@@ -207,6 +207,24 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             self.distributions_ = self.distributions
 
+    @staticmethod
+    def _get_dist_object(name_or_obj):
+        if (
+            isinstance(name_or_obj, Distribution)
+            or name_or_obj in Distribution.__members__.values()
+        ):
+            return AllDistributions[name_or_obj]
+        elif isinstance(name_or_obj, str) and name_or_obj.upper() in [
+            d.name for d in Distribution
+        ]:
+            return AllDistributions[Distribution.__members__[name_or_obj.upper()]]
+        elif isinstance(name_or_obj, str) and name_or_obj.title() in [
+            d.value for d in Distribution
+        ]:
+            return AllDistributions[Distribution(name_or_obj.title())]
+        else:
+            return name_or_obj
+
     def fit(self, X: MatrixLike, y: ArrayLike):
         """Fits general Naive Bayes classifier according to X, y.
 
@@ -241,12 +259,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_ = {
             c: [
-                AllDistributions[self.distributions_[i]].from_data(
+                self._get_dist_object(self.distributions_[i]).from_data(
                     X[y == c, i], alpha=self.alpha
                 )
-                if isinstance(self.distributions_[i], Distribution)
-                or self.distributions_[i] in Distribution.__members__.values()
-                else self.distributions_[i].from_data(X[y == c, i], alpha=self.alpha)
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
