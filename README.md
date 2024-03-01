@@ -1,16 +1,21 @@
-# WNB: General and weighted naive Bayes classifiers
-
-![](https://img.shields.io/badge/release-v0.2.1-green)
-![](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
-![](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
-[![](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
-![](https://img.shields.io/pypi/dm/wnb)
-
-
-<p>
+<div align="center">
 <img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/docs/logo.png" alt="wnb logo" width="275" />
+</div>
 <br>
-</p>
+
+<div align="center"> General and weighted naive Bayes classifiers </div> <br>
+
+<div align="center">
+
+![Lastest Release](https://img.shields.io/badge/release-v0.2.1-green)
+[![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
+![Python Versions](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)<br>
+![PyPI License](https://img.shields.io/pypi/l/wnb)
+![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
+[![PyPi Downloads](https://static.pepy.tech/badge/wnb)](https://pepy.tech/project/wnb)
+
+</div>
+
 
 ## Introduction
 Naive Bayes is often recognized as one of the most popular classification algorithms in the machine learning community. This package takes naive Bayes to a higher level by providing its implementations in more general and weighted settings.
