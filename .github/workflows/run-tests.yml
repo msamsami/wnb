@@ -1,6 +1,6 @@
 # This workflow will run the unit tests on a PR
 
-name: Run Tests for PR
+name: Run Tests
 
 on:
   pull_request:
