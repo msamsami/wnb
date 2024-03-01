@@ -1,21 +1,19 @@
 <div align="center">
 <img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/docs/logo.png" alt="wnb logo" width="275" />
 </div>
-<br>
 
-<div align="center"> General and weighted naive Bayes classifiers </div> <br>
+<div align="center"> <b>General and weighted naive Bayes classifiers</b> </div> <br>
 
 <div align="center">
 
 ![Lastest Release](https://img.shields.io/badge/release-v0.2.1-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)<br>
-![PyPI License](https://img.shields.io/pypi/l/wnb)
 ![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
+![PyPI License](https://img.shields.io/pypi/l/wnb)
 [![PyPi Downloads](https://static.pepy.tech/badge/wnb)](https://pepy.tech/project/wnb)
 
 </div>
-
 
 ## Introduction
 Naive Bayes is often recognized as one of the most popular classification algorithms in the machine learning community. This package takes naive Bayes to a higher level by providing its implementations in more general and weighted settings.
@@ -27,7 +25,7 @@ The issue with the well-known implementations of the naive Bayes algorithm (such
 Although naive Bayes has many advantages such as simplicity and interpretability, its conditional independence assumption rarely holds true in real-world applications. In order to alleviate its conditional independence assumption, many attribute weighting naive Bayes (WNB) approaches have been proposed. Most of the proposed methods involve computationally demanding optimization problems that do not allow for controlling the model's bias due to class imbalance. Minimum Log-likelihood Difference WNB (MLD-WNB) is a novel weighting approach that optimizes the weights according to the Bayes optimal decision rule and includes hyperparameters for controlling the model's bias. **WNB** library provides an efficient implementation of gaussian MLD-WNB.
 
 ## Installation
-The easiest way to install the wnb library is by using `pip`:
+The easiest way to install the **wnb** library is by using `pip`:
 ```
 pip install wnb
 ```
