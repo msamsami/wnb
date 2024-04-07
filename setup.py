@@ -19,8 +19,8 @@ setup(
         path.join(path.abspath(path.dirname(__file__)), "README.md"), encoding="utf-8"
     ).read(),
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["tests*"]),
     include_package_data=True,
+    packages=find_packages(exclude=["tests*"]),
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
@@ -33,9 +33,10 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: BSD License",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.7,<=3.12",
     install_requires=["pandas>=1.4.1", "scipy>=1.8.0", "scikit-learn>=1.0.2"],
-    extras_require={"dev": ["pytest==7.3.1", "black>=24.1.0", "tqdm==4.66.2"]},
+    extras_require={"dev": ["pytest>=7.3.1,<=7.4.4", "black>=24.1.0", "tqdm>=4.65.0"]},
 )
