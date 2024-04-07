@@ -37,6 +37,6 @@ setup(
         "License :: OSI Approved :: BSD License",
     ],
     python_requires=">=3.7,<=3.12",
-    install_requires=["pandas>=1.4.1", "scipy>=1.8.0", "scikit-learn>=1.0.2"],
+    install_requires=["pandas>=1.3.5", "scipy>=1.7.3", "scikit-learn>=1.0.2"],
     extras_require={"dev": ["pytest>=7.3.1,<=7.4.4", "black>=24.1.0", "tqdm>=4.65.0"]},
 )
