@@ -8,7 +8,7 @@
 
 ![Lastest Release](https://img.shields.io/badge/release-v0.2.1-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
-![Python Versions](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)<br>
+![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)<br>
 ![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
 ![PyPI License](https://img.shields.io/pypi/l/wnb)
 [![PyPi Downloads](https://static.pepy.tech/badge/wnb)](https://pepy.tech/project/wnb)
