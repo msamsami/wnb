@@ -3,7 +3,7 @@ from sklearn.naive_bayes import GaussianNB
 
 from wnb import GeneralNB, GaussianWNB, Distribution as D
 
-from benchmarks.utils import benchmark
+from tests.benchmarks.utils import benchmark
 
 MAX_ITER = 100
 
@@ -17,10 +17,9 @@ def benchmark_breast_cancer():
     clf_sklearn = GaussianNB()
     score_wnb, score_sklearn = benchmark(X, y, clf_wnb, clf_sklearn, MAX_ITER)
 
-    print("breast cancer dataset | wnb | GaussianWNB >> score >>", score_wnb)
-    print(
-        "breast cancer dataset | sklearn | GaussianNB >> score >>", score_sklearn, "\n"
-    )
+    print("breast cancer dataset | sklearn | GaussianNB  >> score >>", score_sklearn)
+    print("breast cancer dataset | wnb     | GaussianWNB >> score >>", score_wnb, "\n")
+    
 
 
 def benchmark_digits():
@@ -32,8 +31,8 @@ def benchmark_digits():
     clf_sklearn = GaussianNB()
     score_wnb, score_sklearn = benchmark(X, y, clf_wnb, clf_sklearn, MAX_ITER)
 
-    print("digits dataset | wnb | GeneralNB >> score >>", score_wnb)
-    print("digits dataset | sklearn | GaussianNB >> score >>", score_sklearn, "\n")
+    print("digits dataset | sklearn | GaussianNB >> score >>", score_sklearn)
+    print("digits dataset | wnb     | GeneralNB  >> score >>", score_wnb, "\n")
 
 
 def benchmark_wine():
@@ -45,8 +44,8 @@ def benchmark_wine():
     clf_sklearn = GaussianNB()
     score_wnb, score_sklearn = benchmark(X, y, clf_wnb, clf_sklearn, MAX_ITER)
 
-    print("wine dataset | wnb | GeneralNB >> score >>", score_wnb)
-    print("wine dataset | sklearn | GaussianNB >> score >>", score_sklearn, "\n")
+    print("wine dataset | sklearn | GaussianNB >> score >>", score_sklearn)
+    print("wine dataset | wnb     | GeneralNB  >> score >>", score_wnb, "\n")
 
 
 if __name__ == "__main__":
