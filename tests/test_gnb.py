@@ -1,5 +1,4 @@
 import numpy as np
-
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
@@ -11,11 +10,6 @@ from wnb import GeneralNB, Distribution as D
 # Data is just 6 separable points in the plane
 X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 y = np.array([1, 1, 1, 2, 2, 2])
-
-
-@pytest.fixture
-def global_random_seed():
-    return np.random.randint(0, 1000)
 
 
 def get_random_normal_x_binary_y(global_random_seed):
