@@ -5,7 +5,7 @@ from scipy.special import gamma, beta
 from scipy.stats import chi2
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
-from ._enums import Distribution as D
+from .enums import Distribution as D
 
 __all__ = [
     "NormalDist",
@@ -267,9 +267,7 @@ class PoissonDist(DiscreteDistMixin):
         )
 
 
-AllDistributions = {eval(cls).name: eval(cls) for cls in __all__}
+AllDistributions = {cls.name: cls for cls in (globals()[name] for name in __all__)}
 
 
-NonNumericDistributions = [
-    D.CATEGORICAL,
-]
+NonNumericDistributions = [D.CATEGORICAL]

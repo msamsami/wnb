@@ -1,13 +1,15 @@
+from __future__ import annotations
 from abc import ABCMeta
 from functools import wraps
 import inspect
 from numbers import Number
-from typing import List, Tuple, Union
+from typing import Any
+from typing_extensions import Self
 import warnings
 
 import numpy as np
 
-from ._enums import Distribution
+from .enums import Distribution
 
 __all__ = ["ContinuousDistMixin", "DiscreteDistMixin"]
 
@@ -36,11 +38,11 @@ class DistMixin(metaclass=ABCMeta):
     Mixin class for probability distributions in wnb.
     """
 
-    name: Union[str, Distribution]
-    _support: Union[List[float], Tuple[float, float]]
+    name: str | Distribution
+    _support: list[float] | tuple[float, float]
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs) -> Self:
         """Creates an instance of the class from given data. Distribution parameters will be estimated from data.
 
         Args:
@@ -52,7 +54,7 @@ class DistMixin(metaclass=ABCMeta):
         pass
 
     @classmethod
-    def _get_param_names(cls):
+    def _get_param_names(cls) -> list[str]:
         """
         Gets parameter names for the distribution instance.
         """
@@ -79,7 +81,7 @@ class DistMixin(metaclass=ABCMeta):
 
         return sorted([p.name for p in parameters])
 
-    def get_params(self) -> dict:
+    def get_params(self) -> dict[str, Any]:
         """Gets parameters for this distribution instance.
 
         Returns:
@@ -92,7 +94,7 @@ class DistMixin(metaclass=ABCMeta):
         return out
 
     @property
-    def support(self) -> Union[List[float], Tuple[float, float]]:
+    def support(self) -> list[float] | tuple[float, float]:
         """Returns the support of the probability distribution.
 
         If support is a list, it represents a limited number of discrete values.
@@ -100,7 +102,7 @@ class DistMixin(metaclass=ABCMeta):
         """
         return self._support
 
-    def _check_support(self, x):
+    def _check_support(self, x) -> None:
         if (isinstance(self.support, list) and x not in self.support) or (
             isinstance(self.support, tuple)
             and (x < self.support[0] or x > self.support[1])
@@ -132,9 +134,9 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
     Mixin class for all continuous probability distributions in wnb.
     """
 
-    _type = "continuous"
+    _type: str = "continuous"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Initializes an instance of the continuous probability distribution with given parameters.
         """
@@ -162,9 +164,9 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
     Mixin class for all discrete probability distributions in wnb.
     """
 
-    _type = "discrete"
+    _type: str = "discrete"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Initializes an instance of the discrete probability distribution with given parameters.
         """

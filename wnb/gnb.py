@@ -1,5 +1,6 @@
 from abc import ABCMeta
 from typing import Optional, Sequence
+from typing_extensions import Self
 import warnings
 
 import numpy as np
@@ -12,9 +13,9 @@ from sklearn.utils import check_array, as_float_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
-from ._enums import Distribution
 from ._typing import MatrixLike, ArrayLike, Float, DistibutionLike
 from .dist import AllDistributions, NonNumericDistributions
+from .enums import Distribution
 
 __all__ = [
     "GeneralNB",
@@ -227,7 +228,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             return name_or_obj
 
-    def fit(self, X: MatrixLike, y: ArrayLike):
+    def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.
 
         Parameters
