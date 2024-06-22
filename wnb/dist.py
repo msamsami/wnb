@@ -267,9 +267,7 @@ class PoissonDist(DiscreteDistMixin):
         )
 
 
-AllDistributions = {eval(cls).name: eval(cls) for cls in __all__}
+AllDistributions = {cls.name: cls for cls in (globals()[name] for name in __all__)}
 
 
-NonNumericDistributions = [
-    D.CATEGORICAL,
-]
+NonNumericDistributions = [D.CATEGORICAL]

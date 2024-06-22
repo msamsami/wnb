@@ -1,5 +1,6 @@
 from abc import ABCMeta
 from typing import Optional, Sequence
+from typing_extensions import Self
 import warnings
 
 import numpy as np
@@ -227,7 +228,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             return name_or_obj
 
-    def fit(self, X: MatrixLike, y: ArrayLike):
+    def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.
 
         Parameters

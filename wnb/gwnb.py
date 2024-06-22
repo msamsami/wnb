@@ -1,6 +1,7 @@
 from abc import ABCMeta
 import numbers
 from typing import Optional
+from typing_extensions import Self
 import warnings
 
 import numpy as np
@@ -255,7 +256,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             self.error_weights_ = self.error_weights
 
-    def fit(self, X: MatrixLike, y: ArrayLike):
+    def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits Gaussian Binary MLD-WNB classifier according to X, y.
 
         Parameters
