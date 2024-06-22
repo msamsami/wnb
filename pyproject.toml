@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "wnb"
+dynamic = ["version"]
+authors = [
+    { name = "Mehdi Samsami", email = "mehdisamsami@live.com" },
+]
+description = "Python library for the implementations of general and weighted naive Bayes (WNB) classifiers."
+readme = "README.md"
+readme-content-type = "text/markdown"
+keywords = [
+    "python",
+    "bayes",
+    "naive bayes",
+    "classifier",
+    "probabilistic",
+]
+classifiers = [
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "License :: OSI Approved :: BSD License",
+    ]
+requires-python = ">=3.8,<3.13"
+dependencies = [
+    "pandas>=1.4.1",
+    "scipy>=1.8.0",
+    "scikit-learn>=1.0.2",
+    "typing-extensions>=4.8.0",
+]
+
+[tool.hatch.version]
+path = "wnb/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["wnb"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.sdist]
+include = ["/README.md", "/wnb"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.1",
+    "black>=24.1.0",
+    "tqdm>=4.65.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore"]
