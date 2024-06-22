@@ -12,9 +12,9 @@ from sklearn.utils import check_array, as_float_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
-from ._enums import Distribution
 from ._typing import MatrixLike, ArrayLike, Float, DistibutionLike
 from .dist import AllDistributions, NonNumericDistributions
+from .enums import Distribution
 
 __all__ = [
     "GeneralNB",

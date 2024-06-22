@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 
-from ._enums import Distribution
+from .enums import Distribution
 
 __all__ = ["ContinuousDistMixin", "DiscreteDistMixin"]
 

@@ -5,7 +5,7 @@ from scipy.special import gamma, beta
 from scipy.stats import chi2
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
-from ._enums import Distribution as D
+from .enums import Distribution as D
 
 __all__ = [
     "NormalDist",

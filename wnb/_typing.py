@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.sparse import spmatrix
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
-from ._enums import Distribution
+from .enums import Distribution
 
 __all__ = ["MatrixLike", "ArrayLike", "Int", "Float", "DistibutionLike"]
 
