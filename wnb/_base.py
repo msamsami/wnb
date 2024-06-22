@@ -1,8 +1,8 @@
+from __future__ import annotations
 from abc import ABCMeta
 from functools import wraps
 import inspect
 from numbers import Number
-from typing import List, Tuple, Union
 import warnings
 
 import numpy as np
@@ -36,8 +36,8 @@ class DistMixin(metaclass=ABCMeta):
     Mixin class for probability distributions in wnb.
     """
 
-    name: Union[str, Distribution]
-    _support: Union[List[float], Tuple[float, float]]
+    name: str | Distribution
+    _support: list[float] | tuple[float, float]
 
     @classmethod
     def from_data(cls, data, **kwargs):
@@ -92,7 +92,7 @@ class DistMixin(metaclass=ABCMeta):
         return out
 
     @property
-    def support(self) -> Union[List[float], Tuple[float, float]]:
+    def support(self) -> list[float] | tuple[float, float]:
         """Returns the support of the probability distribution.
 
         If support is a list, it represents a limited number of discrete values.

@@ -19,7 +19,6 @@ def benchmark_breast_cancer():
 
     print("breast cancer dataset | sklearn | GaussianNB  >> score >>", score_sklearn)
     print("breast cancer dataset | wnb     | GaussianWNB >> score >>", score_wnb, "\n")
-    
 
 
 def benchmark_digits():
