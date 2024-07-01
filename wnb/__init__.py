@@ -7,7 +7,6 @@ from .enums import Distribution
 from .gnb import GeneralNB
 from .gwnb import GaussianWNB
 
-
 __all__ = [
     "GeneralNB",
     "GaussianWNB",

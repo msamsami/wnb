@@ -4,7 +4,8 @@ from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-from wnb import GeneralNB, Distribution as D
+from wnb import Distribution as D
+from wnb import GeneralNB
 
 warnings.filterwarnings("ignore")
 

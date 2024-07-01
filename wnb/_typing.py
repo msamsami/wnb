@@ -1,7 +1,7 @@
-from typing import Union, Type
+from typing import Type, Union
 
-import numpy.typing
 import numpy as np
+import numpy.typing
 import pandas as pd
 from scipy.sparse import spmatrix
 

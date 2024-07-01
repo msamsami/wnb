@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
-from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
+from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import check_estimator
 
 from wnb import GaussianWNB
 

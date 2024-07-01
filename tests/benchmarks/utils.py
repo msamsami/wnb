@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 import warnings
 
-from joblib import Parallel, delayed
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 

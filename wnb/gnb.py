@@ -1,19 +1,18 @@
+import warnings
 from abc import ABCMeta
 from typing import Optional, Sequence
-from typing_extensions import Self
-import warnings
 
 import numpy as np
 import pandas as pd
 from scipy.special import logsumexp
-
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import check_array, as_float_array
+from sklearn.utils import as_float_array, check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
+from typing_extensions import Self
 
-from ._typing import MatrixLike, ArrayLike, Float, DistibutionLike
+from ._typing import ArrayLike, DistibutionLike, Float, MatrixLike
 from .dist import AllDistributions, NonNumericDistributions
 from .enums import Distribution
 

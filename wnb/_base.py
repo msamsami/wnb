@@ -1,13 +1,14 @@
 from __future__ import annotations
+
+import inspect
+import warnings
 from abc import ABCMeta
 from functools import wraps
-import inspect
 from numbers import Number
 from typing import Any
-from typing_extensions import Self
-import warnings
 
 import numpy as np
+from typing_extensions import Self
 
 from .enums import Distribution
 
