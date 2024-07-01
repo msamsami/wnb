@@ -1,11 +1,12 @@
 import numpy as np
 import pytest
-from sklearn.utils.estimator_checks import check_estimator
 from sklearn.base import is_classifier
-from sklearn.utils._testing import assert_array_equal, assert_array_almost_equal
-from sklearn.naive_bayes import GaussianNB, BernoulliNB, CategoricalNB
+from sklearn.naive_bayes import BernoulliNB, CategoricalNB, GaussianNB
+from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import check_estimator
 
-from wnb import GeneralNB, Distribution as D
+from wnb import Distribution as D
+from wnb import GeneralNB
 
 # Data is just 6 separable points in the plane
 X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])

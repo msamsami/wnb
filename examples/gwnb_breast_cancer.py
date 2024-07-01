@@ -4,7 +4,6 @@ from sklearn.naive_bayes import GaussianNB
 
 from wnb import GaussianWNB
 
-
 # Load the breast cancer wisconsin dataset
 breast_cancer = load_breast_cancer()
 X = breast_cancer["data"]

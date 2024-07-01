@@ -1,7 +1,7 @@
 from typing import Any, Mapping
 
 import numpy as np
-from scipy.special import gamma, beta
+from scipy.special import beta, gamma
 from scipy.stats import chi2
 
 from ._base import ContinuousDistMixin, DiscreteDistMixin
@@ -16,6 +16,8 @@ __all__ = [
     "GammaDist",
     "BetaDist",
     "ChiSquaredDist",
+    "TDist",
+    "RayleighDist",
     "BernoulliDist",
     "CategoricalDist",
     "GeometricDist",
@@ -186,6 +188,45 @@ class ChiSquaredDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return chi2.pdf(x, self.k)
+
+
+class TDist(ContinuousDistMixin):
+    name = D.T
+    _support = (-np.inf, np.inf)
+
+    def __init__(self, df: float):
+        self.df = df
+        super().__init__()
+
+    @classmethod
+    def from_data(cls, data, **kwargs):
+        return cls(df=len(data) - 1)
+
+    def pdf(self, x: float) -> float:
+        return (
+            gamma((self.df + 1) / 2) / (np.sqrt(self.df * np.pi) * gamma(self.df / 2))
+        ) * (1 + (x**2 / self.df)) ** (-(self.df + 1) / 2)
+
+
+class RayleighDist(ContinuousDistMixin):
+    name = D.RAYLEIGH
+    _support = (0, np.inf)
+
+    def __init__(self, sigma: float):
+        self.sigma = sigma
+        super().__init__()
+
+    @classmethod
+    def from_data(cls, data, **kwargs):
+        sigma = np.sqrt(np.mean(data**2) / 2)
+        return cls(sigma=sigma)
+
+    def pdf(self, x: float) -> float:
+        return (
+            (x / self.sigma**2) * np.exp(-(x**2) / (2 * self.sigma**2))
+            if x >= 0
+            else 0.0
+        )
 
 
 class BernoulliDist(DiscreteDistMixin):

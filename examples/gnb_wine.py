@@ -2,8 +2,8 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-from wnb import GeneralNB, Distribution as D
-
+from wnb import Distribution as D
+from wnb import GeneralNB
 
 # Load the wine dataset
 wine = load_wine()

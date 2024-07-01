@@ -1,9 +1,9 @@
 from sklearn.datasets import load_breast_cancer, load_digits, load_wine
 from sklearn.naive_bayes import GaussianNB
 
-from wnb import GeneralNB, GaussianWNB, Distribution as D
-
 from tests.benchmarks.utils import benchmark
+from wnb import Distribution as D
+from wnb import GaussianWNB, GeneralNB
 
 MAX_ITER = 100
 

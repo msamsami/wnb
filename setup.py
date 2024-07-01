@@ -1,9 +1,9 @@
 import codecs
 from os import path
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 from wnb import __version__
-
 
 setup(
     name="wnb",
@@ -42,5 +42,13 @@ setup(
         "scikit-learn>=1.0.2",
         "typing-extensions>=4.8.0",
     ],
-    extras_require={"dev": ["pytest>=7.3.1", "black>=24.1.0", "tqdm>=4.65.0"]},
+    extras_require={
+        "dev": [
+            "pytest>=7.3.1",
+            "black>=24.4.2",
+            "tqdm>=4.65.0",
+            "pre-commit>=3.7.1",
+            "isort==5.13.2",
+        ]
+    },
 )

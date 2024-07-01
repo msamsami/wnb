@@ -1,21 +1,20 @@
-from abc import ABCMeta
 import numbers
-from typing import Optional
-from typing_extensions import Self
 import warnings
+from abc import ABCMeta
+from typing import Optional
 
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
 from scipy.special import logsumexp
-
+from scipy.stats import norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array, check_array, deprecated
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.multiclass import type_of_target, check_classification_targets
+from typing_extensions import Self
 
-from ._typing import MatrixLike, ArrayLike, Int, Float
+from ._typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = [
     "GaussianWNB",
