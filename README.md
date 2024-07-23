@@ -29,7 +29,7 @@ The easiest way to install the **wnb** library is by using `pip`:
 ```
 pip install wnb
 ```
-This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. Furthermore, it is fully compatible with Scikit-learn API.
+This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. Furthermore, it fully **adheres to Scikit-learn API** ❤️.
 
 ## Getting started ⚡️
 Here, we show how you can use the library to train general and weighted naive Bayes classifiers. 
@@ -82,15 +82,40 @@ wnb.fit(X, y)
 wnb.predict(x_test)
 ```
 
+## Compatibility with Scikit-learn
+
+The **wnb** library fully adheres to the Scikit-learn API, ensuring seamless integration with other Scikit-learn components and workflows. This means that users familiar with Scikit-learn will find the WNB classifiers intuitive to use.
+
+Both Scikit-learn classifiers and WNB classifiers share these well-known methods:
+
+- `fit(X, y)`
+- `predict(X)`
+- `predict_proba(X)`
+- `predict_log_proba(X)`
+- `score(X, y)`
+- `get_params()`
+- `set_params(**params)`
+- etc.
+
+By maintaining this consistency, WNB classifiers can be easily incorporated into existing machine learning pipelines and processes.
+
+## Benchmarks
+We conducted benchmarks on three datasets, [Breast Cancer](https://scikit-learn.org/stable/datasets/toy_dataset.html#breast-cancer-wisconsin-diagnostic-dataset), [Digits](https://scikit-learn.org/stable/datasets/toy_dataset.html#optical-recognition-of-handwritten-digits-dataset), and [Wine](https://scikit-learn.org/stable/datasets/toy_dataset.html#wine-recognition-dataset), to evaluate the performance of WNB classifiers and compare them with their Scikit-learn counterpart, `GaussianNB`. The results show that WNB classifiers generally perform better in certain cases.
+
+| Dataset          | Scikit-learn Classifier | Accuracy | WNB Classifier | Accuracy  |
+|------------------|-------------------------|----------|----------------|-----------|
+| Breast Cancer    | GaussianNB              | 0.939    | GaussianWNB    | **0.951**     |
+| Digits           | GaussianNB              | 0.838    | GeneralNB      | **0.889**     |
+| Wine             | GaussianNB              | 0.974    | GeneralNB      | **0.981**     |
+
+These benchmarks highlight the potential of WNB classifiers to provide better performance in certain scenarios by allowing more flexibility in the choice of distributions and incorporating weighting strategies.
+
+The benchmark scripts used to obtain these results can be found under _tests/benchmarks/_ directory.
+
 ## Tests
-To run the tests, install development requirements:
+To run the tests, make sure to clone the repository and install the development requirements:
 ```
 pip install -r requirements_dev.txt
-```
-
-Or, install the package with dev extras:
-```
-pip install wnb[dev]
 ```
 
 Then, run pytest:
