@@ -245,9 +245,9 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             self.class_prior_ = self.priors
 
-        # Convert to NumPy array if input priors is in a list
-        if type(self.class_prior_) is list:
-            self.class_prior_ = np.array(self.class_prior_)
+        # Convert to NumPy array if input priors is in a list/tuple/set
+        if isinstance(self.class_prior_, (list, tuple, set)):
+            self.class_prior_ = np.array(list(self.class_prior_))
 
         # Update if no error weights is provided
         if self.error_weights is None:
@@ -309,7 +309,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.n_iter_ = 0
         for self.n_iter_ in range(self.max_iter):
             # Predict on X
-            y_hat = self.__predict(X)
+            y_hat = self._predict(X)
 
             # Calculate cost
             self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(
@@ -412,7 +412,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             _grad += _lambda[i] * _log_p
         return _grad
 
-    def __predict(self, X):
+    def _predict(self, X):
         p_hat = self.predict_log_proba(X)
         return np.argmax(p_hat, axis=1)
 

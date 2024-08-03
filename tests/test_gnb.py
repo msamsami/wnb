@@ -246,6 +246,6 @@ def test_gnb_invalid_dist():
     """
     clf = GeneralNB(distributions=["Normal", "Borel"])
 
-    msg = "Distribution 'Borel' is not supported"
+    msg = r"Distribution .* is not supported"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)

@@ -13,8 +13,9 @@ from sklearn.utils.validation import check_is_fitted
 from typing_extensions import Self
 
 from ._typing import ArrayLike, DistibutionLike, Float, MatrixLike
-from .dist import AllDistributions, NonNumericDistributions
+from .dist import NonNumericDistributions
 from .enums import Distribution
+from .utils import get_dist_class, is_dist_supported
 
 __all__ = [
     "GeneralNB",
@@ -182,9 +183,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
             self.class_prior_ = self.priors
 
-        # Convert to NumPy array if input priors is in a list
-        if type(self.class_prior_) is list:
-            self.class_prior_ = np.array(self.class_prior_)
+        # Convert to NumPy array if input priors is in a list/tuple/set
+        if isinstance(self.class_prior_, (list, tuple, set)):
+            self.class_prior_ = np.array(list(self.class_prior_))
 
         # Set distributions if not specified
         if self.distributions is None:
@@ -199,33 +200,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 )
 
             # Check that all specified distributions are supported
-            for dist in self.distributions:
-                if not (
-                    isinstance(dist, Distribution)
-                    or dist in Distribution.__members__.values()
-                    or (hasattr(dist, "from_data") and hasattr(dist, "__call__"))
-                ):
-                    raise ValueError(f"Distribution '{dist}' is not supported.")
+            for i, dist in enumerate(self.distributions):
+                if not is_dist_supported(dist):
+                    raise ValueError(
+                        f"Distribution '{dist}' at index {i} is not supported."
+                    )
 
             self.distributions_ = self.distributions
-
-    @staticmethod
-    def _get_dist_object(name_or_obj):
-        if (
-            isinstance(name_or_obj, Distribution)
-            or name_or_obj in Distribution.__members__.values()
-        ):
-            return AllDistributions[name_or_obj]
-        elif isinstance(name_or_obj, str) and name_or_obj.upper() in [
-            d.name for d in Distribution
-        ]:
-            return AllDistributions[Distribution.__members__[name_or_obj.upper()]]
-        elif isinstance(name_or_obj, str) and name_or_obj.title() in [
-            d.value for d in Distribution
-        ]:
-            return AllDistributions[Distribution(name_or_obj.title())]
-        else:
-            return name_or_obj
 
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.
@@ -261,7 +242,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_ = {
             c: [
-                self._get_dist_object(self.distributions_[i]).from_data(
+                get_dist_class(self.distributions_[i]).from_data(
                     X[y == c, i], alpha=self.alpha
                 )
                 for i in range(self.n_features_in_)
