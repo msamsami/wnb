@@ -44,7 +44,7 @@ setup(
     ],
     extras_require={
         "dev": [
-            "pytest>=7.3.1",
+            "pytest>=7.0.0",
             "black>=24.4.2",
             "tqdm>=4.65.0",
             "pre-commit>=3.7.1",

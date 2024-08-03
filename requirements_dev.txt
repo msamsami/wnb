@@ -3,7 +3,7 @@ numpy<2.0.0
 scipy>=1.8.0
 scikit-learn>=1.0.2
 typing-extensions>=4.8.0
-pytest>=7.3.1
+pytest>=7.0.0
 black>=24.4.2
 tqdm>=4.65.0
 pre-commit>=3.7.1

@@ -2,11 +2,12 @@
 <img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/docs/logo.png" alt="wnb logo" width="275" />
 </div>
 
-<div align="center"> <b>General and weighted naive Bayes classifiers</b> </div> <br>
+<div align="center"> <b>General and weighted naive Bayes classifiers</b> </div>
+<div align="center">Scikit-learn-compatible</div> <br>
 
 <div align="center">
 
-![Lastest Release](https://img.shields.io/badge/release-v0.2.4-green)
+![Lastest Release](https://img.shields.io/badge/release-v0.2.5-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)<br>
 ![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
