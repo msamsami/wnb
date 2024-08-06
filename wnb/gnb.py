@@ -102,9 +102,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             accept_sparse=False,
             accept_large_sparse=False,
             dtype=(
-                None
-                if any(d in self._get_distributions() for d in NonNumericDistributions)
-                else "numeric"
+                None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
             ),
             force_all_finite=True,
             ensure_2d=True,
@@ -119,10 +117,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that the number of samples and labels are compatible
         if X.shape[0] != y.shape[0]:
-            raise ValueError(
-                "X.shape[0]=%d and y.shape[0]=%d are incompatible."
-                % (X.shape[0], y.shape[0])
-            )
+            raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
 
     def _prepare_X_y(self, X=None, y=None, from_fit=False):
         if from_fit and y is None:
@@ -185,9 +180,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Set distributions if not specified
         if self.distributions is None:
-            self.distributions_: list[DistibutionLike] = [
-                Distribution.NORMAL
-            ] * self.n_features_in_
+            self.distributions_: list[DistibutionLike] = [Distribution.NORMAL] * self.n_features_in_
         else:
             # Check if the number of distributions matches the number of features
             if len(self.distributions) != self.n_features_in_:
@@ -199,9 +192,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Check that all specified distributions are supported
             for i, dist in enumerate(self.distributions):
                 if not is_dist_supported(dist):
-                    raise ValueError(
-                        f"Distribution '{dist}' at index {i} is not supported."
-                    )
+                    raise ValueError(f"Distribution '{dist}' at index {i} is not supported.")
 
             self.distributions_: list[DistibutionLike] = list(self.distributions)
 
@@ -243,9 +234,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         self.likelihood_params_: dict[int, list[DistMixin]] = {
             c: [
-                get_dist_class(self.distributions_[i]).from_data(
-                    X[y == c, i], alpha=self.alpha
-                )
+                get_dist_class(self.distributions_[i]).from_data(X[y == c, i], alpha=self.alpha)
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
@@ -294,9 +283,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             accept_large_sparse=False,
             force_all_finite=True,
             dtype=(
-                None
-                if any(d in self._get_distributions() for d in NonNumericDistributions)
-                else "numeric"
+                None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
             ),
             estimator=self,
         )
@@ -304,8 +291,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         # Check if the number of input features matches the data seen during fit
         if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                "Expected input with %d features, got %d instead."
-                % (self.n_features_in_, X.shape[1])
+                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
             )
 
         n_samples = X.shape[0]
@@ -315,17 +301,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         log_joint = np.zeros((n_samples, self.n_classes_))
         for c in range(self.n_classes_):
             log_joint[:, c] = np.log(self.class_prior_[c]) + np.sum(
-                [
-                    np.log(likelihood(X[:, i]))
-                    for i, likelihood in enumerate(self.likelihood_params_[c])
-                ],
+                [np.log(likelihood(X[:, i])) for i, likelihood in enumerate(self.likelihood_params_[c])],
                 axis=0,
             )
 
         log_proba = log_joint - np.transpose(
-            np.repeat(
-                logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0
-            )
+            np.repeat(logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0)
         )
         return log_proba
 

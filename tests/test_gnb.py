@@ -107,9 +107,7 @@ def test_gnb_vs_sklearn_categorical():
         X_[:, i] = rnd_values
     y_ = rng.randint(1, 4, size=(150,))
 
-    clf1 = GeneralNB(
-        distributions=[D.CATEGORICAL for _ in range(len(categorical_values))]
-    )
+    clf1 = GeneralNB(distributions=[D.CATEGORICAL for _ in range(len(categorical_values))])
     clf1.fit(X_str_, y_)
 
     clf2 = CategoricalNB(alpha=1e-10, force_alpha=True)

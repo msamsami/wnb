@@ -21,9 +21,7 @@ def vectorize(otypes=None, excluded=None, signature=None):
     """
 
     def decorator(func):
-        vectorized = np.vectorize(
-            func, otypes=otypes, excluded=excluded, signature=signature
-        )
+        vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
 
         @wraps(func)
         def wrapper(*args):
@@ -65,9 +63,7 @@ class DistMixin(metaclass=ABCMeta):
 
         init_signature = inspect.signature(init)
         parameters = [
-            p
-            for p in init_signature.parameters.values()
-            if p.name != "self" and p.kind != p.VAR_KEYWORD
+            p for p in init_signature.parameters.values() if p.name != "self" and p.kind != p.VAR_KEYWORD
         ]
 
         for p in parameters:
@@ -105,8 +101,7 @@ class DistMixin(metaclass=ABCMeta):
 
     def _check_support(self, x) -> None:
         if (isinstance(self.support, list) and x not in self.support) or (
-            isinstance(self.support, tuple)
-            and (x < self.support[0] or x > self.support[1])
+            isinstance(self.support, tuple) and (x < self.support[0] or x > self.support[1])
         ):
             warnings.warn(
                 "Value doesn't lie within the support of the distribution",

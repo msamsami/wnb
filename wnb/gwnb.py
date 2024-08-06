@@ -117,9 +117,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that the dataset has only two unique labels
         if type_of_target(y) != "binary":
-            warnings.warn(
-                "This version of MLD-WNB only supports binary classification."
-            )
+            warnings.warn("This version of MLD-WNB only supports binary classification.")
             raise ValueError("Unknown label type: non-binary")
 
         # Check if only one class is present in label vector
@@ -144,10 +142,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that the number of samples and labels are compatible
         if self.__n_samples != y.shape[0]:
-            raise ValueError(
-                "X.shape[0]=%d and y.shape[0]=%d are incompatible."
-                % (X.shape[0], y.shape[0])
-            )
+            raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
 
         if self.priors is not None:
             # Check that the provided priors match the number of classes
@@ -174,15 +169,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that the regularization parameter is a positive integer
         if not isinstance(self.C, numbers.Number) or self.C < 0:
-            raise ValueError(
-                "Regularization parameter must be positive; got (C=%r)" % self.C
-            )
+            raise ValueError("Regularization parameter must be positive; got (C=%r)" % self.C)
 
         # Check that the maximum number of iterations is a positive integer
         if not isinstance(self.max_iter, numbers.Number) or self.max_iter < 0:
             raise ValueError(
-                "Maximum number of iteration must be a positive integer; got (max_iter=%r)."
-                % self.max_iter
+                "Maximum number of iteration must be a positive integer; got (max_iter=%r)." % self.max_iter
             )
 
     def _prepare_X_y(self, X=None, y=None, from_fit=False):
@@ -217,12 +209,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     def _prepare_parameters(self, X, y):
         # Calculate mean and standard deviation of features for each class
         for c in range(self.n_classes_):
-            self.theta_[:, c] = np.mean(
-                X[y == c, :], axis=0
-            )  # Calculate mean of features for class c
-            self.std_[:, c] = np.std(
-                X[y == c, :], axis=0
-            )  # Calculate std of features for class c
+            self.theta_[:, c] = np.mean(X[y == c, :], axis=0)  # Calculate mean of features for class c
+            self.std_[:, c] = np.std(X[y == c, :], axis=0)  # Calculate std of features for class c
         self.var_ = np.square(self.std_)  # Calculate variance of features using std
 
         self.class_prior_: np.ndarray
@@ -289,9 +277,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.var_: np.ndarray = np.zeros(
             (self.n_features_in_, self.n_classes_)
         )  # Variance of each feature per class (n_features x n_classes)
-        self.coef_: np.ndarray = np.ones(
-            (self.n_features_in_,)
-        )  # WNB coefficients (n_features x 1)
+        self.coef_: np.ndarray = np.ones((self.n_features_in_,))  # WNB coefficients (n_features x 1)
         self.cost_hist_: np.ndarray = np.array(
             [np.nan for _ in range(self.max_iter)]
         )  # Cost value in each iteration
@@ -305,9 +291,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             y_hat = self._predict(X)
 
             # Calculate cost
-            self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(
-                X, y, y_hat, self.learning_hist
-            )
+            self.cost_hist_[self.n_iter_], _lambda = self._calculate_cost(X, y, y_hat, self.learning_hist)
 
             # Calculate gradients (most time-consuming)
             _grad = self._calculate_grad(X, _lambda)
@@ -337,12 +321,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 x = X[i, :]
                 for j in range(self.n_features_in_):
                     _sum += self.coef_[j] * (
-                        np.log(
-                            1e-20 + norm.pdf(x[j], self.theta_[j, 1], self.std_[j, 1])
-                        )
-                        - np.log(
-                            1e-20 + norm.pdf(x[j], self.theta_[j, 0], self.std_[j, 0])
-                        )
+                        np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 1], self.std_[j, 1]))
+                        - np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 0], self.std_[j, 0]))
                     )
                 _cost += _lambda[i] * _sum
         else:
@@ -359,12 +339,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _grad += (
             0.5
             * (
-                (
-                    X
-                    - np.repeat(
-                        self.theta_[:, 0].reshape(1, -1), self.__n_samples, axis=0
-                    )
-                )
+                (X - np.repeat(self.theta_[:, 0].reshape(1, -1), self.__n_samples, axis=0))
                 / (np.repeat(self.std_[:, 0].reshape(1, -1), self.__n_samples, axis=0))
             )
             ** 2
@@ -372,19 +347,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _grad -= (
             0.5
             * (
-                (
-                    X
-                    - np.repeat(
-                        self.theta_[:, 1].reshape(1, -1), self.__n_samples, axis=0
-                    )
-                )
+                (X - np.repeat(self.theta_[:, 1].reshape(1, -1), self.__n_samples, axis=0))
                 / (np.repeat(self.std_[:, 1].reshape(1, -1), self.__n_samples, axis=0))
             )
             ** 2
         )
-        _grad *= np.transpose(
-            np.repeat(np.array(_lambda).reshape(1, -1), self.n_features_in_, axis=0)
-        )
+        _grad *= np.transpose(np.repeat(np.array(_lambda).reshape(1, -1), self.n_features_in_, axis=0))
         _grad = np.sum(_grad, axis=0)
 
         return _grad
@@ -445,15 +413,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_is_fitted(self)
 
         # Input validation
-        X = check_array(
-            array=X, accept_large_sparse=False, force_all_finite=True, estimator=self
-        )
+        X = check_array(array=X, accept_large_sparse=False, force_all_finite=True, estimator=self)
 
         # Check if the number of input features matches the data seen during fit
         if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                "Expected input with %d features, got %d instead."
-                % (self.n_features_in_, X.shape[1])
+                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
             )
 
         n_samples = X.shape[0]
@@ -473,9 +438,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         log_proba = log_priors + term1 + term2
 
         log_proba -= np.transpose(
-            np.repeat(
-                logsumexp(log_proba, axis=1).reshape(1, -1), self.n_classes_, axis=0
-            )
+            np.repeat(logsumexp(log_proba, axis=1).reshape(1, -1), self.n_classes_, axis=0)
         )
         return log_proba
 
