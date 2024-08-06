@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numbers
 import warnings
 from abc import ABCMeta
@@ -86,20 +88,6 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
     """
-
-    class_count_: np.ndarray
-    class_prior_: np.ndarray
-    classes_: np.ndarray
-    n_classes_: int
-    n_features_in_: int
-    feature_names_in_: np.ndarray
-    error_weights_: np.ndarray
-    theta_: np.ndarray
-    std_: np.ndarray
-    var_: np.ndarray
-    coef_: np.ndarray
-    cost_hist_: np.ndarray
-    n_iter_: int
 
     def __init__(
         self,
@@ -237,6 +225,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             )  # Calculate std of features for class c
         self.var_ = np.square(self.std_)  # Calculate variance of features using std
 
+        self.class_prior_: np.ndarray
         # Update if no priors is provided
         if self.priors is None:
             self.class_prior_ = (
@@ -272,41 +261,45 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self : object
             Returns the instance itself.
         """
+        self.n_features_in_: int
+        self.feature_names_in_: np.ndarray
         self._check_n_features(X=X, reset=True)
         self._check_feature_names(X=X, reset=True)
 
         X, y = self._prepare_X_y(X, y, from_fit=True)
 
+        self.classes_: np.ndarray
+        self.class_count_: np.ndarray
         self.classes_, y_, self.class_count_ = np.unique(
             y, return_counts=True, return_inverse=True
         )  # Unique class labels, their indices, and class counts
-        self.n_classes_ = len(self.classes_)  # Number of classes
+        self.n_classes_: int = len(self.classes_)  # Number of classes
 
         self.__n_samples = X.shape[0]  # Number of samples (for internal use)
 
         self._check_inputs(X, y)
         y = y_
 
-        self.theta_ = np.zeros(
+        self.theta_: np.ndarray = np.zeros(
             (self.n_features_in_, self.n_classes_)
         )  # Mean of each feature per class (n_features x n_classes)
-        self.std_ = np.zeros(
+        self.std_: np.ndarray = np.zeros(
             (self.n_features_in_, self.n_classes_)
         )  # Standard deviation of each feature per class (n_features x n_classes)
-        self.var_ = np.zeros(
+        self.var_: np.ndarray = np.zeros(
             (self.n_features_in_, self.n_classes_)
         )  # Variance of each feature per class (n_features x n_classes)
-        self.coef_ = np.ones(
+        self.coef_: np.ndarray = np.ones(
             (self.n_features_in_,)
         )  # WNB coefficients (n_features x 1)
-        self.cost_hist_ = np.array(
+        self.cost_hist_: np.ndarray = np.array(
             [np.nan for _ in range(self.max_iter)]
         )  # Cost value in each iteration
 
         self._prepare_parameters(X, y)
 
         # Learn the weights using gradient descent
-        self.n_iter_ = 0
+        self.n_iter_: int = 0
         for self.n_iter_ in range(self.max_iter):
             # Predict on X
             y_hat = self._predict(X)

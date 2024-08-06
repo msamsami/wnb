@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import warnings
 from abc import ABCMeta
 from typing import Optional, Sequence
@@ -12,6 +14,7 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 from typing_extensions import Self
 
+from ._base import DistMixin
 from ._typing import ArrayLike, DistibutionLike, Float, MatrixLike
 from .dist import NonNumericDistributions
 from .enums import Distribution
@@ -64,15 +67,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     likelihood_params_ : dict
         A mapping from class labels to their fitted likelihood distributions.
     """
-
-    class_count_: np.ndarray
-    class_prior_: np.ndarray
-    classes_: np.ndarray
-    n_classes_: int
-    n_features_in_: int
-    feature_names_in_: np.ndarray
-    distributions_: list
-    likelihood_params_: dict
 
     def __init__(
         self,
@@ -164,6 +158,8 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         return output[0] if len(output) == 1 else output
 
     def _prepare_parameters(self):
+        self.class_prior_: np.ndarray
+
         # Set priors if not specified
         if self.priors is None:
             self.class_prior_ = (
@@ -189,8 +185,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Set distributions if not specified
         if self.distributions is None:
-            self.distributions_ = [Distribution.NORMAL] * self.n_features_in_
-
+            self.distributions_: list[DistibutionLike] = [
+                Distribution.NORMAL
+            ] * self.n_features_in_
         else:
             # Check if the number of distributions matches the number of features
             if len(self.distributions) != self.n_features_in_:
@@ -206,7 +203,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                         f"Distribution '{dist}' at index {i} is not supported."
                     )
 
-            self.distributions_ = self.distributions
+            self.distributions_: list[DistibutionLike] = list(self.distributions)
 
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.
@@ -225,22 +222,26 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self : object
             Returns the instance itself.
         """
+        self.n_features_in_: int
+        self.feature_names_in_: np.ndarray
         self._check_n_features(X=X, reset=True)
         self._check_feature_names(X=X, reset=True)
 
         X, y = self._prepare_X_y(X, y, from_fit=True)
 
+        self.classes_: np.ndarray
+        self.class_count_: np.ndarray
         self.classes_, y_, self.class_count_ = np.unique(
             y, return_counts=True, return_inverse=True
         )  # Unique class labels, their indices, and class counts
-        self.n_classes_ = len(self.classes_)  # Number of classes
+        self.n_classes_: int = len(self.classes_)  # Number of classes
 
         self._check_inputs(X, y)
 
         y = y_
         self._prepare_parameters()
 
-        self.likelihood_params_ = {
+        self.likelihood_params_: dict[int, list[DistMixin]] = {
             c: [
                 get_dist_class(self.distributions_[i]).from_data(
                     X[y == c, i], alpha=self.alpha
