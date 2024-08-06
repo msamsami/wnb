@@ -7,7 +7,7 @@
 
 <div align="center">
 
-![Lastest Release](https://img.shields.io/badge/release-v0.2.5-green)
+![Lastest Release](https://img.shields.io/badge/release-v0.2.6-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)<br>
 ![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
@@ -83,7 +83,7 @@ wnb.fit(X, y)
 wnb.predict(x_test)
 ```
 
-## Compatibility with Scikit-learn
+## Compatibility with Scikit-learn 🤝
 
 The **wnb** library fully adheres to the Scikit-learn API, ensuring seamless integration with other Scikit-learn components and workflows. This means that users familiar with Scikit-learn will find the WNB classifiers intuitive to use.
 
@@ -100,7 +100,7 @@ Both Scikit-learn classifiers and WNB classifiers share these well-known methods
 
 By maintaining this consistency, WNB classifiers can be easily incorporated into existing machine learning pipelines and processes.
 
-## Benchmarks
+## Benchmarks 📊
 We conducted benchmarks on three datasets, [Breast Cancer](https://scikit-learn.org/stable/datasets/toy_dataset.html#breast-cancer-wisconsin-diagnostic-dataset), [Digits](https://scikit-learn.org/stable/datasets/toy_dataset.html#optical-recognition-of-handwritten-digits-dataset), and [Wine](https://scikit-learn.org/stable/datasets/toy_dataset.html#wine-recognition-dataset), to evaluate the performance of WNB classifiers and compare them with their Scikit-learn counterpart, `GaussianNB`. The results show that WNB classifiers generally perform better in certain cases.
 
 | Dataset          | Scikit-learn Classifier | Accuracy | WNB Classifier | Accuracy  |
@@ -124,7 +124,7 @@ Then, run pytest:
 pytest
 ```
 
-## Support us 🤝
+## Support us 💡
 You can support the project in the following ways:
 
 ⭐ Star WNB on GitHub (click the star button in the top right corner)
