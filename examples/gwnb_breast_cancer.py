@@ -10,9 +10,7 @@ X = breast_cancer["data"]
 y = breast_cancer["target"]
 
 # Split the data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.33, random_state=0
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=0)
 
 # Train and score sklearn GaussianNB classifier
 gnb = GaussianNB()

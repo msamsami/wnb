@@ -39,9 +39,7 @@ class NormalDist(ContinuousDistMixin):
         return cls(mu=np.average(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
-        return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(
-            -0.5 * (((x - self.mu) / self.sigma) ** 2)
-        )
+        return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(-0.5 * (((x - self.mu) / self.sigma) ** 2))
 
 
 class LognormalDist(ContinuousDistMixin):
@@ -114,11 +112,7 @@ class ParetoDist(ContinuousDistMixin):
         return cls(x_m=x_m, alpha=len(data) / np.sum(np.log(data / x_m)))
 
     def pdf(self, x: float) -> float:
-        return (
-            (self.alpha * self.x_m**self.alpha) / x ** (self.alpha + 1)
-            if x >= self.x_m
-            else 0.0
-        )
+        return (self.alpha * self.x_m**self.alpha) / x ** (self.alpha + 1) if x >= self.x_m else 0.0
 
 
 class GammaDist(ContinuousDistMixin):
@@ -134,19 +128,12 @@ class GammaDist(ContinuousDistMixin):
     def from_data(cls, data, **kwargs):
         n = len(data)
         return cls(
-            k=n
-            * np.sum(data)
-            / (n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))),
-            theta=(
-                n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))
-            )
-            / n**2,
+            k=n * np.sum(data) / (n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))),
+            theta=(n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))) / n**2,
         )
 
     def pdf(self, x: float) -> float:
-        return (x ** (self.k - 1) * np.exp(-x / self.theta)) / (
-            gamma(self.k) * self.theta**self.k
-        )
+        return (x ** (self.k - 1) * np.exp(-x / self.theta)) / (gamma(self.k) * self.theta**self.k)
 
 
 class BetaDist(ContinuousDistMixin):
@@ -169,9 +156,7 @@ class BetaDist(ContinuousDistMixin):
         )
 
     def pdf(self, x: float) -> float:
-        return ((x ** (self.alpha - 1)) * (1 - x) ** (self.beta - 1)) / beta(
-            self.alpha, self.beta
-        )
+        return ((x ** (self.alpha - 1)) * (1 - x) ** (self.beta - 1)) / beta(self.alpha, self.beta)
 
 
 class ChiSquaredDist(ContinuousDistMixin):
@@ -203,9 +188,9 @@ class TDist(ContinuousDistMixin):
         return cls(df=len(data) - 1)
 
     def pdf(self, x: float) -> float:
-        return (
-            gamma((self.df + 1) / 2) / (np.sqrt(self.df * np.pi) * gamma(self.df / 2))
-        ) * (1 + (x**2 / self.df)) ** (-(self.df + 1) / 2)
+        return (gamma((self.df + 1) / 2) / (np.sqrt(self.df * np.pi) * gamma(self.df / 2))) * (
+            1 + (x**2 / self.df)
+        ) ** (-(self.df + 1) / 2)
 
 
 class RayleighDist(ContinuousDistMixin):
@@ -222,11 +207,7 @@ class RayleighDist(ContinuousDistMixin):
         return cls(sigma=sigma)
 
     def pdf(self, x: float) -> float:
-        return (
-            (x / self.sigma**2) * np.exp(-(x**2) / (2 * self.sigma**2))
-            if x >= 0
-            else 0.0
-        )
+        return (x / self.sigma**2) * np.exp(-(x**2) / (2 * self.sigma**2)) if x >= 0 else 0.0
 
 
 class BernoulliDist(DiscreteDistMixin):
@@ -281,11 +262,7 @@ class GeometricDist(DiscreteDistMixin):
         return cls(p=len(data) / np.sum(data))
 
     def pmf(self, x: int) -> float:
-        return (
-            self.p * (1 - self.p) ** (x - 1)
-            if x >= self._support[0] and x - int(x) == 0
-            else 0.0
-        )
+        return self.p * (1 - self.p) ** (x - 1) if x >= self._support[0] and x - int(x) == 0 else 0.0
 
 
 class PoissonDist(DiscreteDistMixin):

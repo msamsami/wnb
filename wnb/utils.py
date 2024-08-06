@@ -17,10 +17,7 @@ def is_dist_supported(dist: DistibutionLike) -> bool:
     if (
         isinstance(dist, Distribution)
         or dist in Distribution.__members__.values()
-        or all(
-            hasattr(dist, attr_name)
-            for attr_name in ["from_data", "support", "__call__"]
-        )
+        or all(hasattr(dist, attr_name) for attr_name in ["from_data", "support", "__call__"])
     ):
         return True
 
@@ -32,18 +29,11 @@ def get_dist_class(name_or_type: DistibutionLike) -> Optional[DistMixin]:
         issubclass(name_or_type, DistMixin)
         return name_or_type
 
-    if (
-        isinstance(name_or_type, Distribution)
-        or name_or_type in Distribution.__members__.values()
-    ):
+    if isinstance(name_or_type, Distribution) or name_or_type in Distribution.__members__.values():
         return AllDistributions[name_or_type]
-    elif isinstance(name_or_type, str) and name_or_type.upper() in [
-        d.name for d in Distribution
-    ]:
+    elif isinstance(name_or_type, str) and name_or_type.upper() in [d.name for d in Distribution]:
         return AllDistributions[Distribution.__members__[name_or_type.upper()]]
-    elif isinstance(name_or_type, str) and name_or_type.title() in [
-        d.value for d in Distribution
-    ]:
+    elif isinstance(name_or_type, str) and name_or_type.title() in [d.value for d in Distribution]:
         return AllDistributions[Distribution(name_or_type.title())]
     else:
         return

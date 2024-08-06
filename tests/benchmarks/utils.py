@@ -17,13 +17,9 @@ warnings.filterwarnings("ignore")
 __all__ = ("benchmark",)
 
 
-def compare_score(
-    X, y, wnb, sklearn, random_state: int, test_size: float
-) -> tuple[float, float]:
+def compare_score(X, y, wnb, sklearn, random_state: int, test_size: float) -> tuple[float, float]:
     # Split the data into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
     # Train and score wnb classifier
     clf_wnb = clone(wnb)
@@ -36,14 +32,10 @@ def compare_score(
     return clf_wnb.score(X_test, y_test), clf_sklearn.score(X_test, y_test)
 
 
-def benchmark(
-    X, y, wnb, sklearn, max_iter: int = 50, test_size: float = 0.33
-) -> tuple[float, float]:
+def benchmark(X, y, wnb, sklearn, max_iter: int = 50, test_size: float = 0.33) -> tuple[float, float]:
     results = Parallel(n_jobs=-1, prefer="processes")(
         delayed(compare_score)(*param)
-        for param in tqdm(
-            [(X, y, wnb, sklearn, i, test_size) for i in range(max_iter)], ncols=80
-        )
+        for param in tqdm([(X, y, wnb, sklearn, i, test_size) for i in range(max_iter)], ncols=80)
     )
 
     return np.mean([r[0] for r in results]), np.mean([r[1] for r in results])

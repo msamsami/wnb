@@ -66,6 +66,9 @@ include = ["/README.md", "/wnb"]
 testpaths = ["tests"]
 filterwarnings = ["ignore"]
 
+[tool.black]
+line-length = 110
+
 [tool.isort]
 atomic = true
 profile = "black"
