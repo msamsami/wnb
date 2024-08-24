@@ -1,8 +1,8 @@
 import contextlib
 from typing import Optional
 
-from ._base import DistMixin
 from ._typing import DistibutionLike
+from .base import DistMixin
 from .dist import AllDistributions
 from .enums import Distribution
 
@@ -11,8 +11,7 @@ __all__ = ["is_dist_supported", "get_dist_class"]
 
 def is_dist_supported(dist: DistibutionLike) -> bool:
     with contextlib.suppress(TypeError):
-        issubclass(dist, DistMixin)
-        return True
+        return issubclass(dist, DistMixin)
 
     if (
         isinstance(dist, Distribution)
@@ -26,8 +25,8 @@ def is_dist_supported(dist: DistibutionLike) -> bool:
 
 def get_dist_class(name_or_type: DistibutionLike) -> Optional[DistMixin]:
     with contextlib.suppress(TypeError):
-        issubclass(name_or_type, DistMixin)
-        return name_or_type
+        if issubclass(name_or_type, DistMixin):
+            return name_or_type
 
     if isinstance(name_or_type, Distribution) or name_or_type in Distribution.__members__.values():
         return AllDistributions[name_or_type]

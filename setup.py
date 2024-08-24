@@ -13,7 +13,7 @@ setup(
     author="Mehdi Samsami",
     author_email="mehdisamsami@live.com",
     license="BSD License",
-    url="https://github.com/msamsami/weighted-naive-bayes",
+    url="https://github.com/msamsami/wnb",
     long_description=codecs.open(
         path.join(path.abspath(path.dirname(__file__)), "README.md"), encoding="utf-8"
     ).read(),
@@ -45,7 +45,7 @@ setup(
     extras_require={
         "dev": [
             "pytest>=7.0.0",
-            "black>=24.4.2",
+            "black==24.8.0",
             "tqdm>=4.65.0",
             "pre-commit>=3.7.1",
             "isort==5.13.2",

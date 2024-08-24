@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/msamsami/weighted-naive-bayes/main/docs/logo.png" alt="wnb logo" width="275" />
+<img src="https://raw.githubusercontent.com/msamsami/wnb/main/docs/logo.png" alt="wnb logo" width="275" />
 </div>
 
 <div align="center"> <b>General and weighted naive Bayes classifiers</b> </div>
@@ -7,10 +7,10 @@
 
 <div align="center">
 
-![Lastest Release](https://img.shields.io/badge/release-v0.2.6-green)
+![Lastest Release](https://img.shields.io/badge/release-v0.2.7-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)<br>
-![GitHub Workflow Status (build)](https://github.com/msamsami/weighted-naive-bayes/actions/workflows/python-publish.yml/badge.svg)
+![GitHub Workflow Status (build)](https://github.com/msamsami/wnb/actions/workflows/python-publish.yml/badge.svg)
 ![PyPI License](https://img.shields.io/pypi/l/wnb)
 [![PyPi Downloads](https://static.pepy.tech/badge/wnb)](https://pepy.tech/project/wnb)
 
@@ -26,14 +26,35 @@ The issue with the well-known implementations of the naive Bayes algorithm (such
 Although naive Bayes has many advantages such as simplicity and interpretability, its conditional independence assumption rarely holds true in real-world applications. In order to alleviate its conditional independence assumption, many attribute weighting naive Bayes (WNB) approaches have been proposed. Most of the proposed methods involve computationally demanding optimization problems that do not allow for controlling the model's bias due to class imbalance. Minimum Log-likelihood Difference WNB (MLD-WNB) is a novel weighting approach that optimizes the weights according to the Bayes optimal decision rule and includes hyperparameters for controlling the model's bias. **WNB** library provides an efficient implementation of gaussian MLD-WNB.
 
 ## Installation
-The easiest way to install the **wnb** library is by using `pip`:
-```
-pip install wnb
-```
 This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. Furthermore, it fully **adheres to Scikit-learn API** ❤️.
 
+### Prerequisites
+Ensure that Python 3.8 or higher is installed on your machine before installing **WNB**.
+
+### PyPi
+```bash
+pip install wnb
+```
+
+### Poetry
+```bash
+poetry add wnb
+```
+
+### GitHub
+```bash
+# Clone the repository
+git clone https://github.com/msamsami/wnb.git
+
+# Navigate into the project directory
+cd wnb
+
+# Install the package
+pip install .
+```
+
 ## Getting started ⚡️
-Here, we show how you can use the library to train general and weighted naive Bayes classifiers. 
+Here, we show how you can use the library to train general and weighted naive Bayes classifiers.
 
 ### General naive Bayes
 
@@ -114,13 +135,14 @@ These benchmarks highlight the potential of WNB classifiers to provide better pe
 The benchmark scripts used to obtain these results can be found under _tests/benchmarks/_ directory.
 
 ## Tests
-To run the tests, make sure to clone the repository and install the development requirements:
-```
+To run the tests, make sure to clone the repository and install the development requirements in addition to base requirements:
+```bash
+pip install -r requirements.txt
 pip install -r requirements_dev.txt
 ```
 
 Then, run pytest:
-```
+```bash
 pytest
 ```
 
@@ -129,7 +151,7 @@ You can support the project in the following ways:
 
 ⭐ Star WNB on GitHub (click the star button in the top right corner)
 
-💡 Provide your feedback or propose ideas in the [Issues section](https://github.com/msamsami/weighted-naive-bayes/issues)
+💡 Provide your feedback or propose ideas in the [Issues section](https://github.com/msamsami/wnb/issues)
 
 📰 Post about WNB on LinkedIn or other platforms
 
@@ -144,6 +166,6 @@ If you utilize this repository, please consider citing it with:
   year = {2023},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/msamsami/weighted-naive-bayes}},
+  howpublished = {\url{https://github.com/msamsami/wnb}},
 }
 ```

@@ -5,7 +5,7 @@ import numpy.typing
 import pandas as pd
 from scipy.sparse import spmatrix
 
-from ._base import ContinuousDistMixin, DiscreteDistMixin
+from .base import ContinuousDistMixin, DiscreteDistMixin
 from .enums import Distribution
 
 __all__ = ["MatrixLike", "ArrayLike", "Int", "Float", "DistibutionLike"]
