@@ -41,10 +41,14 @@ dependencies = [
     "typing-extensions>=4.8.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/msamsami/wnb"
+Source = "https://github.com/msamsami/wnb"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
-    "black>=24.4.2",
+    "black==24.8.0",
     "tqdm>=4.65.0",
     "pre-commit>=3.7.1",
     "isort==5.13.2",
