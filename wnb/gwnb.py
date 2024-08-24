@@ -18,9 +18,7 @@ from typing_extensions import Self
 
 from ._typing import ArrayLike, Float, Int, MatrixLike
 
-__all__ = [
-    "GaussianWNB",
-]
+__all__ = ["GaussianWNB"]
 
 
 class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):

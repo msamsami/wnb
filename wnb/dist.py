@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import beta, gamma
 from scipy.stats import chi2
 
-from ._base import ContinuousDistMixin, DiscreteDistMixin
+from .base import ContinuousDistMixin, DiscreteDistMixin
 from .enums import Distribution as D
 
 __all__ = [

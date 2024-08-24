@@ -14,15 +14,13 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 from typing_extensions import Self
 
-from ._base import DistMixin
 from ._typing import ArrayLike, DistibutionLike, Float, MatrixLike
+from .base import DistMixin
 from .dist import NonNumericDistributions
 from .enums import Distribution
 from .utils import get_dist_class, is_dist_supported
 
-__all__ = [
-    "GeneralNB",
-]
+__all__ = ["GeneralNB"]
 
 
 class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
