@@ -9,7 +9,7 @@ setup(
     name="wnb",
     version=__version__,
     description="Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.",
-    keywords=["python", "bayes", "naive bayes", "classifier", "probabilistic"],
+    keywords=["python", "machine learning", "bayes", "naive bayes", "classifier", "probabilistic"],
     author="Mehdi Samsami",
     author_email="mehdisamsami@live.com",
     license="BSD License",
