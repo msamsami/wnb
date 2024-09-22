@@ -16,7 +16,7 @@ from sklearn.utils.multiclass import check_classification_targets, type_of_targe
 from sklearn.utils.validation import check_is_fitted
 from typing_extensions import Self
 
-from ._typing import ArrayLike, Float, Int, MatrixLike
+from .typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = ["GaussianWNB"]
 

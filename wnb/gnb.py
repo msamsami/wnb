@@ -14,11 +14,12 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 from typing_extensions import Self
 
-from ._typing import ArrayLike, DistibutionLike, Float, MatrixLike
-from .base import DistMixin
-from .dist import NonNumericDistributions
-from .enums import Distribution
-from .utils import get_dist_class, is_dist_supported
+from wnb.stats import Distribution, NonNumericDistributions
+from wnb.stats.base import DistMixin
+from wnb.stats.typing import DistributionLike
+from wnb.stats.utils import get_dist_class, is_dist_supported
+
+from .typing import ArrayLike, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
 
@@ -70,7 +71,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self,
         *,
         priors: Optional[ArrayLike] = None,
-        distributions: Optional[Sequence[DistibutionLike]] = None,
+        distributions: Optional[Sequence[DistributionLike]] = None,
         alpha: Float = 1e-10,
     ) -> None:
         self.priors = priors
@@ -178,7 +179,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Set distributions if not specified
         if self.distributions is None:
-            self.distributions_: list[DistibutionLike] = [Distribution.NORMAL] * self.n_features_in_
+            self.distributions_: list[DistributionLike] = [Distribution.NORMAL] * self.n_features_in_
         else:
             # Check if the number of distributions matches the number of features
             if len(self.distributions) != self.n_features_in_:
@@ -192,7 +193,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 if not is_dist_supported(dist):
                     raise ValueError(f"Distribution '{dist}' at index {i} is not supported.")
 
-            self.distributions_: list[DistibutionLike] = list(self.distributions)
+            self.distributions_: list[DistributionLike] = list(self.distributions)
 
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.

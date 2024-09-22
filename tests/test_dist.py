@@ -4,7 +4,7 @@ from scipy import stats
 from sklearn.utils._testing import assert_array_almost_equal
 
 from wnb import Distribution as D
-from wnb.dist import (
+from wnb.stats import (
     AllDistributions,
     BernoulliDist,
     BetaDist,

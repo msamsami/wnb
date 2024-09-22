@@ -13,6 +13,7 @@ readme = "README.md"
 readme-content-type = "text/markdown"
 keywords = [
     "python",
+    "machine learning",
     "bayes",
     "naive bayes",
     "classifier",
