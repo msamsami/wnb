@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ._enum_meta import CaseInsensitiveEnumMeta
+from wnb._enum_meta import CaseInsensitiveEnumMeta
 
 __all__ = ["Distribution"]
 
