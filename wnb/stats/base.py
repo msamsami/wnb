@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from functools import wraps
 from numbers import Number
 from typing import Any
@@ -15,23 +15,6 @@ from .enums import Distribution
 __all__ = ["ContinuousDistMixin", "DiscreteDistMixin"]
 
 
-def vectorize(otypes=None, excluded=None, signature=None):
-    """
-    Numpy vectorization wrapper that works with class methods.
-    """
-
-    def decorator(func):
-        vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
-
-        @wraps(func)
-        def wrapper(*args):
-            return vectorized(*args)
-
-        return wrapper
-
-    return decorator
-
-
 class DistMixin(metaclass=ABCMeta):
     """
     Mixin class for probability distributions in wnb.
@@ -41,6 +24,7 @@ class DistMixin(metaclass=ABCMeta):
     _support: list[float] | tuple[float, float]
 
     @classmethod
+    @abstractmethod
     def from_data(cls, data, **kwargs) -> Self:
         """Creates an instance of the class from given data. Distribution parameters will be estimated from data.
 
@@ -108,6 +92,10 @@ class DistMixin(metaclass=ABCMeta):
                 RuntimeWarning,
             )
 
+    @abstractmethod
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        pass
+
     def __repr__(self) -> str:
         return "".join(
             [
@@ -125,6 +113,23 @@ class DistMixin(metaclass=ABCMeta):
         )
 
 
+def vectorize(otypes=None, excluded=None, signature=None):
+    """
+    Numpy vectorization wrapper that works with class methods.
+    """
+
+    def decorator(func):
+        vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
+
+        @wraps(func)
+        def wrapper(*args):
+            return vectorized(*args)
+
+        return wrapper
+
+    return decorator
+
+
 class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
     """
     Mixin class for all continuous probability distributions in wnb.
@@ -138,6 +143,7 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def pdf(self, x: float) -> float:
         """Returns the value of probability density function (PDF) at x.
 
@@ -168,6 +174,7 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def pmf(self, x: float) -> float:
         """Returns the value of probability mass function (PMF) at x.
 
