@@ -10,8 +10,10 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  test:
+    uses: ./.github/workflows/run-tests.yml
 
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,15 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
         pip install -r requirements.txt
-        pip install -r requirements_dev.txt
 
-    - name: Run tests
-      run: pytest
-
-    - name: Build package
+    - name: Build the package
       run: python -m build
 
-    - name: Publish package
+    - name: Publish the package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
         user: __token__
