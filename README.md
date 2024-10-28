@@ -7,7 +7,7 @@
 
 <div align="center">
 
-![Lastest Release](https://img.shields.io/badge/release-v0.3.0-green)
+![Lastest Release](https://img.shields.io/badge/release-v0.3.1-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)<br>
 ![GitHub Workflow Status (build)](https://github.com/msamsami/wnb/actions/workflows/python-publish.yml/badge.svg)

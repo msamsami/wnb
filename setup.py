@@ -40,15 +40,15 @@ setup(
         "numpy<2.0.0",
         "scipy>=1.8.0",
         "scikit-learn>=1.0.2",
-        "typing-extensions>=4.8.0",
+        "typing-extensions>=4.8.0; python_full_version < '3.11'",
     ],
     extras_require={
         "dev": [
             "pytest>=7.0.0",
             "black==24.8.0",
-            "tqdm>=4.65.0",
-            "pre-commit>=3.7.1",
-            "isort==5.13.2",
+            "tqdm",
+            "pre-commit",
+            "isort",
         ]
     },
 )

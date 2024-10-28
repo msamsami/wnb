@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 from scipy.special import beta, gamma
 from scipy.stats import chi2
@@ -23,13 +25,13 @@ class NormalDist(ContinuousDistMixin):
     name = D.NORMAL
     _support = (-np.inf, np.inf)
 
-    def __init__(self, mu: float, sigma: float):
+    def __init__(self, mu: float, sigma: float) -> None:
         self.mu = mu
         self.sigma = sigma
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray, **kwargs):
+    def from_data(cls, data: np.ndarray, **kwargs: Any) -> "NormalDist":
         return cls(mu=np.average(data), sigma=np.std(data))
 
     def pdf(self, x: float) -> float:
@@ -40,13 +42,13 @@ class LognormalDist(ContinuousDistMixin):
     name = D.LOGNORMAL
     _support = (0, np.inf)
 
-    def __init__(self, mu: float, sigma: float):
+    def __init__(self, mu: float, sigma: float) -> None:
         self.mu = mu
         self.sigma = sigma
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray, **kwargs):
+    def from_data(cls, data: np.ndarray, **kwargs: Any) -> "LognormalDist":
         log_data = np.log(data)
         return cls(mu=np.average(log_data), sigma=np.std(log_data))
 
@@ -60,12 +62,12 @@ class ExponentialDist(ContinuousDistMixin):
     name = D.EXPONENTIAL
     _support = (0, np.inf)
 
-    def __init__(self, rate: float):
+    def __init__(self, rate: float) -> None:
         self.rate = rate
         super().__init__()
 
     @classmethod
-    def from_data(cls, data: np.ndarray, **kwargs):
+    def from_data(cls, data: np.ndarray, **kwargs: Any) -> "ExponentialDist":
         return cls(rate=(len(data) - 2) / np.sum(data))
 
     def pdf(self, x: float) -> float:
@@ -76,14 +78,14 @@ class UniformDist(ContinuousDistMixin):
     name = D.UNIFORM
     _support = None
 
-    def __init__(self, a: float, b: float):
+    def __init__(self, a: float, b: float) -> None:
         self.a = a
         self.b = b
         self._support = (a, b)
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "UniformDist":
         return cls(a=np.min(data), b=np.max(data))
 
     def pdf(self, x: float) -> float:
@@ -94,14 +96,14 @@ class ParetoDist(ContinuousDistMixin):
     name = D.PARETO
     _support = None
 
-    def __init__(self, x_m: float, alpha: float):
+    def __init__(self, x_m: float, alpha: float) -> None:
         self.x_m = x_m
         self.alpha = alpha
         self._support = (self.x_m, np.inf)
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "ParetoDist":
         x_m = np.min(data)
         return cls(x_m=x_m, alpha=len(data) / np.sum(np.log(data / x_m)))
 
@@ -113,13 +115,13 @@ class GammaDist(ContinuousDistMixin):
     name = D.GAMMA
     _support = (0, np.inf)
 
-    def __init__(self, k: float, theta: float):
+    def __init__(self, k: float, theta: float) -> None:
         self.k = k
         self.theta = theta
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "GammaDist":
         n = len(data)
         return cls(
             k=n * np.sum(data) / (n * np.sum(data * np.log(data)) - np.sum(data * np.sum(np.log(data)))),
@@ -134,13 +136,13 @@ class BetaDist(ContinuousDistMixin):
     name = D.BETA
     _support = (0, 1)
 
-    def __init__(self, alpha: float, beta: float):
+    def __init__(self, alpha: float, beta: float) -> None:
         self.alpha = alpha
         self.beta = beta
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "BetaDist":
         mu_hat = np.average(data)
         var_hat = np.var(data, ddof=1)
         multiplied_term = (mu_hat * (1 - mu_hat) / var_hat) - 1
@@ -157,12 +159,12 @@ class ChiSquaredDist(ContinuousDistMixin):
     name = D.CHI_SQUARED
     _support = (0, np.inf)
 
-    def __init__(self, k: int):
+    def __init__(self, k: int) -> None:
         self.k = k
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "ChiSquaredDist":
         return cls(k=round(np.average(data)))
 
     def pdf(self, x: float) -> float:
@@ -173,12 +175,12 @@ class TDist(ContinuousDistMixin):
     name = D.T
     _support = (-np.inf, np.inf)
 
-    def __init__(self, df: float):
+    def __init__(self, df: float) -> None:
         self.df = df
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "TDist":
         return cls(df=len(data) - 1)
 
     def pdf(self, x: float) -> float:
@@ -191,12 +193,12 @@ class RayleighDist(ContinuousDistMixin):
     name = D.RAYLEIGH
     _support = (0, np.inf)
 
-    def __init__(self, sigma: float):
+    def __init__(self, sigma: float) -> None:
         self.sigma = sigma
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "RayleighDist":
         sigma = np.sqrt(np.mean(data**2) / 2)
         return cls(sigma=sigma)
 

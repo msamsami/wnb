@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import warnings
 from abc import ABCMeta
 from typing import Optional, Sequence
@@ -12,7 +13,11 @@ from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array, check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
-from typing_extensions import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from wnb.stats import Distribution, NonNumericDistributions
 from wnb.stats.base import DistMixin
@@ -78,17 +83,17 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.distributions = distributions
         self.alpha = alpha
 
-    def _more_tags(self):
+    def _more_tags(self) -> dict[str, bool]:
         return {"requires_y": True}
 
-    def _get_distributions(self):
+    def _get_distributions(self) -> Sequence[DistributionLike]:
         try:
             if self.distributions_ is not None:
                 return self.distributions_
         except Exception:
             return self.distributions or []
 
-    def _check_inputs(self, X, y):
+    def _check_inputs(self, X, y) -> None:
         # Check if the targets are suitable for classification
         check_classification_targets(y)
 
@@ -118,7 +123,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         if X.shape[0] != y.shape[0]:
             raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
 
-    def _prepare_X_y(self, X=None, y=None, from_fit=False):
+    def _prepare_X_y(self, X=None, y=None, from_fit: bool = False):
         if from_fit and y is None:
             raise ValueError("requires y to be passed, but the target y is None.")
 
@@ -151,7 +156,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         output = tuple(item for item in [X, y] if item is not None)
         return output[0] if len(output) == 1 else output
 
-    def _prepare_parameters(self):
+    def _prepare_parameters(self) -> None:
         self.class_prior_: np.ndarray
 
         # Set priors if not specified

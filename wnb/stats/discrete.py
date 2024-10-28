@@ -17,12 +17,12 @@ class BernoulliDist(DiscreteDistMixin):
     name = D.BERNOULLI
     _support = [0, 1]
 
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "BernoulliDist":
         alpha = kwargs.get("alpha", 1e-10)
         return cls(p=((np.array(data) == 1).sum() + alpha) / len(data))
 
@@ -37,13 +37,13 @@ class CategoricalDist(DiscreteDistMixin):
     name = D.CATEGORICAL
     _support = None
 
-    def __init__(self, prob: Mapping[Any, float]):
+    def __init__(self, prob: Mapping[Any, float]) -> None:
         self.prob = prob
         self._support = list(self.prob.keys())
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "CategoricalDist":
         alpha = kwargs.get("alpha", 1e-10)
         values, counts = np.unique(data, return_counts=True)
         return cls(prob={v: (c + alpha) / len(data) for v, c in zip(values, counts)})
@@ -56,12 +56,12 @@ class GeometricDist(DiscreteDistMixin):
     name = D.GEOMETRIC
     _support = (1, np.inf)
 
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "GeometricDist":
         return cls(p=len(data) / np.sum(data))
 
     def pmf(self, x: int) -> float:
@@ -72,12 +72,12 @@ class PoissonDist(DiscreteDistMixin):
     name = D.POISSON
     _support = (0, np.inf)
 
-    def __init__(self, rate: float):
+    def __init__(self, rate: float) -> None:
         self.rate = rate
         super().__init__()
 
     @classmethod
-    def from_data(cls, data, **kwargs):
+    def from_data(cls, data, **kwargs: Any) -> "PoissonDist":
         return cls(rate=np.sum(data) / len(data))
 
     def pmf(self, x: int) -> float:

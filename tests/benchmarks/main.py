@@ -8,7 +8,7 @@ from wnb import GaussianWNB, GeneralNB
 MAX_ITER = 100
 
 
-def benchmark_breast_cancer():
+def benchmark_breast_cancer() -> None:
     breast_cancer = load_breast_cancer()
     X = breast_cancer["data"]
     y = breast_cancer["target"]
@@ -21,7 +21,7 @@ def benchmark_breast_cancer():
     print("breast cancer dataset | wnb     | GaussianWNB >> score >>", score_wnb, "\n")
 
 
-def benchmark_digits():
+def benchmark_digits() -> None:
     digits = load_digits()
     X = digits["data"]
     y = digits["target"]
@@ -34,7 +34,7 @@ def benchmark_digits():
     print("digits dataset | wnb     | GeneralNB  >> score >>", score_wnb, "\n")
 
 
-def benchmark_wine():
+def benchmark_wine() -> None:
     wine = load_wine()
     X = wine["data"]
     y = wine["target"]
