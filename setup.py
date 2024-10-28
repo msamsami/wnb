@@ -40,7 +40,7 @@ setup(
         "numpy<2.0.0",
         "scipy>=1.8.0",
         "scikit-learn>=1.0.2",
-        "typing-extensions>=4.8.0",
+        "typing-extensions>=4.8.0; python_full_version < '3.11'",
     ],
     extras_require={
         "dev": [
