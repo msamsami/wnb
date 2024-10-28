@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import sys
 import warnings
 from abc import ABCMeta, abstractmethod
 from functools import wraps
@@ -8,7 +9,11 @@ from numbers import Number
 from typing import Any
 
 import numpy as np
-from typing_extensions import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from .enums import Distribution
 
@@ -25,7 +30,7 @@ class DistMixin(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def from_data(cls, data, **kwargs) -> Self:
+    def from_data(cls, data, **kwargs: Any) -> Self:
         """Creates an instance of the class from given data. Distribution parameters will be estimated from data.
 
         Args:
@@ -68,7 +73,7 @@ class DistMixin(metaclass=ABCMeta):
         Returns:
             dict: Parameter names mapped to their values.
         """
-        out = dict()
+        out: dict[str, Any] = {}
         for key in self._get_param_names():
             value = getattr(self, key)
             out[key] = value
@@ -93,7 +98,7 @@ class DistMixin(metaclass=ABCMeta):
             )
 
     @abstractmethod
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
     def __repr__(self) -> str:
@@ -113,7 +118,7 @@ class DistMixin(metaclass=ABCMeta):
         )
 
 
-def vectorize(otypes=None, excluded=None, signature=None):
+def vectorize(otypes: str | None = None, excluded: set[int | str] = None, signature: str | None = None):
     """
     Numpy vectorization wrapper that works with class methods.
     """
@@ -122,8 +127,8 @@ def vectorize(otypes=None, excluded=None, signature=None):
         vectorized = np.vectorize(func, otypes=otypes, excluded=excluded, signature=signature)
 
         @wraps(func)
-        def wrapper(*args):
-            return vectorized(*args)
+        def wrapper(*args: Any, **kwargs: Any):
+            return vectorized(*args, **kwargs)
 
         return wrapper
 
@@ -137,7 +142,7 @@ class ContinuousDistMixin(DistMixin, metaclass=ABCMeta):
 
     _type: str = "continuous"
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initializes an instance of the continuous probability distribution with given parameters.
         """
@@ -168,7 +173,7 @@ class DiscreteDistMixin(DistMixin, metaclass=ABCMeta):
 
     _type: str = "discrete"
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initializes an instance of the discrete probability distribution with given parameters.
         """

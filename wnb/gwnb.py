@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numbers
+import sys
 import warnings
 from abc import ABCMeta
 from typing import Optional
@@ -14,7 +15,11 @@ from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array, check_array, deprecated
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.utils.validation import check_is_fitted
-from typing_extensions import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from .typing import ArrayLike, Float, Int, MatrixLike
 
@@ -106,10 +111,10 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.C = C
         self.learning_hist = learning_hist
 
-    def _more_tags(self):
+    def _more_tags(self) -> dict[str, bool]:
         return {"binary_only": True, "requires_y": True}
 
-    def _check_inputs(self, X, y):
+    def _check_inputs(self, X, y) -> None:
         # Check if the targets are suitable for classification
         check_classification_targets(y)
 
@@ -175,7 +180,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 "Maximum number of iteration must be a positive integer; got (max_iter=%r)." % self.max_iter
             )
 
-    def _prepare_X_y(self, X=None, y=None, from_fit=False):
+    def _prepare_X_y(self, X=None, y=None, from_fit: bool = False):
         if from_fit and y is None:
             raise ValueError("requires y to be passed, but the target y is None.")
 
@@ -204,7 +209,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         output = tuple(item for item in [X, y] if item is not None)
         return output[0] if len(output) == 1 else output
 
-    def _prepare_parameters(self, X, y):
+    def _prepare_parameters(self, X, y) -> None:
         # Calculate mean and standard deviation of features for each class
         for c in range(self.n_classes_):
             self.theta_[:, c] = np.mean(X[y == c, :], axis=0)  # Calculate mean of features for class c
@@ -308,12 +313,12 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def _calculate_cost(self, X, y, y_hat, learning_hist):
+    def _calculate_cost(self, X, y, y_hat, learning_hist: bool) -> tuple[Float, list[Float]]:
         _lambda = [self.error_weights_[y[i], y_hat[i]] for i in range(self.__n_samples)]
 
         if learning_hist:
             # Calculate cost
-            _cost = 0
+            _cost = 0.0
             for i in range(self.__n_samples):
                 _sum = np.log(self.class_prior_[1] / self.class_prior_[0])
                 x = X[i, :]
@@ -328,7 +333,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return _cost, _lambda
 
-    def _calculate_grad(self, X, _lambda):
+    def _calculate_grad(self, X, _lambda: list[Float]) -> np.ndarray:
         _grad = np.repeat(
             np.log(self.std_[:, 0] / self.std_[:, 1]).reshape(1, -1),
             self.__n_samples,
@@ -356,7 +361,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         return _grad
 
     @deprecated()
-    def _calculate_grad_slow(self, X, _lambda):
+    def _calculate_grad_slow(self, X, _lambda: list[Float]) -> np.ndarray:
         _grad = np.zeros((self.n_features_in_,))
         for i in range(self.__n_samples):
             x = X[i, :]
@@ -371,7 +376,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             _grad += _lambda[i] * _log_p
         return _grad
 
-    def _predict(self, X):
+    def _predict(self, X: MatrixLike) -> np.ndarray:
         p_hat = self.predict_log_proba(X)
         return np.argmax(p_hat, axis=1)
 
