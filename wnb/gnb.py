@@ -30,9 +30,9 @@ else:
     from typing_extensions import Self
 
 from wnb.stats import Distribution, NonNumericDistributions
+from wnb.stats._utils import get_dist_class, is_dist_supported
 from wnb.stats.base import DistMixin
 from wnb.stats.typing import DistributionLike
-from wnb.stats.utils import get_dist_class, is_dist_supported
 
 from .typing import ArrayLike, Float, MatrixLike
 
