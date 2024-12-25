@@ -7,22 +7,12 @@ from typing import Optional, Sequence
 
 import numpy as np
 import pandas as pd
-import sklearn
-from packaging import version
 from scipy.special import logsumexp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array, check_array
+from sklearn.utils import as_float_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
-
-if version.parse(sklearn.__version__) >= version.parse("1.6"):
-    from sklearn.utils.validation import validate_data
-else:
-
-    def validate_data(estimator, X, **kwargs):
-        return check_array(X, estimator=estimator, **kwargs)
-
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -34,6 +24,7 @@ from wnb.stats._utils import get_dist_class, is_dist_supported
 from wnb.stats.base import DistMixin
 from wnb.stats.typing import DistributionLike
 
+from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
 from .typing import ArrayLike, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
@@ -93,7 +84,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.distributions = distributions
         self.alpha = alpha
 
-    if version.parse(sklearn.__version__) >= version.parse("1.6"):
+    if SKLEARN_V1_6_OR_LATER:
 
         def __sklearn_tags__(self):
             tags = super().__sklearn_tags__()

@@ -8,29 +8,20 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-import sklearn
-from packaging import version
 from scipy.special import logsumexp
 from scipy.stats import norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array, check_array, deprecated
+from sklearn.utils import as_float_array, deprecated
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.utils.validation import check_is_fitted
-
-if version.parse(sklearn.__version__) >= version.parse("1.6"):
-    from sklearn.utils.validation import validate_data
-else:
-
-    def validate_data(estimator, X, **kwargs):
-        return check_array(X, estimator=estimator, **kwargs)
-
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
 
+from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
 from .typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = ["GaussianWNB"]
@@ -121,7 +112,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.C = C
         self.learning_hist = learning_hist
 
-    if version.parse(sklearn.__version__) >= version.parse("1.6"):
+    if SKLEARN_V1_6_OR_LATER:
 
         def __sklearn_tags__(self):
             tags = super().__sklearn_tags__()
@@ -138,7 +129,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         # Check that the dataset has only two unique labels
         if (y_type := type_of_target(y)) != "binary":
-            if version.parse(sklearn.__version__) >= version.parse("1.6"):
+            if SKLEARN_V1_6_OR_LATER:
                 msg = f"Only binary classification is supported. The type of the target is {y_type}."
             else:
                 msg = "Unknown label type: non-binary"
