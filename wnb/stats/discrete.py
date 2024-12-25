@@ -1,3 +1,4 @@
+from math import factorial
 from typing import Any, Mapping
 
 import numpy as np
@@ -82,7 +83,7 @@ class PoissonDist(DiscreteDistMixin):
 
     def pmf(self, x: int) -> float:
         return (
-            (np.exp(-self.rate) * self.rate**x) / np.math.factorial(x)
+            (np.exp(-self.rate) * self.rate**x) / factorial(x)
             if x >= self._support[0] and x - int(x) == 0
             else 0.0
         )
