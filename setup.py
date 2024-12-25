@@ -9,7 +9,7 @@ setup(
     name="wnb",
     version=__version__,
     description="Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.",
-    keywords=["python", "machine learning", "bayes", "naive bayes", "classifier", "probabilistic"],
+    keywords=["python", "machine learning", "bayes", "naive bayes", "classifier"],
     author="Mehdi Samsami",
     author_email="mehdisamsami@live.com",
     license="BSD License",
@@ -32,12 +32,12 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "License :: OSI Approved :: BSD License",
     ],
-    python_requires=">=3.8,<3.13",
+    python_requires=">=3.8,<3.14",
     install_requires=[
         "pandas>=1.4.1",
-        "numpy<2.0.0",
         "scipy>=1.8.0",
         "scikit-learn>=1.0.2",
         "typing-extensions>=4.8.0; python_full_version < '3.11'",
@@ -45,9 +45,9 @@ setup(
     extras_require={
         "dev": [
             "pytest>=7.0.0",
-            "black==24.8.0",
+            "black>=24.8.0",
             "tqdm",
-            "pre-commit",
+            "pre-commit>=3.5.0",
             "isort",
         ]
     },

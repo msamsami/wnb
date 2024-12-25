@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pytest
 from sklearn.base import is_classifier
@@ -131,8 +133,8 @@ def test_gwnb_non_binary():
     y_ = np.array([1, 2, 3, 4, 4, 3, 2, 1, 1, 2])
     clf = GaussianWNB()
 
-    msg = "Unknown label type: non-binary"
-    with pytest.raises(ValueError, match=msg):
+    pattern = re.compile(r"(Only binary classification is supported|Unknown label type: non-binary)")
+    with pytest.raises(ValueError, match=pattern):
         clf.fit(X_, y_)
 
 

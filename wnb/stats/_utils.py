@@ -6,8 +6,6 @@ from .base import DistMixin
 from .enums import Distribution
 from .typing import DistributionLike
 
-__all__ = ["is_dist_supported", "get_dist_class"]
-
 
 def is_dist_supported(dist: DistributionLike) -> bool:
     with contextlib.suppress(TypeError):

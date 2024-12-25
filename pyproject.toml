@@ -17,7 +17,6 @@ keywords = [
     "bayes",
     "naive bayes",
     "classifier",
-    "probabilistic",
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -31,12 +30,12 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: BSD License",
 ]
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.8,<3.14"
 dependencies = [
     "pandas>=1.4.1",
-    "numpy<2.0.0",
     "scipy>=1.8.0",
     "scikit-learn>=1.0.2",
     "typing-extensions>=4.8.0; python_full_version < '3.11'",
@@ -49,9 +48,9 @@ Source = "https://github.com/msamsami/wnb"
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
-    "black==24.8.0",
+    "black>=24.8.0",
     "tqdm",
-    "pre-commit",
+    "pre-commit>=3.5.0",
     "isort",
 ]
 

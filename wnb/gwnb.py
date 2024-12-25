@@ -12,7 +12,7 @@ from scipy.special import logsumexp
 from scipy.stats import norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array, check_array, deprecated
+from sklearn.utils import as_float_array, deprecated
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.utils.validation import check_is_fitted
 
@@ -21,6 +21,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
 from .typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = ["GaussianWNB"]
@@ -111,6 +112,14 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.C = C
         self.learning_hist = learning_hist
 
+    if SKLEARN_V1_6_OR_LATER:
+
+        def __sklearn_tags__(self):
+            tags = super().__sklearn_tags__()
+            tags.target_tags.required = True
+            tags.classifier_tags.multi_class = False
+            return tags
+
     def _more_tags(self) -> dict[str, bool]:
         return {"binary_only": True, "requires_y": True}
 
@@ -119,16 +128,20 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_classification_targets(y)
 
         # Check that the dataset has only two unique labels
-        if type_of_target(y) != "binary":
-            warnings.warn("This version of MLD-WNB only supports binary classification.")
-            raise ValueError("Unknown label type: non-binary")
+        if (y_type := type_of_target(y)) != "binary":
+            if SKLEARN_V1_6_OR_LATER:
+                msg = f"Only binary classification is supported. The type of the target is {y_type}."
+            else:
+                msg = "Unknown label type: non-binary"
+            raise ValueError(msg)
 
         # Check if only one class is present in label vector
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present.")
 
-        X = check_array(
-            array=X,
+        X = validate_data(
+            self,
+            X,
             accept_sparse=False,
             accept_large_sparse=False,
             dtype="numeric",
@@ -136,7 +149,6 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ensure_2d=True,
             ensure_min_samples=1,
             ensure_min_features=1,
-            estimator=self,
         )
 
         # Check if X contains complex values
@@ -416,7 +428,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_is_fitted(self)
 
         # Input validation
-        X = check_array(array=X, accept_large_sparse=False, force_all_finite=True, estimator=self)
+        X = validate_data(self, X, accept_large_sparse=False, force_all_finite=True, reset=False)
 
         # Check if the number of input features matches the data seen during fit
         if X.shape[1] != self.n_features_in_:

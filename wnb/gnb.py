@@ -10,7 +10,7 @@ import pandas as pd
 from scipy.special import logsumexp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array, check_array
+from sklearn.utils import as_float_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 
@@ -20,10 +20,11 @@ else:
     from typing_extensions import Self
 
 from wnb.stats import Distribution, NonNumericDistributions
+from wnb.stats._utils import get_dist_class, is_dist_supported
 from wnb.stats.base import DistMixin
 from wnb.stats.typing import DistributionLike
-from wnb.stats.utils import get_dist_class, is_dist_supported
 
+from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
 from .typing import ArrayLike, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
@@ -83,6 +84,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.distributions = distributions
         self.alpha = alpha
 
+    if SKLEARN_V1_6_OR_LATER:
+
+        def __sklearn_tags__(self):
+            tags = super().__sklearn_tags__()
+            tags.target_tags.required = True
+            return tags
+
     def _more_tags(self) -> dict[str, bool]:
         return {"requires_y": True}
 
@@ -101,8 +109,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
 
-        X = check_array(
-            array=X,
+        X = validate_data(
+            self,
+            X,
             accept_sparse=False,
             accept_large_sparse=False,
             dtype=(
@@ -112,7 +121,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ensure_2d=True,
             ensure_min_samples=1,
             ensure_min_features=1,
-            estimator=self,
         )
 
         # Check if X contains complex values
@@ -282,14 +290,15 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_is_fitted(self)
 
         # Input validation
-        X = check_array(
-            array=X,
+        X = validate_data(
+            self,
+            X,
             accept_large_sparse=False,
             force_all_finite=True,
             dtype=(
                 None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
             ),
-            estimator=self,
+            reset=False,
         )
 
         # Check if the number of input features matches the data seen during fit
