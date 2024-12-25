@@ -7,12 +7,22 @@ from typing import Optional, Sequence
 
 import numpy as np
 import pandas as pd
+import sklearn
+from packaging import version
 from scipy.special import logsumexp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array, check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
+
+if version.parse(sklearn.__version__) >= version.parse("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+
+    def validate_data(estimator, X, **kwargs):
+        return check_array(X, estimator=estimator, **kwargs)
+
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -83,6 +93,13 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.distributions = distributions
         self.alpha = alpha
 
+    if version.parse(sklearn.__version__) >= version.parse("1.6"):
+
+        def __sklearn_tags__(self):
+            tags = super().__sklearn_tags__()
+            tags.target_tags.required = True
+            return tags
+
     def _more_tags(self) -> dict[str, bool]:
         return {"requires_y": True}
 
@@ -101,8 +118,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         if self.n_classes_ == 1:
             raise ValueError("Classifier can't train when only one class is present")
 
-        X = check_array(
-            array=X,
+        X = validate_data(
+            self,
+            X,
             accept_sparse=False,
             accept_large_sparse=False,
             dtype=(
@@ -112,7 +130,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ensure_2d=True,
             ensure_min_samples=1,
             ensure_min_features=1,
-            estimator=self,
         )
 
         # Check if X contains complex values
@@ -282,14 +299,15 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         check_is_fitted(self)
 
         # Input validation
-        X = check_array(
-            array=X,
+        X = validate_data(
+            self,
+            X,
             accept_large_sparse=False,
             force_all_finite=True,
             dtype=(
                 None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
             ),
-            estimator=self,
+            reset=False,
         )
 
         # Check if the number of input features matches the data seen during fit
