@@ -47,7 +47,7 @@ setup(
             "pytest>=7.0.0",
             "black>=24.8.0",
             "tqdm",
-            "pre-commit>=4.0.0",
+            "pre-commit>=3.5.0",
             "isort",
         ]
     },
