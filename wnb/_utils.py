@@ -26,7 +26,7 @@ else:
         return check_array(X, estimator=estimator, **kwargs)
 
     def _check_n_features(estimator, X, reset):
-        return estimator._check_n_features(X, reset)
+        return estimator._check_n_features(X, reset=reset)
 
-    def _check_feature_names(estimator, X, reset):
-        return estimator._check_feature_names(X, reset)
+    def _check_feature_names(estimator, X, *, reset):
+        return estimator._check_feature_names(X, reset=reset)
