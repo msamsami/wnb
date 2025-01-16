@@ -2,7 +2,7 @@
 Python library for the implementations of general and weighted naive Bayes (WNB) classifiers.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __author__ = "Mehdi Samsami"
 
 
