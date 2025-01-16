@@ -24,7 +24,12 @@ from wnb.stats._utils import get_dist_class, is_dist_supported
 from wnb.stats.base import DistMixin
 from wnb.stats.typing import DistributionLike
 
-from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
+from ._utils import (
+    SKLEARN_V1_6_OR_LATER,
+    _check_feature_names,
+    _check_n_features,
+    validate_data,
+)
 from .typing import ArrayLike, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
@@ -39,11 +44,17 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     priors : array-like of shape (n_classes,), default=None
         Prior probabilities of the classes. If specified, the priors are not
         adjusted according to the data.
+
     distributions : sequence of distribution-like of length n_features, default=None
         Probability distributions to be used for features' likelihoods. If not specified,
         all likelihoods will be considered Gaussian.
+
     alpha : float, default=1e-10
         Additive (Laplace/Lidstone) smoothing parameter. Set alpha=0 for no smoothing.
+
+    var_smoothing : float, default=1e-9
+        Portion of the largest variance of all features that is added to
+        variances of normal distributions for calculation stability.
 
     Attributes
     ----------
@@ -58,6 +69,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
     n_classes_ : int
         Number of classes seen during :term:`fit`.
+
+    epsilon_ : float
+        Absolute additive value to variances of normal distributions.
 
     n_features_in_ : int
         Number of features seen during :term:`fit`.
@@ -79,10 +93,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         priors: Optional[ArrayLike] = None,
         distributions: Optional[Sequence[DistributionLike]] = None,
         alpha: Float = 1e-10,
+        var_smoothing: Float = 1e-9,
     ) -> None:
         self.priors = priors
         self.distributions = distributions
         self.alpha = alpha
+        self.var_smoothing = var_smoothing
 
     if SKLEARN_V1_6_OR_LATER:
 
@@ -227,8 +243,8 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         """
         self.n_features_in_: int
         self.feature_names_in_: np.ndarray
-        self._check_n_features(X=X, reset=True)
-        self._check_feature_names(X=X, reset=True)
+        _check_n_features(self, X=X, reset=True)
+        _check_feature_names(self, X=X, reset=True)
 
         X, y = self._prepare_X_y(X, y, from_fit=True)
 
@@ -240,13 +256,19 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.n_classes_: int = len(self.classes_)  # Number of classes
 
         self._check_inputs(X, y)
-
         y = y_
         self._prepare_parameters()
 
+        if np.all(np.isreal(X)):
+            self.epsilon_ = self.var_smoothing * np.var(X, axis=0).max()
+        else:
+            self.epsilon_ = 0.0
+
         self.likelihood_params_: dict[int, list[DistMixin]] = {
             c: [
-                get_dist_class(self.distributions_[i]).from_data(X[y == c, i], alpha=self.alpha)
+                get_dist_class(self.distributions_[i]).from_data(
+                    X[y == c, i], alpha=self.alpha, epsilon=self.epsilon_
+                )
                 for i in range(self.n_features_in_)
             ]
             for c in range(self.n_classes_)
@@ -268,8 +290,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             Predicted target values for X.
         """
         p_hat = self.predict_log_proba(X)
-        y_hat = self.classes_[np.argmax(p_hat, axis=1)]
-        return y_hat
+        return self.classes_[np.argmax(p_hat, axis=1)]
 
     def predict_log_proba(self, X: MatrixLike) -> np.ndarray:
         """Returns log-probability estimates for the array of test vectors X.
@@ -308,7 +329,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             )
 
         n_samples = X.shape[0]
-
         X = self._prepare_X_y(X=X)
 
         log_joint = np.zeros((n_samples, self.n_classes_))
