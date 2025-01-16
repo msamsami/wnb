@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 from scipy.special import beta, gamma
@@ -25,17 +25,20 @@ class NormalDist(ContinuousDistMixin):
     name = D.NORMAL
     _support = (-np.inf, np.inf)
 
-    def __init__(self, mu: float, sigma: float) -> None:
+    def __init__(self, mu: float, sigma: float, epsilon: Optional[float] = None) -> None:
         self.mu = mu
         self.sigma = sigma
+        self.epsilon = epsilon
         super().__init__()
 
     @classmethod
     def from_data(cls, data: np.ndarray, **kwargs: Any) -> "NormalDist":
-        return cls(mu=np.average(data), sigma=np.std(data))
+        epsilon = kwargs.get("epsilon")
+        return cls(mu=np.average(data), sigma=np.std(data), epsilon=epsilon)
 
     def pdf(self, x: float) -> float:
-        return (1.0 / np.sqrt(2 * np.pi * self.sigma**2)) * np.exp(-0.5 * (((x - self.mu) / self.sigma) ** 2))
+        var = self.sigma**2 + (self.epsilon or 0.0)
+        return (1.0 / np.sqrt(2 * np.pi * var)) * np.exp(-0.5 * ((x - self.mu) ** 2 / var))
 
 
 class LognormalDist(ContinuousDistMixin):
@@ -53,8 +56,11 @@ class LognormalDist(ContinuousDistMixin):
         return cls(mu=np.average(log_data), sigma=np.std(log_data))
 
     def pdf(self, x: float) -> float:
-        return (1.0 / (x * self.sigma * np.sqrt(2 * np.pi))) * np.exp(
-            -0.5 * ((np.log(x) - self.mu) / self.sigma) ** 2
+        return (
+            (1.0 / (x * self.sigma * np.sqrt(2 * np.pi)))
+            * np.exp(-0.5 * ((np.log(x) - self.mu) / self.sigma) ** 2)
+            if x > 0
+            else 0.0
         )
 
 
