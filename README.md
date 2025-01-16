@@ -122,23 +122,24 @@ Both Scikit-learn classifiers and WNB classifiers share these well-known methods
 By maintaining this consistency, WNB classifiers can be easily incorporated into existing machine learning pipelines and processes.
 
 ## Benchmarks 📊
-We conducted benchmarks on three datasets, [Breast Cancer](https://scikit-learn.org/stable/datasets/toy_dataset.html#breast-cancer-wisconsin-diagnostic-dataset), [Digits](https://scikit-learn.org/stable/datasets/toy_dataset.html#optical-recognition-of-handwritten-digits-dataset), and [Wine](https://scikit-learn.org/stable/datasets/toy_dataset.html#wine-recognition-dataset), to evaluate the performance of WNB classifiers and compare them with their Scikit-learn counterpart, `GaussianNB`. The results show that WNB classifiers generally perform better in certain cases.
+We conducted benchmarks on four datasets, [Wine](https://scikit-learn.org/stable/datasets/toy_dataset.html#wine-recognition-dataset), [Iris](https://scikit-learn.org/stable/datasets/toy_dataset.html#iris-plants-dataset), [Digits](https://scikit-learn.org/stable/datasets/toy_dataset.html#optical-recognition-of-handwritten-digits-dataset), and [Breast Cancer](https://scikit-learn.org/stable/datasets/toy_dataset.html#breast-cancer-wisconsin-diagnostic-dataset), to evaluate the performance of WNB classifiers and compare them with their Scikit-learn counterpart, `GaussianNB`. The results show that WNB classifiers generally perform better in certain cases.
 
 | Dataset          | Scikit-learn Classifier | Accuracy | WNB Classifier | Accuracy  |
 |------------------|-------------------------|----------|----------------|-----------|
-| Breast Cancer    | GaussianNB              | 0.939    | GaussianWNB    | **0.951**     |
-| Digits           | GaussianNB              | 0.838    | GeneralNB      | **0.889**     |
-| Wine             | GaussianNB              | 0.974    | GeneralNB      | **0.981**     |
+| Wine             | GaussianNB              | 0.9749    | GeneralNB      | **0.9812**     |
+| Iris             | GaussianNB              | 0.9556    | GeneralNB      | **0.9602**     |
+| Digits           | GaussianNB              | 0.8372    | GeneralNB      | **0.8905**     |
+| Breast Cancer    | GaussianNB              | 0.9389    | GaussianWNB    | **0.9512**     |
 
 These benchmarks highlight the potential of WNB classifiers to provide better performance in certain scenarios by allowing more flexibility in the choice of distributions and incorporating weighting strategies.
 
-The benchmark scripts used to obtain these results can be found under _tests/benchmarks/_ directory.
+The scripts used to generate these benchmark results are available in the _tests/benchmarks/_ directory.
 
 ## Tests
 To run the tests, make sure to clone the repository and install the development requirements in addition to base requirements:
 ```bash
 pip install -r requirements.txt
-pip install -r requirements_dev.txt
+pip install -r requirements-dev.txt
 ```
 
 Then, run pytest:
@@ -154,7 +155,6 @@ You can support the project in the following ways:
 💡 Provide your feedback or propose ideas in the [Issues section](https://github.com/msamsami/wnb/issues)
 
 📰 Post about WNB on LinkedIn or other platforms
-
 
 ## Citation 📚
 If you utilize this repository, please consider citing it with:
