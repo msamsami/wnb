@@ -21,7 +21,12 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-from ._utils import SKLEARN_V1_6_OR_LATER, validate_data
+from ._utils import (
+    SKLEARN_V1_6_OR_LATER,
+    _check_feature_names,
+    _check_n_features,
+    validate_data,
+)
 from .typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = ["GaussianWNB"]
@@ -35,17 +40,23 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     priors : array-like of shape (n_classes,), default=None
         Prior probabilities of the classes. If specified, the priors are not
         adjusted according to the data.
+
     error_weights : array-like of shape (n_classes, n_classes), default=None
         Matrix of error weights. If not specified, equal weight is assigned to the
         errors of both classes.
+
     max_iter : int, default=25
         Maximum number of gradient descent iterations.
+
     step_size : float, default=1e-4
         Step size of weight update (i.e., learning rate).
+
     penalty : str, default="l2"
         Regularization term, either 'l1' or 'l2'.
+
     C : float, default=1.0
         Regularization strength. Must be strictly positive.
+
     learning_hist : bool, default=False
         Whether to record the learning history, i.e., the value of cost function
         in each learning iteration.
@@ -266,8 +277,8 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         """
         self.n_features_in_: int
         self.feature_names_in_: np.ndarray
-        self._check_n_features(X=X, reset=True)
-        self._check_feature_names(X=X, reset=True)
+        _check_n_features(self, X=X, reset=True)
+        _check_feature_names(self, X=X, reset=True)
 
         X, y = self._prepare_X_y(X, y, from_fit=True)
 
@@ -370,22 +381,6 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _grad *= np.transpose(np.repeat(np.array(_lambda).reshape(1, -1), self.n_features_in_, axis=0))
         _grad = np.sum(_grad, axis=0)
 
-        return _grad
-
-    @deprecated()
-    def _calculate_grad_slow(self, X, _lambda: list[Float]) -> np.ndarray:
-        _grad = np.zeros((self.n_features_in_,))
-        for i in range(self.__n_samples):
-            x = X[i, :]
-            _log_p = np.array(
-                [
-                    np.log(self.std_[j, 0] / self.std_[j, 1])
-                    + 0.5 * ((x[j] - self.theta_[j, 0]) / self.std_[j, 0]) ** 2
-                    - 0.5 * ((x[j] - self.theta_[j, 1]) / self.std_[j, 1]) ** 2
-                    for j in range(self.n_features_in_)
-                ]
-            )
-            _grad += _lambda[i] * _log_p
         return _grad
 
     def _predict(self, X: MatrixLike) -> np.ndarray:
