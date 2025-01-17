@@ -12,7 +12,7 @@ from scipy.special import logsumexp
 from scipy.stats import norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array, deprecated
+from sklearn.utils import as_float_array
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.utils.validation import check_is_fitted
 
