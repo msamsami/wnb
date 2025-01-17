@@ -12,7 +12,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import _ensure_no_complex_data, check_is_fitted
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -139,10 +139,6 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ensure_min_features=1,
         )
 
-        # Check if X contains complex values
-        if np.iscomplex(X).any() or np.iscomplex(y).any():
-            raise ValueError("Complex data not supported")
-
         # Check that the number of samples and labels are compatible
         if X.shape[0] != y.shape[0]:
             raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
@@ -155,6 +151,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
                 X = X.values
+            _ensure_no_complex_data(X)
             X = (
                 X
                 if any(d in self._get_distributions() for d in NonNumericDistributions)
@@ -259,10 +256,9 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         y = y_
         self._prepare_parameters()
 
+        self.epsilon_ = 0.0
         if np.all(np.isreal(X)):
             self.epsilon_ = self.var_smoothing * np.var(X, axis=0).max()
-        else:
-            self.epsilon_ = 0.0
 
         self.likelihood_params_: dict[int, list[DistMixin]] = {
             c: [

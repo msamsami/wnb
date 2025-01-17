@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import as_float_array
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import _ensure_no_complex_data, check_is_fitted
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -162,10 +162,6 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             ensure_min_features=1,
         )
 
-        # Check if X contains complex values
-        if np.iscomplex(X).any() or np.iscomplex(y).any():
-            raise ValueError("Complex data not supported")
-
         # Check that the number of samples and labels are compatible
         if self.__n_samples != y.shape[0]:
             raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
@@ -211,6 +207,7 @@ class GaussianWNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
             # Convert to NumPy array if X is Pandas DataFrame
             if isinstance(X, pd.DataFrame):
                 X = X.values
+            _ensure_no_complex_data(X)
             X = as_float_array(X)
 
         if y is not None:
