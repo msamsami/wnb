@@ -4,7 +4,12 @@ import sklearn
 from packaging import version
 from sklearn.utils import check_array
 
-__all__ = ["SKLEARN_V1_6_OR_LATER", "validate_data", "_check_n_features", "_check_feature_names"]
+__all__ = [
+    "SKLEARN_V1_6_OR_LATER",
+    "validate_data",
+    "_check_n_features",
+    "_check_feature_names",
+]
 
 
 SKLEARN_V1_6_OR_LATER = version.parse(sklearn.__version__) >= version.parse("1.6")

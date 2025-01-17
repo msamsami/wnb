@@ -118,7 +118,11 @@ class DistMixin(metaclass=ABCMeta):
         )
 
 
-def vectorize(otypes: str | None = None, excluded: set[int | str] = None, signature: str | None = None):
+def vectorize(
+    otypes: str | None = None,
+    excluded: set[int | str] = None,
+    signature: str | None = None,
+):
     """
     Numpy vectorization wrapper that works with class methods.
     """

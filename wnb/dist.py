@@ -1,6 +1,6 @@
 import warnings
 
-from wnb.stats import *
+from wnb.stats import *  # noqa: F403
 
 warnings.warn(
     "The `wnb.dist` module is deprecated and will be removed in a future release. "

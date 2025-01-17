@@ -6,7 +6,7 @@ import numpy.typing
 import pandas as pd
 from scipy.sparse import spmatrix
 
-__all__ = ["MatrixLike", "ArrayLike", "Int", "Float", "DistributionLike"]
+__all__ = ["MatrixLike", "ArrayLike", "Int", "Float", "DistributionLike"]  # noqa: F822
 
 
 ArrayLike = numpy.typing.ArrayLike

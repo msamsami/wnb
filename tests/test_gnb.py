@@ -247,3 +247,37 @@ def test_gnb_invalid_dist():
     msg = r"Distribution .* is not supported"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
+
+
+def test_gnb_var_smoothing():
+    """
+    Test whether var_smoothing parameter properly affects the variances of normal distributions.
+    """
+    X = np.array([[1, 0], [2, 0], [3, 0], [4, 0], [5, 0]])  # First feature has variance 2.0
+    y = np.array([1, 1, 2, 2, 2])
+
+    clf1 = GeneralNB(var_smoothing=0.0)
+    clf1.fit(X, y)
+
+    clf2 = GeneralNB(var_smoothing=1.0)
+    clf2.fit(X, y)
+
+    test_point = np.array([[2.5, 0]])
+    prob1 = clf1.predict_proba(test_point)
+    prob2 = clf2.predict_proba(test_point)
+
+    assert not np.allclose(prob1, prob2)
+    assert clf1.epsilon_ == 0.0
+    assert clf2.epsilon_ > clf1.epsilon_
+
+
+def test_gnb_var_smoothing_non_numeric():
+    """
+    Test that var_smoothing is ignored for non-numeric features.
+    """
+    X = np.array([["a", 1], ["b", 2], ["a", 2], ["b", 1]])
+    y = np.array([1, 1, 2, 2])
+
+    clf = GeneralNB(distributions=[D.CATEGORICAL, D.CATEGORICAL], var_smoothing=1e-6)
+    clf.fit(X, y)
+    assert clf.epsilon_ == 0

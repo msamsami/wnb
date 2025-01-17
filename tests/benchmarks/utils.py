@@ -10,7 +10,10 @@ from sklearn.model_selection import train_test_split
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
-    tqdm = lambda iterable, *args, **kwargs: iterable
+
+    def tqdm(iterable, *args, **kwargs):
+        return iterable
+
 
 warnings.filterwarnings("ignore")
 

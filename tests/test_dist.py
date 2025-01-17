@@ -62,6 +62,21 @@ def test_normal_pdf():
     assert_array_almost_equal(norm_wnb(X), norm_scipy.pdf(X), decimal=10)
 
 
+@pytest.mark.parametrize("epsilon", [1e-10, 1e-9, 1e-6, 1e-3])
+def test_normal_with_epsilon(epsilon: float):
+    """
+    Test whether epsilon is correctly applied for `NormalDist`.
+    """
+    norm_1 = NormalDist(mu=1, sigma=0)
+    norm_2 = NormalDist(mu=1, sigma=0, epsilon=epsilon)
+    norm_3 = NormalDist(mu=1, sigma=np.sqrt(epsilon))
+    assert norm_1.sigma == norm_2.sigma == 0
+    assert norm_3.sigma == np.sqrt(epsilon)
+    X = np.random.uniform(-100, 100, size=10000)
+    assert np.isnan(norm_1(X)).all()
+    assert_array_almost_equal(norm_2(X), norm_3(X), decimal=10)
+
+
 def test_lognormal_pdf(random_uniform):
     """
     Test whether pdf method of `LognormalDist` returns the same result as pdf method of `scipy.stats.lognorm`.
