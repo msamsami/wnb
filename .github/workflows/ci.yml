@@ -10,7 +10,7 @@ permissions:
     contents: read
 
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,9 +33,7 @@ jobs:
       run: uv run ruff check --output-format=github .
 
     - name: Run black format check
-      uses: psf/black@stable
-      with:
-        options: "--check --diff"
+      run: uv run black --check --diff .
 
     - name: Run tests
       run: uv run pytest -vv
