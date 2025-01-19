@@ -123,18 +123,6 @@ These benchmarks highlight the potential of WNB classifiers to provide better pe
 
 The scripts used to generate these benchmark results are available in the _tests/benchmarks/_ directory.
 
-## Tests
-To run the tests, make sure to clone the repository and install the development requirements in addition to base requirements:
-```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-```
-
-Then, run pytest:
-```bash
-pytest
-```
-
 ## Support us 💡
 You can support the project in the following ways:
 

@@ -1,4 +1,0 @@
-include README.md
-include LICENSE
-recursive-include wnb *.py
-recursive-include tests *.py
