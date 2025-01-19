@@ -112,7 +112,7 @@ class GeneralNB(_BaseNB):
             return self.distributions or []
 
     def _check_X(self, X) -> np.ndarray:
-        return validate_data(
+        X = validate_data(
             self,
             X,
             accept_sparse=False,
@@ -123,6 +123,11 @@ class GeneralNB(_BaseNB):
             force_all_finite=True,
             reset=False,
         )
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
+            )
+        return X
 
     def _check_X_y(self, X, y) -> tuple[np.ndarray, np.ndarray]:
         X, y = check_X_y(
