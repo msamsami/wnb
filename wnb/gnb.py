@@ -145,14 +145,10 @@ class GeneralNB(_BaseNB):
         return X, y
 
     def _init_parameters(self) -> None:
-        self.class_prior_: np.ndarray
-
         # Set priors if not specified
         if self.priors is None:
-            self.class_prior_ = (
-                self.class_count_ / self.class_count_.sum()
-            )  # Calculate empirical prior probabilities
-
+            # Calculate empirical prior probabilities
+            self.class_prior_ = self.class_count_ / self.class_count_.sum()
         else:
             # Check that the provided priors match the number of classes
             if len(self.priors) != self.n_classes_:
@@ -213,7 +209,7 @@ class GeneralNB(_BaseNB):
         X, y = self._check_X_y(X, y)
 
         self.classes_, y_, self.class_count_ = np.unique(y, return_counts=True, return_inverse=True)
-        self.n_classes_: int = len(self.classes_)
+        self.n_classes_ = len(self.classes_)
 
         self._init_parameters()
 

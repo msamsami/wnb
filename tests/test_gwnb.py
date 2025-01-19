@@ -1,6 +1,7 @@
 import re
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
@@ -194,3 +195,25 @@ def test_gwnb_no_cost_hist():
     clf = GaussianWNB(max_iter=10)
     clf.fit(X, y)
     assert clf.cost_hist_ is None
+
+
+def test_gwnb_attrs():
+    """
+    Test whether the attributes are properly set.
+    """
+    clf = GaussianWNB().fit(X, y)
+    assert np.array_equal(clf.class_count_, np.array([3, 3]))
+    assert np.array_equal(clf.class_prior_, np.array([0.5, 0.5]))
+    assert np.array_equal(clf.classes_, np.array([1, 2]))
+    assert clf.n_classes_ == 2
+    assert clf.n_features_in_ == 2
+    assert not hasattr(clf, "feature_names_in_")
+    assert np.array_equal(clf.error_weights_, np.array([[0, 1], [-1, 0]]))
+    assert clf.theta_.shape == (2, 2)
+    assert clf.std_.shape == (2, 2)
+    assert clf.var_.shape == (2, 2)
+    assert clf.coef_.shape == (2,)
+
+    feature_names = [f"x{i}" for i in range(X.shape[1])]
+    clf = GaussianWNB().fit(pd.DataFrame(X, columns=feature_names), y)
+    assert np.array_equal(clf.feature_names_in_, np.array(feature_names))
