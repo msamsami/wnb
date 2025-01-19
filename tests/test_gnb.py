@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.base import is_classifier
 from sklearn.naive_bayes import BernoulliNB, CategoricalNB, GaussianNB
@@ -281,3 +282,23 @@ def test_gnb_var_smoothing_non_numeric():
     clf = GeneralNB(distributions=[D.CATEGORICAL, D.CATEGORICAL], var_smoothing=1e-6)
     clf.fit(X, y)
     assert clf.epsilon_ == 0
+
+
+def test_gnb_attrs():
+    """
+    Test whether the attributes are properly set.
+    """
+    clf = GeneralNB().fit(X, y)
+    assert np.array_equal(clf.class_count_, np.array([3, 3]))
+    assert np.array_equal(clf.class_prior_, np.array([0.5, 0.5]))
+    assert np.array_equal(clf.classes_, np.array([1, 2]))
+    assert clf.n_classes_ == 2
+    assert clf.epsilon_ > 0
+    assert clf.n_features_in_ == 2
+    assert not hasattr(clf, "feature_names_in_")
+    assert clf.distributions_ == [D.NORMAL, D.NORMAL]
+    assert len(clf.likelihood_params_) == 2
+
+    feature_names = [f"x{i}" for i in range(X.shape[1])]
+    clf = GeneralNB().fit(pd.DataFrame(X, columns=feature_names), y)
+    assert np.array_equal(clf.feature_names_in_, np.array(feature_names))

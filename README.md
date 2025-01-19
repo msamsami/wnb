@@ -7,7 +7,7 @@
 
 <div align="center">
 
-![Lastest Release](https://img.shields.io/badge/release-v0.5.1-green)
+![Lastest Release](https://img.shields.io/badge/release-v0.6.0-green)
 [![PyPI Version](https://img.shields.io/pypi/v/wnb)](https://pypi.org/project/wnb/)
 ![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)<br>
 ![GitHub Workflow Status (build)](https://github.com/msamsami/wnb/actions/workflows/build.yml/badge.svg)
@@ -102,6 +102,7 @@ Both Scikit-learn classifiers and WNB classifiers share these well-known methods
 - `predict(X)`
 - `predict_proba(X)`
 - `predict_log_proba(X)`
+- `predict_joint_log_proba(X)`
 - `score(X, y)`
 - `get_params()`
 - `set_params(**params)`
@@ -122,18 +123,6 @@ We conducted benchmarks on four datasets, [Wine](https://scikit-learn.org/stable
 These benchmarks highlight the potential of WNB classifiers to provide better performance in certain scenarios by allowing more flexibility in the choice of distributions and incorporating weighting strategies.
 
 The scripts used to generate these benchmark results are available in the _tests/benchmarks/_ directory.
-
-## Tests
-To run the tests, make sure to clone the repository and install the development requirements in addition to base requirements:
-```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-```
-
-Then, run pytest:
-```bash
-pytest
-```
 
 ## Support us 💡
 You can support the project in the following ways:

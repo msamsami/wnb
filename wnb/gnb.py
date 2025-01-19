@@ -1,18 +1,11 @@
 from __future__ import annotations
 
 import sys
-import warnings
-from abc import ABCMeta
 from typing import Optional, Sequence
 
 import numpy as np
-import pandas as pd
-from scipy.special import logsumexp
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import as_float_array
+from sklearn.naive_bayes import _BaseNB
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import _ensure_no_complex_data, check_is_fitted
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -28,6 +21,7 @@ from ._utils import (
     SKLEARN_V1_6_OR_LATER,
     _check_feature_names,
     _check_n_features,
+    check_X_y,
     validate_data,
 )
 from .typing import ArrayLike, Float, MatrixLike
@@ -35,7 +29,7 @@ from .typing import ArrayLike, Float, MatrixLike
 __all__ = ["GeneralNB"]
 
 
-class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
+class GeneralNB(_BaseNB):
     """A General Naive Bayes classifier that supports distinct likelihood distributions for individual features,
     enabling more tailored modeling beyond the standard single-distribution approaches such as GaussianNB and BernoulliNB.
 
@@ -117,14 +111,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         except Exception:
             return self.distributions or []
 
-    def _check_inputs(self, X, y) -> None:
-        # Check if the targets are suitable for classification
-        check_classification_targets(y)
-
-        # Check if only one class is present in label vector
-        if self.n_classes_ == 1:
-            raise ValueError("Classifier can't train when only one class is present")
-
+    def _check_X(self, X) -> np.ndarray:
         X = validate_data(
             self,
             X,
@@ -134,58 +121,34 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
                 None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
             ),
             force_all_finite=True,
-            ensure_2d=True,
-            ensure_min_samples=1,
-            ensure_min_features=1,
+            reset=False,
         )
-
-        # Check that the number of samples and labels are compatible
-        if X.shape[0] != y.shape[0]:
-            raise ValueError("X.shape[0]=%d and y.shape[0]=%d are incompatible." % (X.shape[0], y.shape[0]))
-
-    def _prepare_X_y(self, X=None, y=None, from_fit: bool = False):
-        if from_fit and y is None:
-            raise ValueError("requires y to be passed, but the target y is None.")
-
-        if X is not None:
-            # Convert to NumPy array if X is Pandas DataFrame
-            if isinstance(X, pd.DataFrame):
-                X = X.values
-            _ensure_no_complex_data(X)
-            X = (
-                X
-                if any(d in self._get_distributions() for d in NonNumericDistributions)
-                else as_float_array(X)
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
             )
+        return X
 
-        if y is not None:
-            # Convert to a NumPy array
-            if isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
-                y = y.values
-            else:
-                y = np.array(y)
+    def _check_X_y(self, X, y) -> tuple[np.ndarray, np.ndarray]:
+        X, y = check_X_y(
+            X,
+            y,
+            accept_sparse=False,
+            accept_large_sparse=False,
+            dtype=(
+                None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
+            ),
+            force_all_finite=True,
+            estimator=self,
+        )
+        check_classification_targets(y)
+        return X, y
 
-            # Warning in case of y being 2d
-            if y.ndim > 1:
-                warnings.warn(
-                    "A column-vector y was passed when a 1d array was expected.",
-                    DataConversionWarning,
-                )
-
-            y = y.flatten()
-
-        output = tuple(item for item in [X, y] if item is not None)
-        return output[0] if len(output) == 1 else output
-
-    def _prepare_parameters(self) -> None:
-        self.class_prior_: np.ndarray
-
+    def _init_parameters(self) -> None:
         # Set priors if not specified
         if self.priors is None:
-            self.class_prior_ = (
-                self.class_count_ / self.class_count_.sum()
-            )  # Calculate empirical prior probabilities
-
+            # Calculate empirical prior probabilities
+            self.class_prior_ = self.class_count_ / self.class_count_.sum()
         else:
             # Check that the provided priors match the number of classes
             if len(self.priors) != self.n_classes_:
@@ -243,18 +206,12 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         _check_n_features(self, X=X, reset=True)
         _check_feature_names(self, X=X, reset=True)
 
-        X, y = self._prepare_X_y(X, y, from_fit=True)
+        X, y = self._check_X_y(X, y)
 
-        self.classes_: np.ndarray
-        self.class_count_: np.ndarray
-        self.classes_, y_, self.class_count_ = np.unique(
-            y, return_counts=True, return_inverse=True
-        )  # Unique class labels, their indices, and class counts
-        self.n_classes_: int = len(self.classes_)  # Number of classes
+        self.classes_, y_, self.class_count_ = np.unique(y, return_counts=True, return_inverse=True)
+        self.n_classes_ = len(self.classes_)
 
-        self._check_inputs(X, y)
-        y = y_
-        self._prepare_parameters()
+        self._init_parameters()
 
         self.epsilon_ = 0.0
         if np.all(np.isreal(X)):
@@ -263,7 +220,7 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         self.likelihood_params_: dict[int, list[DistMixin]] = {
             c: [
                 get_dist_class(self.distributions_[i]).from_data(
-                    X[y == c, i], alpha=self.alpha, epsilon=self.epsilon_
+                    X[y_ == c, i], alpha=self.alpha, epsilon=self.epsilon_
                 )
                 for i in range(self.n_features_in_)
             ]
@@ -272,86 +229,11 @@ class GeneralNB(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def predict(self, X: MatrixLike) -> np.ndarray:
-        """Performs classification on an array of test vectors X.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        C : ndarray of shape (n_samples,)
-            Predicted target values for X.
-        """
-        p_hat = self.predict_log_proba(X)
-        return self.classes_[np.argmax(p_hat, axis=1)]
-
-    def predict_log_proba(self, X: MatrixLike) -> np.ndarray:
-        """Returns log-probability estimates for the array of test vectors X.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        C : array-like of shape (n_samples, n_classes)
-            Returns the log-probability of the samples for each class in
-            the model. The columns correspond to the classes in sorted
-            order, as they appear in the attribute :term:`classes_`.
-        """
-        # Check is fit had been called
-        check_is_fitted(self)
-
-        # Input validation
-        X = validate_data(
-            self,
-            X,
-            accept_large_sparse=False,
-            force_all_finite=True,
-            dtype=(
-                None if any(d in self._get_distributions() for d in NonNumericDistributions) else "numeric"
-            ),
-            reset=False,
-        )
-
-        # Check if the number of input features matches the data seen during fit
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                "Expected input with %d features, got %d instead." % (self.n_features_in_, X.shape[1])
-            )
-
-        n_samples = X.shape[0]
-        X = self._prepare_X_y(X=X)
-
-        log_joint = np.zeros((n_samples, self.n_classes_))
+    def _joint_log_likelihood(self, X) -> np.ndarray:
+        jll = np.zeros((X.shape[0], self.n_classes_))
         for c in range(self.n_classes_):
-            log_joint[:, c] = np.log(self.class_prior_[c]) + np.sum(
+            jll[:, c] = np.log(self.class_prior_[c]) + np.sum(
                 [np.log(likelihood(X[:, i])) for i, likelihood in enumerate(self.likelihood_params_[c])],
                 axis=0,
             )
-
-        log_proba = log_joint - np.transpose(
-            np.repeat(logsumexp(log_joint, axis=1).reshape(1, -1), self.n_classes_, axis=0)
-        )
-        return log_proba
-
-    def predict_proba(self, X: MatrixLike) -> np.ndarray:
-        """Returns probability estimates for the array of test vectors X.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        C : array-like of shape (n_samples, n_classes)
-            Returns the probability of the samples for each class in
-            the model. The columns correspond to the classes in sorted
-            order, as they appear in the attribute :term:`classes_`.
-        """
-        return np.exp(self.predict_log_proba(X))
+        return jll
