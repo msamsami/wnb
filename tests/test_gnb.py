@@ -284,6 +284,30 @@ def test_gnb_var_smoothing_non_numeric():
     assert clf.epsilon_ == 0
 
 
+def test_gnb_neg_var_smoothing():
+    """
+    Test whether an error is raised in case of negative var_smoothing.
+    """
+    clf = GeneralNB(var_smoothing=-1.0)
+
+    msg_1 = "Variance smoothing parameter must be a non-negative real number"
+    msg_2 = "'var_smoothing' parameter of GeneralNB must be a float in the range \[0.0, inf\)"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
+
+
+def test_gnb_neg_alpha():
+    """
+    Test whether an error is raised in case of negative alpha.
+    """
+    clf = GeneralNB(alpha=-1.0)
+
+    msg_1 = "Alpha must be a non-negative real number"
+    msg_2 = "'alpha' parameter of GeneralNB must be a float in the range \[0.0, inf\)"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
+
+
 def test_gnb_attrs():
     """
     Test whether the attributes are properly set.
