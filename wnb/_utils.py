@@ -1,3 +1,4 @@
+import functools
 from typing import Any
 
 import sklearn
@@ -11,8 +12,8 @@ __all__ = [
     "check_X_y",
     "_check_n_features",
     "_check_feature_names",
+    "_fit_context",
 ]
-
 
 SKLEARN_V1_6_OR_LATER = version.parse(sklearn.__version__) >= version.parse("1.6")
 
@@ -45,3 +46,20 @@ else:
 
     def _check_feature_names(estimator, X, *, reset):
         return estimator._check_feature_names(X, reset=reset)
+
+
+try:
+    # Added in sklearn v1.3.0
+    from sklearn.base import _fit_context
+except ImportError:
+
+    def _fit_context(*, prefer_skip_nested_validation: bool):
+
+        def decorator(fit_method):
+            @functools.wraps(fit_method)
+            def wrapper(estimator, *args: Any, **kwargs: Any):
+                return fit_method(estimator, *args, **kwargs)
+
+            return wrapper
+
+        return decorator
