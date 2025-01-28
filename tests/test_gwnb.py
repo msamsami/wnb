@@ -159,11 +159,13 @@ def test_gwnb_wrong_penalty():
     """
     Test whether an error is raised in case regularization penalty is not supported.
     """
-    clf = GaussianWNB(penalty="dropout")
+    clfs = [GaussianWNB(penalty="dropout"), GaussianWNB(penalty=5)]
 
-    msg = "Regularization type must be either 'l1' or 'l2'"
-    with pytest.raises(ValueError, match=msg):
-        clf.fit(X, y)
+    msg_1 = "Regularization type must be either 'l1' or 'l2'"
+    msg_2 = "'penalty' parameter of GaussianWNB must be a str among"
+    for clf in clfs:
+        with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+            clf.fit(X, y)
 
 
 def test_gwnb_neg_C():
@@ -172,9 +174,23 @@ def test_gwnb_neg_C():
     """
     clf = GaussianWNB(C=-0.6)
 
-    msg = "Regularization parameter must be positive"
-    with pytest.raises(ValueError, match=msg):
+    msg_1 = "Regularization parameter must be a non-negative"
+    msg_2 = "'C' parameter of GaussianWNB must be a float in the range \[0.0, inf\)"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
         clf.fit(X, y)
+
+
+def test_gwnb_non_pos_step_size():
+    """
+    Test whether an error is raised in case of non-positive step size.
+    """
+    clfs = [GaussianWNB(step_size=0.0), GaussianWNB(step_size=-0.6)]
+
+    msg_1 = "Step size must be a positive real number"
+    msg_2 = "'step_size' parameter of GaussianWNB must be a float in the range \(0.0, inf\)"
+    for clf in clfs:
+        with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+            clf.fit(X, y)
 
 
 def test_gwnb_neg_max_iter():
@@ -183,8 +199,9 @@ def test_gwnb_neg_max_iter():
     """
     clf = GaussianWNB(max_iter=-10)
 
-    msg = "Maximum number of iteration must be a positive integer"
-    with pytest.raises(ValueError, match=msg):
+    msg_1 = "Maximum number of iterations must be a non-negative"
+    msg_2 = "'max_iter' parameter of GaussianWNB must be an int in the range \[0, inf\)"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
         clf.fit(X, y)
 
 
