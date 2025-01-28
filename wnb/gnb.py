@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import sys
-from typing import Optional, Sequence
+from numbers import Real
+from typing import Any, Optional, Sequence
 
 import numpy as np
 from sklearn.naive_bayes import _BaseNB
@@ -21,12 +22,31 @@ from ._utils import (
     SKLEARN_V1_6_OR_LATER,
     _check_feature_names,
     _check_n_features,
+    _fit_context,
     check_X_y,
     validate_data,
 )
 from .typing import ArrayLike, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
+
+
+def _get_parameter_constraints() -> dict[str, list[Any]]:
+    """
+    Gets parameter validation constraints for GeneralNB based on Scikit-learn version.
+    """
+    try:
+        # Added in sklearn v1.2.0
+        from sklearn.utils._param_validation import Interval
+
+        return {
+            "priors": ["array-like", None],
+            "distributions": ["array-like", None],
+            "alpha": [Interval(Real, 0, None, closed="left")],
+            "var_smoothing": [Interval(Real, 0, None, closed="left")],
+        }
+    except (ImportError, ModuleNotFoundError):
+        return {}
 
 
 class GeneralNB(_BaseNB):
@@ -80,6 +100,9 @@ class GeneralNB(_BaseNB):
     likelihood_params_ : dict
         A mapping from class labels to their fitted likelihood distributions.
     """
+
+    if parameter_constraints := _get_parameter_constraints():
+        _parameter_constraints = parameter_constraints
 
     def __init__(
         self,
@@ -184,6 +207,18 @@ class GeneralNB(_BaseNB):
 
             self.distributions_: list[DistributionLike] = list(self.distributions)
 
+        # Ensure alpha is a non-negative real number
+        if not isinstance(self.alpha, Real) or self.alpha < 0:
+            raise ValueError("Alpha must be a non-negative real number; got (alpha=%r) instead." % self.alpha)
+
+        # Ensure variance smoothing is a non-negative real number
+        if not isinstance(self.var_smoothing, Real) or self.var_smoothing < 0:
+            raise ValueError(
+                "Variance smoothing parameter must be a non-negative real number; got (var_smoothing=%r) instead."
+                % self.var_smoothing
+            )
+
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits general Naive Bayes classifier according to X, y.
 
