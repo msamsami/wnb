@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import numbers
 import sys
-from typing import Optional
+from numbers import Integral, Real
+from typing import Any, Optional
 
 import numpy as np
 from scipy.stats import norm
@@ -18,12 +18,34 @@ from ._utils import (
     SKLEARN_V1_6_OR_LATER,
     _check_feature_names,
     _check_n_features,
+    _fit_context,
     check_X_y,
     validate_data,
 )
 from .typing import ArrayLike, Float, Int, MatrixLike
 
 __all__ = ["GaussianWNB"]
+
+
+def _get_parameter_constraints() -> dict[str, list[Any]]:
+    """
+    Gets parameter validation constraints for GaussianWNB based on Scikit-learn version.
+    """
+    try:
+        # Added in sklearn v1.2.0
+        from sklearn.utils._param_validation import Interval, StrOptions
+
+        return {
+            "priors": ["array-like", None],
+            "error_weights": ["array-like", None],
+            "max_iter": [Interval(Integral, 0, None, closed="left")],
+            "step_size": [Interval(Real, 0.0, None, closed="neither")],
+            "penalty": [StrOptions({"l1", "l2"})],
+            "C": [Interval(Real, 0.0, None, closed="left")],
+            "learning_hist": ["boolean"],
+        }
+    except (ImportError, ModuleNotFoundError):
+        return {}
 
 
 class GaussianWNB(_BaseNB):
@@ -97,6 +119,9 @@ class GaussianWNB(_BaseNB):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
     """
+
+    if parameter_constraints := _get_parameter_constraints():
+        _parameter_constraints = parameter_constraints
 
     def __init__(
         self,
@@ -193,7 +218,7 @@ class GaussianWNB(_BaseNB):
             # Assign equal weight to the errors of both classes
             self.error_weights_ = np.array([[0, 1], [-1, 0]])
         else:
-            # Check that the size of error weights matrix matches number of classes
+            # Ensure the size of error weights matrix matches number of classes
             if self.error_weights.shape != (self.n_classes_, self.n_classes_):
                 raise ValueError(
                     "The shape of error weights matrix does not match the number of classes, "
@@ -201,20 +226,30 @@ class GaussianWNB(_BaseNB):
                 )
             self.error_weights_ = self.error_weights
 
-        # Check that the regularization type is either 'l1' or 'l2'
+        # Ensure regularization type is either 'l1' or 'l2'
         if self.penalty not in ("l1", "l2"):
             raise ValueError("Regularization type must be either 'l1' or 'l2'.")
 
-        # Check that the regularization parameter is a positive integer
-        if not isinstance(self.C, numbers.Number) or self.C < 0:
-            raise ValueError("Regularization parameter must be positive; got (C=%r)" % self.C)
-
-        # Check that the maximum number of iterations is a positive integer
-        if not isinstance(self.max_iter, numbers.Number) or self.max_iter < 0:
+        # Ensure regularization parameter is a non-negative real number
+        if not isinstance(self.C, Real) or self.C < 0:
             raise ValueError(
-                "Maximum number of iteration must be a positive integer; got (max_iter=%r)." % self.max_iter
+                "Regularization parameter must be a non-negative real number; got (C=%r) instead." % self.C
             )
 
+        # Ensure step size is a positive real number
+        if not isinstance(self.step_size, Real) or self.step_size <= 0:
+            raise ValueError(
+                "Step size must be a positive real number; got (step_size=%r) instead." % self.step_size
+            )
+
+        # Ensure maximum number of iterations is a non-negative integer
+        if not isinstance(self.max_iter, Integral) or self.max_iter < 0:
+            raise ValueError(
+                "Maximum number of iterations must be a non-negative integer; got (max_iter=%r) instead."
+                % self.max_iter
+            )
+
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits Gaussian Binary MLD-WNB classifier according to X, y.
 
