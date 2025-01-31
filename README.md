@@ -65,8 +65,8 @@ or
 gnb = GeneralNB(
     distributions=[
         (D.CATEGORICAL, "col2"),
-        (D.EXPONENTIAL, ["col3", "col4"])
-    ]
+        (D.EXPONENTIAL, ["col3", "col4"]),
+    ],
 )
 ```
 
