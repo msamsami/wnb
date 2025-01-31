@@ -62,7 +62,12 @@ gnb = GeneralNB(distributions=[D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL, D.EXPONEN
 or
 ```python
 # Columns not explicitly specified will default to Gaussian (normal) distribution
-gnb = GeneralNB(distributions=[(D.CATEGORICAL, "col2"), (D.EXPONENTIAL, ["col3", "col4"])])
+gnb = GeneralNB(
+    distributions=[
+        (D.CATEGORICAL, "col2"),
+        (D.EXPONENTIAL, ["col3", "col4"]),
+    ],
+)
 ```
 
 3. Fit the classifier to a training set (with four features)
