@@ -306,7 +306,7 @@ class GeneralNB(_BaseNB):
         self._init_parameters()
 
         self.epsilon_ = 0.0
-        if np.all(np.isreal(X)):
+        if np.issubdtype(X.dtype, np.number) and np.all(np.isreal(X)):
             self.epsilon_ = self.var_smoothing * np.var(X, axis=0).max()
 
         self.likelihood_params_: dict[int, list[DistMixin]] = {
