@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 from scipy import stats
 from sklearn.utils._testing import assert_array_almost_equal
 
@@ -20,29 +21,29 @@ from wnb.stats import (
     TDist,
     UniformDist,
 )
+from wnb.stats.typing import DistributionLike
 
 out_of_support_warn_msg = "Value doesn't lie within the support of the distribution"
 
 
-def test_distributions_correct_name_attr():
+@pytest.mark.parametrize("dist_name", AllDistributions.keys())
+def test_distributions_correct_name_attr(dist_name):
     """
     Test if all defined distributions have correct `name` attributes.
     """
-    for dist_name in AllDistributions.keys():
-        assert isinstance(dist_name, (str, D))
+    assert isinstance(dist_name, (str, D))
 
 
-def test_distributions_correct_support_attr():
+@pytest.mark.parametrize("dist", AllDistributions.values())
+def test_distributions_correct_support_attr(dist: DistributionLike):
     """
     Test if all defined distributions have correct `_support` attributes.
     """
-    for dist in AllDistributions.values():
-        if dist.name in [D.UNIFORM, D.PARETO, D.CATEGORICAL]:
-            assert dist._support is None
-            continue
+    if dist.name in [D.UNIFORM, D.PARETO, D.CATEGORICAL]:
+        assert dist._support is None
 
+    else:
         assert isinstance(dist._support, (list, tuple))
-
         if isinstance(dist._support, list):
             for x in dist._support:
                 assert isinstance(x, (float, int))
@@ -77,7 +78,7 @@ def test_normal_with_epsilon(epsilon: float):
     assert_array_almost_equal(norm_2(X), norm_3(X), decimal=10)
 
 
-def test_lognormal_pdf(random_uniform):
+def test_lognormal_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `LognormalDist` returns the same result as pdf method of `scipy.stats.lognorm`.
     """
@@ -98,7 +99,7 @@ def test_lognormal_out_of_support_data():
         lognorm_wnb(-1)
 
 
-def test_exponential_pdf(random_uniform):
+def test_exponential_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `ExponentialDist` returns the same result as pdf method of `scipy.stats.expon`.
     """
@@ -119,7 +120,7 @@ def test_exponential_out_of_support_data():
         expon_wnb(-1)
 
 
-def test_uniform_pdf(random_uniform):
+def test_uniform_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `UniformDist` returns the same result as pdf method of `scipy.stats.uniform`.
     """
@@ -140,7 +141,7 @@ def test_uniform_out_of_support_data():
         uniform_wnb(3)
 
 
-def test_pareto_pdf(random_uniform):
+def test_pareto_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `ParetoDist` returns the same result as pdf method of `scipy.stats.pareto`.
     """
@@ -161,7 +162,7 @@ def test_pareto_out_of_support_data():
         pareto_wnb(-5)
 
 
-def test_gamma_pdf(random_uniform):
+def test_gamma_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `GammaDist` returns the same result as pdf method of `scipy.stats.gamma`.
     """
@@ -203,7 +204,7 @@ def test_beta_out_of_support_data():
         beta_wnb(1.01)
 
 
-def test_chi2_pdf(random_uniform):
+def test_chi2_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `ChiSquaredDist` returns the same result as pdf method of `scipy.stats.chi2`.
     """
@@ -224,7 +225,7 @@ def test_chi2_out_of_support_data():
         chi2_wnb(-5)
 
 
-def test_t_pdf(random_uniform):
+def test_t_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `TDist` returns the same result as pdf method of `scipy.stats.t`.
     """
@@ -234,7 +235,7 @@ def test_t_pdf(random_uniform):
     assert_array_almost_equal(t_wnb(X), t_scipy.pdf(X), decimal=10)
 
 
-def test_rayleigh_pdf(random_uniform):
+def test_rayleigh_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `RayleighDist` returns the same result as pdf method of `scipy.stats.rayleigh`.
     """

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.typing import NDArray
 from sklearn.base import is_classifier
 from sklearn.naive_bayes import BernoulliNB, CategoricalNB, GaussianNB
 from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
@@ -14,7 +17,7 @@ X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 y = np.array([1, 1, 1, 2, 2, 2])
 
 
-def get_random_normal_x_binary_y(global_random_seed):
+def get_random_normal_x_binary_y(global_random_seed: int) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
     # A bit more random tests
     rng = np.random.RandomState(global_random_seed)
     X1 = rng.normal(size=(10, 3))
@@ -69,7 +72,7 @@ def test_gnb_vs_sklearn_bernoulli():
     X_ = rng.randint(2, size=(150, 100))
     y_ = rng.randint(1, 5, size=(150,))
 
-    clf1 = GeneralNB(distributions=[D.BERNOULLI for _ in range(100)])
+    clf1 = GeneralNB(distributions=[D.BERNOULLI] * 100)
     clf1.fit(X_, y_)
 
     clf2 = BernoulliNB(alpha=1e-10, force_alpha=True)
@@ -135,7 +138,121 @@ def test_gnb_estimator():
     assert is_classifier(GeneralNB)
 
 
-def test_gnb_prior(global_random_seed):
+def test_gnb_dist_none():
+    """
+    Test whether the default distribution is set to Gaussian (normal) when no distributions are specified.
+    """
+    clf = GeneralNB().fit(X, y)
+    assert clf.distributions_ == [D.NORMAL] * X.shape[1]
+
+
+def test_gnb_dist_default_normal():
+    """
+    Test whether the default distribution is set to Gaussian (normal) when no distributions are specified.
+    """
+    clf = GeneralNB(distributions=[(D.RAYLEIGH, [0])]).fit(X, y)
+    assert clf.distributions_ == [D.RAYLEIGH, D.NORMAL]
+
+
+def test_gnb_wrong_dist_length():
+    """
+    Test whether an error is raised if the number of distributions is different from the number of features.
+    """
+    clf = GeneralNB(distributions=[D.NORMAL] * (X.shape[1] + 1))
+    msg = "Number of specified distributions must match the number of features"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+@pytest.mark.parametrize(
+    "clf",
+    [
+        GeneralNB(distributions="Normal"),
+        GeneralNB(distributions={"Normal": 0}),
+        GeneralNB(distributions=[(D.NORMAL, [0]), D.BERNOULLI]),
+        GeneralNB(distributions=["Normal", (D.BERNOULLI, [1])]),
+    ],
+)
+def test_gnb_wrong_dist_value(clf: GeneralNB):
+    """
+    Test whether an error is raised if invalid value is provided for the distributions parameter.
+    """
+    msg_1 = "distributions parameter must be a sequence of distributions or a sequence of tuples"
+    msg_2 = "The 'distributions' parameter of GeneralNB must be an array-like or None"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
+
+
+class InvalidDistA:
+    def __call__(self, *args, **kwargs):
+        return 0.0
+
+
+class InvalidDistB(InvalidDistA):
+    @classmethod
+    def from_data(cls, *args, **kwargs):
+        return cls()
+
+
+@pytest.mark.parametrize(
+    "clf",
+    [
+        GeneralNB(distributions=["Normal", "Borel"]),
+        GeneralNB(distributions=[(D.NORMAL, 0), ("Weibull", [1])]),
+        GeneralNB(distributions=[D.NORMAL, InvalidDistA]),
+        GeneralNB(distributions=[(InvalidDistA, 0), (InvalidDistB, 1)]),
+    ],
+)
+def test_gnb_unsupported_dist(clf: GeneralNB):
+    """
+    Test whether an error is raised if an unsupported distribution is provided.
+    """
+
+    msg = r"Distribution .* is not supported"
+    with pytest.raises(ValueError, match=msg):
+        clf.fit(X, y)
+
+
+@pytest.mark.parametrize("dist", [D.BERNOULLI, D.POISSON, D.CATEGORICAL])
+def test_gnb_dist_identical(dist: D):
+    """
+    Test whether GeneralNB returns the same outputs when identical distributions are specified in different formats.
+    """
+
+    rng = np.random.RandomState(10)
+    X_ = rng.randint(2, size=(150, 100))
+    y_ = rng.randint(1, 5, size=(150,))
+
+    clf1 = GeneralNB(distributions=[dist] * 100)
+    clf1.fit(X_, y_)
+
+    clf2 = GeneralNB(distributions=[(dist, [i for i in range(100)])])
+    clf2.fit(X_, y_)
+
+    df_X = pd.DataFrame(X_, columns=[f"x{i}" for i in range(100)])
+    clf3 = GeneralNB(distributions=[(dist, [f"x{i}" for i in range(100)])])
+    clf3.fit(df_X, y_)
+
+    y_pred1 = clf1.predict(X_[10:15])
+    y_pred2 = clf2.predict(X_[10:15])
+    y_pred3 = clf3.predict(df_X.iloc[10:15])
+    assert np.array_equal(y_pred1, y_pred2)
+    assert np.array_equal(y_pred2, y_pred3)
+
+    y_pred_proba1 = clf1.predict_proba(X_[10:15])
+    y_pred_proba2 = clf2.predict_proba(X_[10:15])
+    y_pred_proba3 = clf3.predict_proba(df_X.iloc[10:15])
+    assert np.array_equal(y_pred_proba1, y_pred_proba2)
+    assert np.array_equal(y_pred_proba2, y_pred_proba3)
+
+    y_pred_log_proba1 = clf1.predict_log_proba(X_[10:15])
+    y_pred_log_proba2 = clf2.predict_log_proba(X_[10:15])
+    y_pred_log_proba3 = clf3.predict_log_proba(df_X.iloc[10:15])
+    assert np.array_equal(y_pred_log_proba1, y_pred_log_proba2)
+    assert np.array_equal(y_pred_log_proba2, y_pred_log_proba3)
+
+
+def test_gnb_prior(global_random_seed: int):
     """
     Test whether class priors are properly set.
     """
@@ -235,17 +352,6 @@ def test_gnb_wrong_nb_dist():
     clf = GeneralNB(distributions=[D.NORMAL, D.GAMMA, D.PARETO])
 
     msg = "Number of specified distributions must match the number of features"
-    with pytest.raises(ValueError, match=msg):
-        clf.fit(X, y)
-
-
-def test_gnb_invalid_dist():
-    """
-    Test whether an error is raised if an invalid distribution is provided.
-    """
-    clf = GeneralNB(distributions=["Normal", "Borel"])
-
-    msg = r"Distribution .* is not supported"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
 
