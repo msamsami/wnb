@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import sys
+from collections import defaultdict
 from numbers import Real
-from typing import Any, Optional, Sequence
+from typing import Any, Iterable, Optional, Sequence, Union
 
 import numpy as np
 from sklearn.naive_bayes import _BaseNB
@@ -26,7 +27,7 @@ from ._utils import (
     check_X_y,
     validate_data,
 )
-from .typing import ArrayLike, Float, MatrixLike
+from .typing import ArrayLike, ColumnKey, Float, MatrixLike
 
 __all__ = ["GeneralNB"]
 
@@ -40,8 +41,8 @@ def _get_parameter_constraints() -> dict[str, list[Any]]:
         from sklearn.utils._param_validation import Interval
 
         return {
-            "priors": ["array-like", None],
             "distributions": ["array-like", None],
+            "priors": ["array-like", None],
             "alpha": [Interval(Real, 0, None, closed="left")],
             "var_smoothing": [Interval(Real, 0, None, closed="left")],
         }
@@ -55,13 +56,20 @@ class GeneralNB(_BaseNB):
 
     Parameters
     ----------
+    distributions : sequence of distribution-likes or tuples, default=None
+        Probability distributions to be used for feature likelihoods. If not specified,
+        all features will use Gaussian (normal) distributions.
+
+        Can be specified in two ways:
+            A sequence of length n_features specifying feature distributions in the order of appearance.
+
+            A sequence of `(distribution, columns)` tuples each specifying the distribution of one or more columns.
+            Columns can be referenced by position (int or array-like of int) or name (str or array-like of str)
+            when using a DataFrame. Any columns not explicitly specified will use a Gaussian distribution.
+
     priors : array-like of shape (n_classes,), default=None
         Prior probabilities of the classes. If specified, the priors are not
         adjusted according to the data.
-
-    distributions : sequence of distribution-like of length n_features, default=None
-        Probability distributions to be used for features' likelihoods. If not specified,
-        all likelihoods will be considered Gaussian.
 
     alpha : float, default=1e-10
         Additive (Laplace/Lidstone) smoothing parameter. Set alpha=0 for no smoothing.
@@ -107,13 +115,15 @@ class GeneralNB(_BaseNB):
     def __init__(
         self,
         *,
+        distributions: Optional[
+            Union[Sequence[DistributionLike], Sequence[tuple[DistributionLike, ColumnKey]]]
+        ] = None,
         priors: Optional[ArrayLike] = None,
-        distributions: Optional[Sequence[DistributionLike]] = None,
         alpha: Float = 1e-10,
         var_smoothing: Float = 1e-9,
     ) -> None:
-        self.priors = priors
         self.distributions = distributions
+        self.priors = priors
         self.alpha = alpha
         self.var_smoothing = var_smoothing
 
@@ -167,6 +177,22 @@ class GeneralNB(_BaseNB):
         check_classification_targets(y)
         return X, y
 
+    @staticmethod
+    def _find_dist(
+        feature_idx: int, feature_name: str | None, dist_mapping: dict[DistributionLike, ColumnKey]
+    ) -> DistributionLike:
+        for dist, cols in dist_mapping.items():
+            cols_ = (
+                [cols]
+                if isinstance(cols, (int, str)) or (isinstance(cols, np.ndarray) and cols.shape == ())
+                else cols
+            )
+            if feature_idx in cols_:
+                return dist
+            if feature_name is not None and feature_name in cols_:
+                return dist
+        return Distribution.NORMAL
+
     def _init_parameters(self) -> None:
         # Set priors if not specified
         if self.priors is None:
@@ -189,23 +215,54 @@ class GeneralNB(_BaseNB):
         if isinstance(self.class_prior_, (list, tuple, set)):
             self.class_prior_ = np.array(list(self.class_prior_))
 
-        # Set distributions if not specified
+        distributions_error_msg = "distributions parameter must be a sequence of distributions or a sequence of tuples of (distribution, column_key)"
         if self.distributions is None:
+            # Set distributions if not specified
             self.distributions_: list[DistributionLike] = [Distribution.NORMAL] * self.n_features_in_
+        elif not isinstance(self.distributions, (Sequence, np.ndarray)) or isinstance(
+            self.distributions, str
+        ):
+            raise ValueError(distributions_error_msg)
         else:
-            # Check if the number of distributions matches the number of features
-            if len(self.distributions) != self.n_features_in_:
-                raise ValueError(
-                    "Number of specified distributions must match the number of features."
-                    f"({len(self.distributions)} != {self.n_features_in_})"
-                )
+            if not any(isinstance(d, tuple) for d in self.distributions):
+                # Check if the number of distributions matches the number of features
+                if len(self.distributions) != self.n_features_in_:
+                    raise ValueError(
+                        "Number of specified distributions must match the number of features "
+                        f"({len(self.distributions)} != {self.n_features_in_})."
+                    )
+
+                # Handle `Sequence[DistributionLike]`
+                dist_mapping = defaultdict(list)
+                for i, dist in enumerate(self.distributions):
+                    dist_mapping[dist].append(i)
+            elif all(isinstance(d, tuple) for d in self.distributions):
+                # Handle `Sequence[tuple[DistributionLike, ColumnKey]]`
+                dist_mapping = {d[0]: d[1] for d in self.distributions}
+            else:
+                raise ValueError(distributions_error_msg)
 
             # Check that all specified distributions are supported
-            for i, dist in enumerate(self.distributions):
+            for dist, cols in dist_mapping.items():
                 if not is_dist_supported(dist):
-                    raise ValueError(f"Distribution '{dist}' at index {i} is not supported.")
+                    raise ValueError(f"Distribution '{dist}' is not supported.")
+                if isinstance(cols, str) or (
+                    isinstance(cols, Iterable)
+                    and any(isinstance(c, str) for c in cols)
+                    and not hasattr(self, "feature_names_in_")
+                ):
+                    raise ValueError(
+                        "Feature names are only supported when input data X is a DataFrame with named columns."
+                    )
 
-            self.distributions_: list[DistributionLike] = list(self.distributions)
+            # Initialize self.distributions_
+            self.distributions_: list[DistributionLike] = []
+            if hasattr(self, "feature_names_in_"):
+                feature_names = self.feature_names_in_.tolist()
+            else:
+                feature_names = [None] * self.n_features_in_
+            for i, feature_name in enumerate(feature_names):
+                self.distributions_.append(self._find_dist(i, feature_name, dist_mapping))
 
         # Ensure alpha is a non-negative real number
         if not isinstance(self.alpha, Real) or self.alpha < 0:
