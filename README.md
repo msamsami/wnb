@@ -17,13 +17,15 @@
 </div>
 
 ## Introduction
-Naive Bayes is often recognized as one of the most popular classification algorithms in the machine learning community. This package takes naive Bayes to a higher level by providing its implementations in more general and weighted settings.
+Naive Bayes is a widely used classification algorithm known for its simplicity and efficiency. This package takes naive Bayes to a higher level by providing more flexible and weighted variants, making it suitable for a broader range of applications.
 
 ### General naive Bayes
-The issue with the well-known implementations of the naive Bayes algorithm (such as the ones in `sklearn.naive_bayes` module) is that they assume a single distribution for the likelihoods of all features. Such an implementation can limit those who need to develop naive Bayes models with different distributions for feature likelihood. And enters **WNB** library! It allows you to customize your naive Bayes model by specifying the likelihood distribution of each feature separately. You can choose from a range of continuous and discrete probability distributions to design your classifier.
+Most standard implementations, such as those in `sklearn.naive_bayes`, assume a single distribution type for all feature likelihoods. This can be restrictive when dealing with mixed data types. **WNB** overcomes this limitation by allowing users to specify different probability distributions for each feature individually. You can select from a variety of continuous and discrete distributions, enabling greater customization and improved model performance.
 
 ### Weighted naive Bayes
-Although naive Bayes has many advantages such as simplicity and interpretability, its conditional independence assumption rarely holds true in real-world applications. In order to alleviate its conditional independence assumption, many attribute weighting naive Bayes (WNB) approaches have been proposed. Most of the proposed methods involve computationally demanding optimization problems that do not allow for controlling the model's bias due to class imbalance. Minimum Log-likelihood Difference WNB (MLD-WNB) is a novel weighting approach that optimizes the weights according to the Bayes optimal decision rule and includes hyperparameters for controlling the model's bias. **WNB** library provides an efficient implementation of gaussian MLD-WNB.
+While naive Bayes is simple and interpretable, its conditional independence assumption often fails in real-world scenarios. To address this, various attribute-weighted naive Bayes methods exist, but most are computationally expensive and lack mechanisms for handling class imbalance.
+
+**WNB** package provides an optimized implementation of *Minimum Log-likelihood Difference Wighted Naive Bayes* (MLD-WNB), a novel approach that optimizes feature weights using the Bayes optimal decision rule. It also introduces hyperparameters for controlling model bias, making it more robust for imbalanced classification.
 
 ## Installation
 This library is shipped as an all-in-one module implementation with minimalistic dependencies and requirements. Furthermore, it fully **adheres to Scikit-learn API** ❤️.
@@ -42,7 +44,7 @@ uv add wnb
 ```
 
 ## Getting started ⚡️
-Here, we show how you can use the library to train general and weighted naive Bayes classifiers.
+Here, we show how you can use the library to train general (mixed) and weighted naive Bayes classifiers.
 
 ### General naive Bayes
 
@@ -53,14 +55,19 @@ A general naive Bayes model can be set up and used in four simple steps:
 from wnb import GeneralNB, Distribution as D
 ```
 
-2. Initialize a classifier and specify the likelihood distributions
+2. Initialize a classifier with likelihood distributions specified
 ```python
-gnb = GeneralNB(distributions=[D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL])
+gnb = GeneralNB(distributions=[D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL, D.EXPONENTIAL])
+```
+or
+```python
+# Columns not explicitly specified will default to Gaussian (normal) distribution
+gnb = GeneralNB(distributions=[(D.CATEGORICAL, "col2"), (D.EXPONENTIAL, ["col3", "col4"])])
 ```
 
-3. Fit the classifier to a training set (with three features)
+3. Fit the classifier to a training set (with four features)
 ```python
-gnb.fit(X, y)
+gnb.fit(X_train, y_train)
 ```
 
 4. Predict on test data
@@ -79,17 +86,17 @@ from wnb import GaussianWNB
 
 2. Initialize a classifier
 ```python
-wnb = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
+gwnb = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
 ```
 
 3. Fit the classifier to a training set
 ```python
-wnb.fit(X, y)
+gwnb.fit(X_train, y_train)
 ```
 
 4. Predict on test data
 ```python
-wnb.predict(x_test)
+gwnb.predict(X_test)
 ```
 
 ## Compatibility with Scikit-learn 🤝
