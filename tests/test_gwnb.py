@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import re
 
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.typing import NDArray
 from sklearn.base import is_classifier
 from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
 from sklearn.utils.estimator_checks import check_estimator
@@ -14,7 +17,7 @@ X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 y = np.array([1, 1, 1, 2, 2, 2])
 
 
-def get_random_normal_x_binary_y(global_random_seed):
+def get_random_normal_x_binary_y(global_random_seed: int) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
     # A bit more random tests
     rng = np.random.RandomState(global_random_seed)
     X1 = rng.normal(size=(10, 3))
@@ -44,7 +47,7 @@ def test_gwnb_estimator():
     assert is_classifier(GaussianWNB)
 
 
-def test_gwnb_prior(global_random_seed):
+def test_gwnb_prior(global_random_seed: int):
     """
     Test whether class priors are properly set.
     """
@@ -155,17 +158,16 @@ def test_gwnb_wrong_error_weights():
         clf.fit(X, y)
 
 
-def test_gwnb_wrong_penalty():
+@pytest.mark.parametrize("clf", [GaussianWNB(penalty="dropout"), GaussianWNB(penalty=5)])
+def test_gwnb_wrong_penalty(clf: GaussianWNB):
     """
     Test whether an error is raised in case regularization penalty is not supported.
     """
-    clfs = [GaussianWNB(penalty="dropout"), GaussianWNB(penalty=5)]
 
     msg_1 = "Regularization type must be either 'l1' or 'l2'"
     msg_2 = "'penalty' parameter of GaussianWNB must be a str among"
-    for clf in clfs:
-        with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
-            clf.fit(X, y)
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
 
 
 def test_gwnb_neg_C():
@@ -180,17 +182,16 @@ def test_gwnb_neg_C():
         clf.fit(X, y)
 
 
-def test_gwnb_non_pos_step_size():
+@pytest.mark.parametrize("clf", [GaussianWNB(step_size=0.0), GaussianWNB(step_size=-0.6)])
+def test_gwnb_non_pos_step_size(clf: GaussianWNB):
     """
     Test whether an error is raised in case of non-positive step size.
     """
-    clfs = [GaussianWNB(step_size=0.0), GaussianWNB(step_size=-0.6)]
 
     msg_1 = "Step size must be a positive real number"
     msg_2 = "'step_size' parameter of GaussianWNB must be a float in the range \(0.0, inf\)"
-    for clf in clfs:
-        with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
-            clf.fit(X, y)
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
 
 
 def test_gwnb_neg_max_iter():
