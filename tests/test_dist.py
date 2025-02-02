@@ -13,6 +13,7 @@ from wnb.stats import (
     ExponentialDist,
     GammaDist,
     GeometricDist,
+    LaplaceDist,
     LognormalDist,
     NormalDist,
     ParetoDist,
@@ -254,6 +255,16 @@ def test_rayleigh_out_of_support_data():
 
     with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
         rayleigh_wnb(-5)
+
+
+def test_laplace_pdf(random_uniform: NDArray[np.float64]):
+    """
+    Test whether pdf method of `LaplaceDist` returns the same result as pdf method of `scipy.stats.laplace`.
+    """
+    laplace_wnb = LaplaceDist(mu=1, b=3)
+    laplace_scipy = stats.laplace(loc=1, scale=3)
+    X = random_uniform
+    assert_array_almost_equal(laplace_wnb(X), laplace_scipy.pdf(X), decimal=10)
 
 
 def test_bernoulli_pdf():
