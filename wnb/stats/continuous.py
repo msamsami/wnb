@@ -18,6 +18,7 @@ __all__ = [
     "ChiSquaredDist",
     "TDist",
     "RayleighDist",
+    "LaplaceDist",
 ]
 
 
@@ -210,3 +211,24 @@ class RayleighDist(ContinuousDistMixin):
 
     def pdf(self, x: float) -> float:
         return (x / self.sigma**2) * np.exp(-(x**2) / (2 * self.sigma**2)) if x >= 0 else 0.0
+
+
+class LaplaceDist(ContinuousDistMixin):
+    name = D.LAPLACE
+    _support = (-np.inf, np.inf)
+
+    def __init__(self, mu: float, b: float) -> None:
+        if b <= 0:
+            raise ValueError("Scale parameter b must be positive")
+        self.mu = mu
+        self.b = b
+        super().__init__()
+
+    @classmethod
+    def from_data(cls, data: np.ndarray, **kwargs: Any) -> "LaplaceDist":
+        mu = np.median(data)
+        b = np.mean(np.abs(data - mu))
+        return cls(mu=mu, b=b)
+
+    def pdf(self, x: float) -> float:
+        return (1.0 / (2 * self.b)) * np.exp(-np.abs(x - self.mu) / self.b)

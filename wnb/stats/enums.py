@@ -20,6 +20,7 @@ class Distribution(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     CHI_SQUARED = "Chi-squared"
     T = "T"
     RAYLEIGH = "Rayleigh"
+    LAPLACE = "Laplace"
     BERNOULLI = "Bernoulli"
     CATEGORICAL = "Categorical"
     GEOMETRIC = "Geometric"
