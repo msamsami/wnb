@@ -231,4 +231,4 @@ class LaplaceDist(ContinuousDistMixin):
         return cls(mu=mu, b=b)
 
     def pdf(self, x: float) -> float:
-        return (1 / (2 * self.b)) * np.exp(-np.abs(x - self.mu) / self.b)
+        return (1.0 / (2 * self.b)) * np.exp(-np.abs(x - self.mu) / self.b)
