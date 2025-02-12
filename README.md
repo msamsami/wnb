@@ -64,7 +64,7 @@ or
 # Columns not explicitly specified will default to Gaussian (normal) distribution
 gnb = GeneralNB(
     distributions=[
-        (D.CATEGORICAL, "col2"),
+        (D.CATEGORICAL, [1]),
         (D.EXPONENTIAL, ["col3", "col4"]),
     ],
 )

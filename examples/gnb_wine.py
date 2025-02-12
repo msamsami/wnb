@@ -19,6 +19,6 @@ gnb.fit(X_train, y_train)
 print("sklearn | GaussianNB >> score >>", gnb.score(X_test, y_test))
 
 # Train and score wnb GeneralNB classifier with Log-normal likelihoods
-gnb = GeneralNB(distributions=[D.LOGNORMAL] * X.shape[1])
+gnb = GeneralNB(distributions=[(D.LOGNORMAL, range(X.shape[1]))])
 gnb.fit(X_train, y_train)
 print("wnb | GeneralNB >> score >>", gnb.score(X_test, y_test))
