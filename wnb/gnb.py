@@ -107,6 +107,27 @@ class GeneralNB(_BaseNB):
 
     likelihood_params_ : dict
         A mapping from class labels to their fitted likelihood distributions.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> X = np.array([[-1, 1], [-2, 1], [-3, 2], [1, 1], [2, 1], [3, 2]])
+    >>> Y = np.array([1, 1, 1, 2, 2, 2])
+    >>> from wnb import GeneralNB, Distribution as D
+    >>> clf = GeneralNB(distributions=[D.NORMAL, D.POISSON])
+    >>> clf.fit(X, Y)
+    GeneralNB(distributions=[<Distribution.NORMAL: 'Normal'>,
+                             <Distribution.POISSON: 'Poisson'>])
+    >>> print(clf.predict([[-0.8, 1]]))
+    [1]
+    >>> X = np.array([[-1, 1, 1], [-2, 1, 1], [-3, 2, 2], [1, 1, 1], [2, 1, 1], [3, 2, 2]])
+    >>> Y = np.array([-1, -1, -1, 1, 1, 1])
+    >>> clf_2 = GeneralNB(distributions=[(D.NORMAL, [0, 2]), (D.POISSON, [1])])
+    >>> clf_2.fit(X, Y)
+    GeneralNB(distributions=[(<Distribution.NORMAL: 'Normal'>, [0, 2]),
+                             (<Distribution.POISSON: 'Poisson'>, [1])])
+    >>> print(clf_2.predict([[-0.8, 1, 1]]))
+    [-1]
     """
 
     if parameter_constraints := _get_parameter_constraints():
@@ -194,26 +215,23 @@ class GeneralNB(_BaseNB):
         return Distribution.NORMAL
 
     def _init_parameters(self) -> None:
-        # Set priors if not specified
         if self.priors is None:
             # Calculate empirical prior probabilities
             self.class_prior_ = self.class_count_ / self.class_count_.sum()
         else:
+            priors = np.asarray(self.priors)
+
             # Check that the provided priors match the number of classes
-            if len(self.priors) != self.n_classes_:
+            if len(priors) != self.n_classes_:
                 raise ValueError("Number of priors must match the number of classes.")
             # Check that the sum of priors is 1
-            if not np.isclose(self.priors.sum(), 1.0):
+            if not np.isclose(priors.sum(), 1.0):
                 raise ValueError("The sum of the priors should be 1.")
             # Check that the priors are non-negative
-            if (self.priors < 0).any():
+            if (priors < 0).any():
                 raise ValueError("Priors must be non-negative.")
 
-            self.class_prior_ = self.priors
-
-        # Convert to NumPy array if input priors is in a list/tuple/set
-        if isinstance(self.class_prior_, (list, tuple, set)):
-            self.class_prior_ = np.array(list(self.class_prior_))
+            self.class_prior_ = priors
 
         distributions_error_msg = "distributions parameter must be a sequence of distributions or a sequence of tuples of (distribution, column_key)"
         if self.distributions is None:
