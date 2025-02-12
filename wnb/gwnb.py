@@ -118,6 +118,25 @@ class GaussianWNB(_BaseNB):
 
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> X = np.array([[-1, 1], [-2, 1], [-3, 2], [1, 1], [2, 1], [3, 2]])
+    >>> Y = np.array([1, 1, 1, 2, 2, 2])
+    >>> from wnb import GaussianWNB
+    >>> clf = GaussianWNB()
+    >>> clf.fit(X, Y)
+    GaussianWNB()
+    >>> print(clf.predict([[-0.8, 1]]))
+    [1]
+    >>> X = np.array([[1, 3], [-1, 2], [2, 1], [3, 0], [1, 0.5], [-2, 1], [2, -1], [0, 0]])
+    >>> Y = np.array([-1, -1, 1, 1, 1, 1, 1, 1])
+    >>> clf_2 = GaussianWNB(error_weights=[[0, 3], [-1, 0]], max_iter=20, step_size=0.1)
+    >>> clf_2.fit(X, Y)
+    GaussianWNB(error_weights=[[0, 3], [-1, 0]], max_iter=20, step_size=0.1)
+    >>> print(clf_2.predict([[-1, 1.75]]))
+    [-1]
     """
 
     if parameter_constraints := _get_parameter_constraints():
@@ -127,7 +146,7 @@ class GaussianWNB(_BaseNB):
         self,
         *,
         priors: Optional[ArrayLike] = None,
-        error_weights: Optional[np.ndarray] = None,
+        error_weights: Optional[ArrayLike] = None,
         max_iter: Int = 25,
         step_size: Float = 1e-4,
         penalty: str = "l2",
@@ -198,33 +217,34 @@ class GaussianWNB(_BaseNB):
             # Calculate empirical prior probabilities
             self.class_prior_ = self.class_count_ / self.class_count_.sum()
         else:
+            priors = np.asarray(self.priors)
+
             # Check that the provided priors match the number of classes
-            if len(self.priors) != self.n_classes_:
+            if len(priors) != self.n_classes_:
                 raise ValueError("Number of priors must match the number of classes.")
             # Check that the sum of priors is 1
-            if not np.isclose(self.priors.sum(), 1.0):
+            if not np.isclose(priors.sum(), 1.0):
                 raise ValueError("The sum of the priors should be 1.")
             # Check that the priors are non-negative
-            if (self.priors < 0).any():
+            if (priors < 0).any():
                 raise ValueError("Priors must be non-negative.")
 
-            self.class_prior_ = self.priors
-
-        # Convert to NumPy array if input priors is in a list/tuple/set
-        if isinstance(self.class_prior_, (list, tuple, set)):
-            self.class_prior_ = np.array(list(self.class_prior_))
+            self.class_prior_ = priors
 
         if self.error_weights is None:
             # Assign equal weight to the errors of both classes
             self.error_weights_ = np.array([[0, 1], [-1, 0]])
         else:
+            error_weights = np.asarray(self.error_weights)
+
             # Ensure the size of error weights matrix matches number of classes
-            if self.error_weights.shape != (self.n_classes_, self.n_classes_):
+            if error_weights.shape != (self.n_classes_, self.n_classes_):
                 raise ValueError(
                     "The shape of error weights matrix does not match the number of classes, "
                     "must be (n_classes, n_classes)."
                 )
-            self.error_weights_ = self.error_weights
+
+            self.error_weights_ = error_weights
 
         # Ensure regularization type is either 'l1' or 'l2'
         if self.penalty not in ("l1", "l2"):
