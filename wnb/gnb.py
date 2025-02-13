@@ -135,10 +135,10 @@ class GeneralNB(_BaseNB):
 
     def __init__(
         self,
-        *,
         distributions: Optional[
             Union[Sequence[DistributionLike], Sequence[tuple[DistributionLike, ColumnKey]]]
         ] = None,
+        *,
         priors: Optional[ArrayLike] = None,
         alpha: Float = 1e-10,
         var_smoothing: Float = 1e-9,
