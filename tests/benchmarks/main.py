@@ -45,7 +45,7 @@ def benchmark_digits() -> None:
 def benchmark_breast_cancer() -> None:
     X, y = load_breast_cancer(return_X_y=True)
 
-    clf_wnb = GaussianWNB(max_iter=20, step_size=0.01, C=1.5)
+    clf_wnb = GaussianWNB(max_iter=30, step_size=0.01, C=1.5, var_smoothing=1e-12)
     clf_sklearn = GaussianNB()
     score_wnb, score_sklearn = benchmark(X, y, clf_wnb, clf_sklearn, MAX_ITER)
 
