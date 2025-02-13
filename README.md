@@ -130,7 +130,7 @@ We conducted benchmarks on four datasets, [Wine](https://scikit-learn.org/stable
 | Wine             | GaussianNB              | 0.9749    | GeneralNB      | **0.9812**     |
 | Iris             | GaussianNB              | 0.9556    | GeneralNB      | **0.9602**     |
 | Digits           | GaussianNB              | 0.8372    | GeneralNB      | **0.8905**     |
-| Breast Cancer    | GaussianNB              | 0.9389    | GaussianWNB    | **0.9512**     |
+| Breast Cancer    | GaussianNB              | 0.9389    | GaussianWNB    | **0.9519**     |
 
 These benchmarks highlight the potential of WNB classifiers to provide better performance in certain scenarios by allowing more flexibility in the choice of distributions and incorporating weighting strategies.
 
