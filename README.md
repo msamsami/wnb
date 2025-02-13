@@ -57,12 +57,12 @@ from wnb import GeneralNB, Distribution as D
 
 2. Initialize a classifier with likelihood distributions specified
 ```python
-gnb = GeneralNB(distributions=[D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL, D.EXPONENTIAL])
+clf = GeneralNB([D.NORMAL, D.CATEGORICAL, D.EXPONENTIAL, D.EXPONENTIAL])
 ```
 or
 ```python
 # Columns not explicitly specified will default to Gaussian (normal) distribution
-gnb = GeneralNB(
+clf = GeneralNB(
     distributions=[
         (D.CATEGORICAL, [1]),
         (D.EXPONENTIAL, ["col3", "col4"]),
@@ -72,12 +72,12 @@ gnb = GeneralNB(
 
 3. Fit the classifier to a training set (with four features)
 ```python
-gnb.fit(X_train, y_train)
+clf.fit(X_train, y_train)
 ```
 
 4. Predict on test data
 ```python
-gnb.predict(X_test)
+clf.predict(X_test)
 ```
 
 ### Weighted naive Bayes
@@ -91,17 +91,17 @@ from wnb import GaussianWNB
 
 2. Initialize a classifier
 ```python
-gwnb = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
+clf = GaussianWNB(max_iter=25, step_size=1e-2, penalty="l2")
 ```
 
 3. Fit the classifier to a training set
 ```python
-gwnb.fit(X_train, y_train)
+clf.fit(X_train, y_train)
 ```
 
 4. Predict on test data
 ```python
-gwnb.predict(X_test)
+clf.predict(X_test)
 ```
 
 ## Compatibility with Scikit-learn 🤝
