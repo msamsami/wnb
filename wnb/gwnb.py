@@ -42,6 +42,7 @@ def _get_parameter_constraints() -> dict[str, list[Any]]:
             "step_size": [Interval(Real, 0.0, None, closed="neither")],
             "penalty": [StrOptions({"l1", "l2"})],
             "C": [Interval(Real, 0.0, None, closed="left")],
+            "var_smoothing": [Interval(Real, 0, None, closed="left")],
             "learning_hist": ["boolean"],
         }
     except (ImportError, ModuleNotFoundError):
@@ -73,6 +74,10 @@ class GaussianWNB(_BaseNB):
     C : float, default=1.0
         Regularization strength. Must be strictly positive.
 
+    var_smoothing : float, default=1e-9
+        Portion of the largest variance of all features that is added to
+        variances for calculation stability.
+
     learning_hist : bool, default=False
         Whether to record the learning history, i.e., the value of cost function
         in each learning iteration.
@@ -90,6 +95,9 @@ class GaussianWNB(_BaseNB):
 
     n_classes_ : int
         Number of classes seen during :term:`fit`.
+
+    epsilon_ : float
+        Absolute additive value to variances.
 
     n_features_in_ : int
         Number of features seen during :term:`fit`.
@@ -151,6 +159,7 @@ class GaussianWNB(_BaseNB):
         step_size: Float = 1e-4,
         penalty: str = "l2",
         C: Float = 1.0,
+        var_smoothing: Float = 1e-9,
         learning_hist: bool = False,
     ) -> None:
         self.priors = priors
@@ -159,6 +168,7 @@ class GaussianWNB(_BaseNB):
         self.step_size = step_size
         self.penalty = penalty
         self.C = C
+        self.var_smoothing = var_smoothing
         self.learning_hist = learning_hist
 
     if SKLEARN_V1_6_OR_LATER:
@@ -269,6 +279,13 @@ class GaussianWNB(_BaseNB):
                 % self.max_iter
             )
 
+        # Ensure variance smoothing is a non-negative real number
+        if not isinstance(self.var_smoothing, Real) or self.var_smoothing < 0:
+            raise ValueError(
+                "Variance smoothing parameter must be a non-negative real number; got (var_smoothing=%r) instead."
+                % self.var_smoothing
+            )
+
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: MatrixLike, y: ArrayLike) -> Self:
         """Fits Gaussian Binary MLD-WNB classifier according to X, y.
@@ -299,6 +316,8 @@ class GaussianWNB(_BaseNB):
 
         self._init_parameters()
 
+        self.epsilon_ = self.var_smoothing * np.var(X, axis=0).max()
+
         self.theta_: np.ndarray = np.zeros((self.n_features_in_, self.n_classes_))
         self.std_: np.ndarray = np.zeros((self.n_features_in_, self.n_classes_))
         self.var_: np.ndarray = np.zeros((self.n_features_in_, self.n_classes_))
@@ -325,18 +344,22 @@ class GaussianWNB(_BaseNB):
 
         return self
 
+    def _get_std(self) -> np.ndarray:
+        return np.sqrt(self.var_ + self.epsilon_)
+
     def _calculate_cost(self, X, y, y_hat, learning_hist: bool) -> tuple[Float, list[Float]]:
         _lambda = [self.error_weights_[y[i], y_hat[i]] for i in range(X.shape[0])]
 
         if learning_hist:
+            std = self._get_std()
             _cost = 0.0
             for i in range(X.shape[0]):
                 _sum = np.log(self.class_prior_[1] / self.class_prior_[0])
                 x = X[i, :]
                 for j in range(self.n_features_in_):
                     _sum += self.coef_[j] * (
-                        np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 1], self.std_[j, 1]))
-                        - np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 0], self.std_[j, 0]))
+                        np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 1], std[j, 1]))
+                        - np.log(1e-20 + norm.pdf(x[j], self.theta_[j, 0], std[j, 0]))
                     )
                 _cost += _lambda[i] * _sum
         else:
@@ -345,8 +368,9 @@ class GaussianWNB(_BaseNB):
         return _cost, _lambda
 
     def _calculate_grad(self, X, _lambda: list[Float]) -> np.ndarray:
+        std = self._get_std()
         _grad = np.repeat(
-            np.log(self.std_[:, 0] / self.std_[:, 1]).reshape(1, -1),
+            np.log(std[:, 0] / std[:, 1]).reshape(1, -1),
             X.shape[0],
             axis=0,
         )
@@ -354,7 +378,7 @@ class GaussianWNB(_BaseNB):
             0.5
             * (
                 (X - np.repeat(self.theta_[:, 0].reshape(1, -1), X.shape[0], axis=0))
-                / (np.repeat(self.std_[:, 0].reshape(1, -1), X.shape[0], axis=0))
+                / (np.repeat(std[:, 0].reshape(1, -1), X.shape[0], axis=0))
             )
             ** 2
         )
@@ -362,7 +386,7 @@ class GaussianWNB(_BaseNB):
             0.5
             * (
                 (X - np.repeat(self.theta_[:, 1].reshape(1, -1), X.shape[0], axis=0))
-                / (np.repeat(self.std_[:, 1].reshape(1, -1), X.shape[0], axis=0))
+                / (np.repeat(std[:, 1].reshape(1, -1), X.shape[0], axis=0))
             )
             ** 2
         )
@@ -376,10 +400,11 @@ class GaussianWNB(_BaseNB):
         return np.argmax(jll, axis=1)
 
     def _joint_log_likelihood(self, X) -> np.ndarray:
+        std = self._get_std()
         log_priors = np.tile(np.log(self.class_prior_), (X.shape[0], 1))
         w_reshaped = np.tile(self.coef_.reshape(-1, 1), (1, self.n_classes_))
-        term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * self.std_)))
-        var_inv = np.multiply(w_reshaped, 1.0 / np.multiply(self.std_, self.std_))
+        term1 = np.sum(np.multiply(w_reshaped, -np.log(np.sqrt(2 * np.pi) * std)))
+        var_inv = np.multiply(w_reshaped, 1.0 / np.multiply(std, std))
         mu_by_var = np.multiply(self.theta_, var_inv)
         term2 = -0.5 * (
             np.matmul(np.multiply(X, X), var_inv)

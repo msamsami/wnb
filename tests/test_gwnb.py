@@ -116,6 +116,40 @@ def test_gwnb_prior_large_bias():
     assert clf.predict(np.array([[-0.1, -0.1]])) == np.array([2])
 
 
+def test_gwnb_var_smoothing():
+    """
+    Test whether var_smoothing parameter properly affects the variances.
+    """
+    X = np.array([[1, 0], [2, 0], [3, 0], [4, 0], [5, 0]])  # First feature has variance 2.0
+    y = np.array([1, 1, 2, 2, 2])
+
+    clf1 = GaussianWNB(var_smoothing=0.0)
+    clf1.fit(X, y)
+
+    clf2 = GaussianWNB(var_smoothing=1.0)
+    clf2.fit(X, y)
+
+    test_point = np.array([[2.5, 0]])
+    prob1 = clf1.predict_proba(test_point)
+    prob2 = clf2.predict_proba(test_point)
+
+    assert not np.allclose(prob1, prob2)
+    assert clf1.epsilon_ == 0.0
+    assert clf2.epsilon_ > clf1.epsilon_
+
+
+def test_gwnb_neg_var_smoothing():
+    """
+    Test whether an error is raised in case of negative var_smoothing.
+    """
+    clf = GaussianWNB(var_smoothing=-1.0)
+
+    msg_1 = "Variance smoothing parameter must be a non-negative real number"
+    msg_2 = "'var_smoothing' parameter of GaussianWNB must be a float in the range \[0.0, inf\)"
+    with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
+
+
 def test_gwnb_non_binary():
     """
     Test if an error is raised when given non-binary targets.
