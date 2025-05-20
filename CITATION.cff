@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: WNB
+message: >-
+  Python library for the implementations of general and
+  weighted naive Bayes classifiers.
+type: software
+authors:
+  - given-names: Mehdi
+    family-names: Samsami
+    email: mehdisamsami@live.com
+repository-code: 'https://github.com/msamsami/wnb'
+keywords:
+  - python
+  - machine learning
+  - bayes
+  - naive bayes
+  - classifier
+license: BSD-2-Clause
