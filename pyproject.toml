@@ -68,11 +68,11 @@ allow-direct-references = true
 testpaths = ["tests"]
 filterwarnings = ["ignore"]
 
-[tool.black]
+[tool.ruff]
 line-length = 110
 
 [tool.isort]
 atomic = true
 profile = "black"
 skip_gitignore = true
-known_first_party = ["black", "blib2to3", "blackd", "_black_version"]
+known_first_party = ["wnb"]
