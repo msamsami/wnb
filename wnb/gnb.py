@@ -114,7 +114,7 @@ class GeneralNB(_BaseNB):
     >>> X = np.array([[-1, 1], [-2, 1], [-3, 2], [1, 1], [2, 1], [3, 2]])
     >>> Y = np.array([1, 1, 1, 2, 2, 2])
     >>> from wnb import GeneralNB, Distribution as D
-    >>> clf = GeneralNB(distributions=[D.NORMAL, D.POISSON])
+    >>> clf = GeneralNB([D.NORMAL, D.POISSON])
     >>> clf.fit(X, Y)
     GeneralNB(distributions=[<Distribution.NORMAL: 'Normal'>,
                              <Distribution.POISSON: 'Poisson'>])
@@ -200,7 +200,9 @@ class GeneralNB(_BaseNB):
 
     @staticmethod
     def _find_dist(
-        feature_idx: int, feature_name: str | None, dist_mapping: dict[DistributionLike, ColumnKey]
+        feature_idx: int,
+        feature_name: str | None,
+        dist_mapping: dict[DistributionLike, ColumnKey],
     ) -> DistributionLike:
         for dist, cols in dist_mapping.items():
             cols_ = (
