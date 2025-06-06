@@ -68,7 +68,7 @@ allow-direct-references = true
 testpaths = ["tests"]
 filterwarnings = ["ignore"]
 
-[tool.ruff]
+[tool.black]
 line-length = 110
 
 [tool.isort]
