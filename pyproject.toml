@@ -52,7 +52,8 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/msamsami/wnb"
-Source = "https://github.com/msamsami/wnb"
+Repository = "https://github.com/msamsami/wnb"
+Issues = "https://github.com/msamsami/wnb/issues"
 
 [tool.hatch.version]
 path = "wnb/__init__.py"
