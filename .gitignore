@@ -136,3 +136,4 @@ dmypy.json
 test.ipynb
 dummy.py
 .DS_Store
+.cursor/

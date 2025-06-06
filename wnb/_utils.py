@@ -54,7 +54,6 @@ try:
 except ImportError:
 
     def _fit_context(*, prefer_skip_nested_validation: bool):
-
         def decorator(fit_method):
             @functools.wraps(fit_method)
             def wrapper(estimator, *args: Any, **kwargs: Any):
