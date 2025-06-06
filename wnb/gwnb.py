@@ -250,8 +250,7 @@ class GaussianWNB(_BaseNB):
             # Ensure the size of error weights matrix matches number of classes
             if error_weights.shape != (self.n_classes_, self.n_classes_):
                 raise ValueError(
-                    "The shape of error weights matrix does not match the number of classes, "
-                    "must be (n_classes, n_classes)."
+                    "The shape of error weights matrix does not match the number of classes, must be (n_classes, n_classes)."
                 )
 
             self.error_weights_ = error_weights
