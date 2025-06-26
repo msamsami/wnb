@@ -1,8 +1,8 @@
 from typing import Any, Optional
 
 import numpy as np
+import scipy.stats
 from scipy.special import beta, gamma
-from scipy.stats import chi2
 
 from .base import ContinuousDistMixin
 from .enums import Distribution as D
@@ -175,7 +175,7 @@ class ChiSquaredDist(ContinuousDistMixin):
         return cls(k=round(np.average(data)))
 
     def pdf(self, x: float) -> float:
-        return chi2.pdf(x, self.k)
+        return scipy.stats.chi2.pdf(x, self.k)
 
 
 class TDist(ContinuousDistMixin):
@@ -188,7 +188,8 @@ class TDist(ContinuousDistMixin):
 
     @classmethod
     def from_data(cls, data, **kwargs: Any) -> "TDist":
-        return cls(df=len(data) - 1)
+        df, _, _ = scipy.stats.t.fit(data)
+        return cls(df=df)
 
     def pdf(self, x: float) -> float:
         return (gamma((self.df + 1) / 2) / (np.sqrt(self.df * np.pi) * gamma(self.df / 2))) * (
