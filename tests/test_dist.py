@@ -236,6 +236,14 @@ def test_t_pdf(random_uniform: NDArray[np.float64]):
     assert_array_almost_equal(t_wnb(X), t_scipy.pdf(X), decimal=10)
 
 
+def test_t_from_data(random_uniform: NDArray[np.float64]):
+    """
+    Test whether `TDist.from_data` correctly estimates the degrees of freedom.
+    """
+    t_wnb = TDist.from_data(random_uniform)
+    assert_array_almost_equal(t_wnb.df, stats.t.fit(random_uniform)[0], decimal=8)
+
+
 def test_rayleigh_pdf(random_uniform: NDArray[np.float64]):
     """
     Test whether pdf method of `RayleighDist` returns the same result as pdf method of `scipy.stats.rayleigh`.
