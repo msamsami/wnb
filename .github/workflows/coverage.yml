@@ -1,0 +1,71 @@
+name: Coverage
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  UV_SYSTEM_PYTHON: 1
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - run: mkdir coverage
+
+      - name: Run tests with coverage
+        run: 
+            uv run coverage run -m pytest tests
+            uv run coverage combine
+            uv run coverage report
+            uv run coverage html --title "Coverage for ${{ github.sha }}"
+            uv run coverage xml
+        env:
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py
+          CONTEXT: ${{ runner.os }}-py
+
+      - name: Store coverage files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+          include-hidden-files: true
+
+      - name: Store coverage HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+          include-hidden-files: true
+
+      - name: Store coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          include-hidden-files: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          slug: msamsami/wnb
+          fail_ci_if_error: true
