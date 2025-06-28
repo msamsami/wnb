@@ -26,11 +26,16 @@ def get_dist_class(name_or_type: DistributionLike) -> Optional[DistMixin]:
         if issubclass(name_or_type, DistMixin):
             return name_or_type
 
-    if isinstance(name_or_type, Distribution) or name_or_type in Distribution.__members__.values():
+    d_names = [d.name for d in Distribution]
+    d_values = [d.value for d in Distribution]
+
+    if isinstance(name_or_type, Distribution) or name_or_type in d_values:
         return AllDistributions[name_or_type]
-    elif isinstance(name_or_type, str) and name_or_type.upper() in [d.name for d in Distribution]:
+    elif isinstance(name_or_type, str) and name_or_type.upper() in d_names:
         return AllDistributions[Distribution.__members__[name_or_type.upper()]]
-    elif isinstance(name_or_type, str) and name_or_type.title() in [d.value for d in Distribution]:
-        return AllDistributions[Distribution(name_or_type.title())]
+    elif isinstance(name_or_type, str) and name_or_type.lower() in [value.lower() for value in d_values]:
+        idx = next(i for i, value in enumerate(d_values) if value.lower() == name_or_type.lower())
+        name = d_names[idx]
+        return AllDistributions[Distribution.__members__[name]]
     else:
         return
