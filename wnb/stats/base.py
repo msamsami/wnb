@@ -58,7 +58,7 @@ class DistMixin(metaclass=ABCMeta):
         for p in parameters:
             if p.kind == p.VAR_POSITIONAL:
                 raise RuntimeError(
-                    "wnb estimators should always "
+                    "wnb distributions should always "
                     "specify their parameters in the signature "
                     "of their __init__ (no varargs). "
                     "%s with constructor %s doesn't "
