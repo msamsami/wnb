@@ -238,7 +238,7 @@ def test_t_pdf(random_uniform: NDArray[np.float64]):
 
 def test_t_from_data(random_uniform: NDArray[np.float64]):
     """
-    Test whether `TDist.from_data` correctly estimates the degrees of freedom.
+    Test whether `TDist.from_data` correctly estimates the degrees of freedom parameter.
     """
     t_wnb = TDist.from_data(random_uniform)
     assert_array_almost_equal(t_wnb.df, stats.t.fit(random_uniform)[0], decimal=8)
@@ -273,6 +273,22 @@ def test_laplace_pdf(random_uniform: NDArray[np.float64]):
     laplace_scipy = stats.laplace(loc=1, scale=3)
     X = random_uniform
     assert_array_almost_equal(laplace_wnb(X), laplace_scipy.pdf(X), decimal=10)
+
+
+def test_laplace_from_data(random_uniform: NDArray[np.float64]):
+    """
+    Test whether `LaplaceDist.from_data` correctly estimates the scale parameter.
+    """
+    laplace_wnb = LaplaceDist.from_data(random_uniform)
+    assert_array_almost_equal(laplace_wnb.b, stats.laplace.fit(random_uniform)[1], decimal=8)
+
+
+def test_laplace_scale_non_positive():
+    """
+    Test whether a ValueError is raised when calling `LaplaceDist` with a non-positive scale.
+    """
+    with pytest.raises(ValueError):
+        LaplaceDist(mu=1, b=-1)
 
 
 def test_bernoulli_pdf():

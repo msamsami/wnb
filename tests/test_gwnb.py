@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import re
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -45,6 +45,14 @@ def test_gwnb_estimator():
     """
     check_estimator(GaussianWNB())
     assert is_classifier(GaussianWNB)
+
+
+def test_gwnb_with_error_weights():
+    clf1 = GaussianWNB().fit(X, y)
+    clf2 = GaussianWNB(error_weights=np.array([[0, 1], [-2, 0]])).fit(X, y)
+
+    np.array_equal(clf1.error_weights_, np.array([[0, 1], [-1, 0]]))
+    np.array_equal(clf2.error_weights_, np.array([[0, 1], [-2, 0]]))
 
 
 def test_gwnb_prior(global_random_seed: int):
@@ -171,33 +179,31 @@ def test_gwnb_non_binary():
     y_ = np.array([1, 2, 3, 4, 4, 3, 2, 1, 1, 2])
     clf = GaussianWNB()
 
-    pattern = re.compile(r"(Only binary classification is supported|Unknown label type: non-binary)")
-    with pytest.raises(ValueError, match=pattern):
+    with pytest.raises(
+        ValueError, match=r"Only binary classification is supported|Unknown label type: non-binary"
+    ):
         clf.fit(X_, y_)
 
 
-def test_gwnb_wrong_error_weights():
+@pytest.mark.parametrize(
+    "error_weights", [np.array([[1, 2, 0], [0, -2, -3]]), np.array([[1, 2, 0], [0, -2, -3], [-2, 1, 1.5]])]
+)
+def test_gwnb_wrong_error_weights(error_weights: np.ndarray):
     """
     Test whether an error is raised in case error weight is not a square array of size (n_classes, n_classes).
     """
-    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3]]))
-
-    msg = "The shape of error weights matrix does not match the number of classes"
-    with pytest.raises(ValueError, match=msg):
-        clf.fit(X, y)
-
-    clf = GaussianWNB(error_weights=np.array([[1, 2, 0], [0, -2, -3], [-2, 1, 1.5]]))
+    clf = GaussianWNB(error_weights=error_weights)
     msg = "The shape of error weights matrix does not match the number of classes"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
 
 
-@pytest.mark.parametrize("clf", [GaussianWNB(penalty="dropout"), GaussianWNB(penalty=5)])
-def test_gwnb_wrong_penalty(clf: GaussianWNB):
+@pytest.mark.parametrize("penalty", ["dropout", "l3", 5, ["l1"]])
+def test_gwnb_wrong_penalty(penalty):
     """
     Test whether an error is raised in case regularization penalty is not supported.
     """
-
+    clf = GaussianWNB(penalty=penalty)
     msg_1 = "Regularization type must be either 'l1' or 'l2'"
     msg_2 = "'penalty' parameter of GaussianWNB must be a str among"
     with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
@@ -216,12 +222,12 @@ def test_gwnb_neg_C():
         clf.fit(X, y)
 
 
-@pytest.mark.parametrize("clf", [GaussianWNB(step_size=0.0), GaussianWNB(step_size=-0.6)])
-def test_gwnb_non_pos_step_size(clf: GaussianWNB):
+@pytest.mark.parametrize("step_size", [0.0, -0.6])
+def test_gwnb_non_pos_step_size(step_size: float):
     """
     Test whether an error is raised in case of non-positive step size.
     """
-
+    clf = GaussianWNB(step_size=step_size)
     msg_1 = "Step size must be a positive real number"
     msg_2 = "'step_size' parameter of GaussianWNB must be a float in the range \(0.0, inf\)"
     with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
@@ -240,7 +246,7 @@ def test_gwnb_neg_max_iter():
         clf.fit(X, y)
 
 
-def test_gwnb_no_cost_hist():
+def test_gwnb_no_learning_hist():
     """
     Test whether cost_hist_ is None if learning_hist is not enabled.
     """
@@ -249,11 +255,25 @@ def test_gwnb_no_cost_hist():
     assert clf.cost_hist_ is None
 
 
-def test_gwnb_attrs():
+def test_gwnb_with_learning_hist():
+    """
+    Test whether cost_hist_ has the correct shape if learning_hist is enabled.
+    """
+    clf = GaussianWNB(max_iter=10, learning_hist=True)
+    clf.fit(X, y)
+    assert clf.cost_hist_ is not None
+    assert len(clf.cost_hist_) == clf.max_iter
+    assert np.count_nonzero(~np.isnan(clf.cost_hist_)) == clf.n_iter_
+
+
+@pytest.mark.parametrize(
+    ["penalty", "learning_hist"], [("l1", True), ("l1", False), ("l2", True), ("l2", False)]
+)
+def test_gwnb_attrs(penalty: str, learning_hist: bool):
     """
     Test whether the attributes are properly set.
     """
-    clf = GaussianWNB().fit(X, y)
+    clf = GaussianWNB(penalty=penalty, learning_hist=learning_hist).fit(X, y)
     assert np.array_equal(clf.class_count_, np.array([3, 3]))
     assert np.array_equal(clf.class_prior_, np.array([0.5, 0.5]))
     assert np.array_equal(clf.classes_, np.array([1, 2]))
@@ -265,7 +285,27 @@ def test_gwnb_attrs():
     assert clf.std_.shape == (2, 2)
     assert clf.var_.shape == (2, 2)
     assert clf.coef_.shape == (2,)
+    if learning_hist:
+        assert clf.cost_hist_ is not None
 
     feature_names = [f"x{i}" for i in range(X.shape[1])]
     clf = GaussianWNB().fit(pd.DataFrame(X, columns=feature_names), y)
     assert np.array_equal(clf.feature_names_in_, np.array(feature_names))
+
+
+def test_gwnb_check_X_wrong_features():
+    """
+    Test whether an error is raised in case of providing wrong number of features to the predict method.
+    """
+    X = np.array([[1, 2], [3, 4]])
+    y = np.array([0, 1])
+
+    clf = GaussianWNB()
+    clf.fit(X, y)
+
+    # Mock validate_data to return X but skip sklearn's feature check, so we can test our custom feature count check
+    X_wrong = np.array([[1, 2, 3]])  # 3 features instead of 2
+    msg = "Expected input with 2 features, got 3 instead"
+    with patch("wnb.gwnb.validate_data", return_value=X_wrong):
+        with pytest.raises(ValueError, match=msg):
+            clf.predict(X_wrong)

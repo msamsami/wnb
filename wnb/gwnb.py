@@ -45,7 +45,7 @@ def _get_parameter_constraints() -> dict[str, list[Any]]:
             "var_smoothing": [Interval(Real, 0, None, closed="left")],
             "learning_hist": ["boolean"],
         }
-    except (ImportError, ModuleNotFoundError):
+    except (ImportError, ModuleNotFoundError):  # pragma: no cover
         return {}
 
 
@@ -180,7 +180,7 @@ class GaussianWNB(_BaseNB):
             return tags
 
     def _more_tags(self) -> dict[str, bool]:
-        return {"binary_only": True, "requires_y": True}
+        return {"binary_only": True, "requires_y": True}  # pragma: no cover
 
     def _check_X(self, X) -> np.ndarray:
         X = validate_data(

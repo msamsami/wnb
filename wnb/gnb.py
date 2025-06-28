@@ -46,7 +46,7 @@ def _get_parameter_constraints() -> dict[str, list[Any]]:
             "alpha": [Interval(Real, 0, None, closed="left")],
             "var_smoothing": [Interval(Real, 0, None, closed="left")],
         }
-    except (ImportError, ModuleNotFoundError):
+    except (ImportError, ModuleNotFoundError):  # pragma: no cover
         return {}
 
 
@@ -156,7 +156,7 @@ class GeneralNB(_BaseNB):
             return tags
 
     def _more_tags(self) -> dict[str, bool]:
-        return {"requires_y": True}
+        return {"requires_y": True}  # pragma: no cover
 
     def _get_distributions(self) -> Sequence[DistributionLike]:
         try:

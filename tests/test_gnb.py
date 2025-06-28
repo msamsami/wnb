@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -165,21 +167,32 @@ def test_gnb_wrong_dist_length():
 
 
 @pytest.mark.parametrize(
-    "clf",
+    "distributions",
     [
-        GeneralNB(distributions="Normal"),
-        GeneralNB(distributions={"Normal": 0}),
-        GeneralNB(distributions=[(D.NORMAL, [0]), D.BERNOULLI]),
-        GeneralNB(distributions=["Normal", (D.BERNOULLI, [1])]),
+        "Normal",
+        {"Normal": 0},
+        [(D.NORMAL, [0]), D.BERNOULLI],
+        ["Normal", (D.BERNOULLI, [1])],
     ],
 )
-def test_gnb_wrong_dist_value(clf: GeneralNB):
+def test_gnb_wrong_dist_value(distributions):
     """
     Test whether an error is raised if invalid value is provided for the distributions parameter.
     """
+    clf = GeneralNB(distributions=distributions)
     msg_1 = "distributions parameter must be a sequence of distributions or a sequence of tuples"
     msg_2 = "The 'distributions' parameter of GeneralNB must be an array-like or None"
     with pytest.raises(ValueError, match=rf"{msg_1}|{msg_2}"):
+        clf.fit(X, y)
+
+
+@pytest.mark.parametrize("distributions", [[("Normal", "x1")], [(D.RAYLEIGH, [1, "f1"])]])
+def test_gnb_feature_name_dist_with_array(distributions):
+    clf = GeneralNB(distributions=distributions)
+    with pytest.raises(
+        ValueError,
+        match="Feature names are only supported when input data X is a DataFrame with named columns",
+    ):
         clf.fit(X, y)
 
 
@@ -195,19 +208,19 @@ class InvalidDistB(InvalidDistA):
 
 
 @pytest.mark.parametrize(
-    "clf",
+    "distributions",
     [
-        GeneralNB(distributions=["Normal", "Borel"]),
-        GeneralNB(distributions=[(D.NORMAL, 0), ("Weibull", [1])]),
-        GeneralNB(distributions=[D.NORMAL, InvalidDistA]),
-        GeneralNB(distributions=[(InvalidDistA, 0), (InvalidDistB, 1)]),
+        ["Normal", "Borel"],
+        [(D.NORMAL, 0), ("Weibull", [1])],
+        [D.NORMAL, InvalidDistA],
+        [(InvalidDistA, 0), (InvalidDistB, 1)],
     ],
 )
-def test_gnb_unsupported_dist(clf: GeneralNB):
+def test_gnb_unsupported_dist(distributions):
     """
     Test whether an error is raised if an unsupported distribution is provided.
     """
-
+    clf = GeneralNB(distributions=distributions)
     msg = r"Distribution .* is not supported"
     with pytest.raises(ValueError, match=msg):
         clf.fit(X, y)
@@ -432,3 +445,21 @@ def test_gnb_attrs():
     feature_names = [f"x{i}" for i in range(X.shape[1])]
     clf = GeneralNB().fit(pd.DataFrame(X, columns=feature_names), y)
     assert np.array_equal(clf.feature_names_in_, np.array(feature_names))
+
+
+def test_gnb_check_X_wrong_features():
+    """
+    Test whether an error is raised in case of providing wrong number of features to the predict method.
+    """
+    X = np.array([[1, 2], [3, 4]])
+    y = np.array([0, 1])
+
+    clf = GeneralNB()
+    clf.fit(X, y)
+
+    # Mock validate_data to return X but skip sklearn's feature check, so we can test our custom feature count check
+    X_wrong = np.array([[1, 2, 3]])  # 3 features instead of 2
+    msg = "Expected input with 2 features, got 3 instead"
+    with patch("wnb.gnb.validate_data", return_value=X_wrong):
+        with pytest.raises(ValueError, match=msg):
+            clf.predict(X_wrong)
