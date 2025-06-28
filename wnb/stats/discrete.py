@@ -1,3 +1,4 @@
+from collections import Counter
 from math import factorial
 from typing import Any, Mapping
 
@@ -46,7 +47,9 @@ class CategoricalDist(DiscreteDistMixin):
     @classmethod
     def from_data(cls, data, **kwargs: Any) -> "CategoricalDist":
         alpha = kwargs.get("alpha", 1e-10)
-        values, counts = np.unique(data, return_counts=True)
+        counter = Counter(data)
+        values = list(counter.keys())
+        counts = list(counter.values())
         return cls(prob={v: (c + alpha) / len(data) for v, c in zip(values, counts)})
 
     def pmf(self, x: Any) -> float:
