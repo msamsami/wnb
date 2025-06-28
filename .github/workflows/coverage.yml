@@ -31,7 +31,7 @@ jobs:
       - run: mkdir coverage
 
       - name: Run tests with coverage
-        run: 
+        run: |
             uv run coverage run -m pytest tests
             uv run coverage combine
             uv run coverage report
