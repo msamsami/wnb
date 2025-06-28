@@ -4,54 +4,21 @@ from numpy.typing import NDArray
 from scipy import stats
 from sklearn.utils._testing import assert_array_almost_equal
 
-from wnb import Distribution as D
 from wnb.stats import (
-    AllDistributions,
-    BernoulliDist,
     BetaDist,
     ChiSquaredDist,
     ExponentialDist,
     GammaDist,
-    GeometricDist,
     LaplaceDist,
     LognormalDist,
     NormalDist,
     ParetoDist,
-    PoissonDist,
     RayleighDist,
     TDist,
     UniformDist,
 )
-from wnb.stats.typing import DistributionLike
 
 out_of_support_warn_msg = "Value doesn't lie within the support of the distribution"
-
-
-@pytest.mark.parametrize("dist_name", AllDistributions.keys())
-def test_distributions_correct_name_attr(dist_name):
-    """
-    Test if all defined distributions have correct `name` attributes.
-    """
-    assert isinstance(dist_name, (str, D))
-
-
-@pytest.mark.parametrize("dist", AllDistributions.values())
-def test_distributions_correct_support_attr(dist: DistributionLike):
-    """
-    Test if all defined distributions have correct `_support` attributes.
-    """
-    if dist.name in [D.UNIFORM, D.PARETO, D.CATEGORICAL]:
-        assert dist._support is None
-
-    else:
-        assert isinstance(dist._support, (list, tuple))
-        if isinstance(dist._support, list):
-            for x in dist._support:
-                assert isinstance(x, (float, int))
-        else:
-            assert len(dist._support) == 2
-            for x in dist._support:
-                assert isinstance(x, (float, int))
 
 
 def test_normal_pdf():
@@ -289,66 +256,3 @@ def test_laplace_scale_non_positive():
     """
     with pytest.raises(ValueError):
         LaplaceDist(mu=1, b=-1)
-
-
-def test_bernoulli_pdf():
-    """
-    Test whether pmf method of `BernoulliDist` returns the same result as pmf method of `scipy.stats.bernoulli`.
-    """
-    bernoulli_wnb = BernoulliDist(p=0.4)
-    bernoulli_scipy = stats.bernoulli(p=0.4)
-    X = np.random.randint(0, 2, size=10000)
-    assert_array_almost_equal(bernoulli_wnb(X), bernoulli_scipy.pmf(X), decimal=10)
-
-
-def test_bernoulli_out_of_support_data():
-    """
-    Test whether a warning is issued when calling `BernoulliDist` with out-of-support data.
-    """
-    X = np.random.randint(0, 2, size=1000)
-    bernoulli_wnb = BernoulliDist.from_data(X)
-
-    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
-        bernoulli_wnb(2)
-
-
-def test_geometric_pdf():
-    """
-    Test whether pmf method of `GeometricDist` returns the same result as pmf method of `scipy.stats.geom`.
-    """
-    geom_wnb = GeometricDist(p=0.3)
-    geom_scipy = stats.geom(p=0.3)
-    X = np.random.randint(1, 1000, size=10000)
-    assert_array_almost_equal(geom_wnb(X), geom_scipy.pmf(X), decimal=10)
-
-
-def test_geometric_out_of_support_data():
-    """
-    Test whether a warning is issued when calling `GeometricDist` with out-of-support data.
-    """
-    X = np.random.geometric(p=0.3, size=1000)
-    geom_wnb = GeometricDist.from_data(X)
-
-    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
-        geom_wnb(0)
-
-
-def test_poisson_pdf():
-    """
-    Test whether pmf method of `PoissonDist` returns the same result as pmf method of `scipy.stats.poisson`.
-    """
-    poisson_wnb = PoissonDist(rate=1.5)
-    poisson_scipy = stats.poisson(mu=1.5)
-    X = np.random.randint(0, 100, size=10000)
-    assert_array_almost_equal(poisson_wnb(X), poisson_scipy.pmf(X), decimal=10)
-
-
-def test_poisson_out_of_support_data():
-    """
-    Test whether a warning is issued when calling `PoissonDist` with out-of-support data.
-    """
-    X = np.random.poisson(lam=1.5, size=1000)
-    poisson_wnb = PoissonDist.from_data(X)
-
-    with pytest.warns(RuntimeWarning, match=out_of_support_warn_msg):
-        poisson_wnb(-1)
