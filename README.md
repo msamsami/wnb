@@ -135,7 +135,7 @@ We conducted benchmarks on four datasets, [Wine](https://scikit-learn.org/stable
 
 These benchmarks highlight the potential of WNB classifiers to provide better performance in certain scenarios by allowing more flexibility in the choice of distributions and incorporating weighting strategies.
 
-The scripts used to generate these benchmark results are available in the _tests/benchmarks/_ directory.
+The scripts used to generate these benchmark results are available in the _benchmarks/_ directory.
 
 ## Support us 💡
 You can support the project in the following ways:
