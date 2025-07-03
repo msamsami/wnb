@@ -1,7 +1,7 @@
 from sklearn.datasets import load_breast_cancer, load_digits, load_iris, load_wine
 from sklearn.naive_bayes import GaussianNB
 
-from tests.benchmarks.utils import benchmark
+from benchmarks.utils import benchmark
 from wnb import Distribution as D
 from wnb import GaussianWNB, GeneralNB
 
